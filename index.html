@@ -29,17 +29,13 @@
             }
         }
     </script>
-    <!-- FontAwesome for Icons -->
+    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        .calendar-day-active {
-            transition: all 0.2s ease-in-out;
-        }
-        .calendar-day-active:hover {
-            transform: translateY(-2px);
-        }
+        .calendar-day-active { transition: all 0.2s ease-in-out; }
+        .calendar-day-active:hover { transform: translateY(-2px); }
     </style>
 </head>
 <body class="bg-slate-100 min-h-screen flex flex-col text-slate-800">
@@ -58,8 +54,8 @@
                 </div>
             </div>
 
-            <div id="navRight" class="flex items-center space-x-3">
-                <!-- User Profile & Navigation injected dynamically -->
+            <div id="navRight" class="flex items-center space-x-4">
+                <!-- Injected dynamically -->
             </div>
         </div>
     </header>
@@ -100,7 +96,7 @@
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user"></i></span>
-                                <input type="text" id="loginUsername" required placeholder="Enter username (e.g., Raymond)" 
+                                <input type="text" id="loginUsername" required placeholder="Enter username" 
                                        class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 outline-none text-slate-800 transition">
                             </div>
                         </div>
@@ -113,7 +109,7 @@
                             </div>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock"></i></span>
-                                <input type="password" id="loginPassword" required placeholder="Enter password (e.g., 123456)" 
+                                <input type="password" id="loginPassword" required placeholder="Enter password" 
                                        class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 outline-none text-slate-800 transition">
                             </div>
                         </div>
@@ -121,12 +117,6 @@
                             <span>Sign In</span> <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </form>
-                    
-                    <div class="mt-6 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600 space-y-1">
-                        <p class="font-semibold text-slate-700"><i class="fa-solid fa-key text-tennis-600 mr-1"></i> Demo Credentials:</p>
-                        <p>• Admin: <span class="font-mono bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">Raymond</span> / Password: <span class="font-mono bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">123456</span></p>
-                        <p>• Student: <span class="font-mono bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">john</span> / Password: <span class="font-mono bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">123</span></p>
-                    </div>
                 </div>
 
                 <!-- Register Form -->
@@ -143,8 +133,16 @@
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contact Phone No. <span class="text-red-500">*</span></label>
-                            <input type="tel" id="regContact" required placeholder="91234567" 
-                                   class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 outline-none text-slate-800">
+                            <div class="flex gap-2">
+                                <select id="regCountryCode" class="bg-slate-100 border border-slate-300 text-slate-800 font-bold px-3 py-2.5 rounded-lg text-sm outline-none focus:ring-2 focus:ring-tennis-500">
+                                    <option value="+852">+852</option>
+                                    <option value="+86">+86</option>
+                                    <option value="+853">+853</option>
+                                    <option value="+886">+886</option>
+                                </select>
+                                <input type="tel" id="regContact" required placeholder="91234567" 
+                                       class="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 outline-none text-slate-800">
+                            </div>
                         </div>
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Desired Username <span class="text-red-500">*</span></label>
@@ -177,7 +175,6 @@
                 <div class="space-y-1">
                     <div class="inline-flex items-center gap-2">
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-tennis-500 text-slate-900">Active Cohort</span>
-                        <!-- Multi-Cohort Selection Dropdown -->
                         <select id="userCohortSelect" onchange="changeActiveCohort(this.value)" class="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2 py-1 outline-none font-semibold">
                             <option value="c1">1st Training Cohort: Dec 2026 - Feb 2027</option>
                             <option value="c2">2nd Training Cohort: Mar 2027 - May 2027</option>
@@ -198,7 +195,6 @@
                     <button id="tabLessonSchedBtn" onclick="switchMainTab('schedule')" class="px-5 py-3 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-base"></i> Check Confirmed Schedule
                     </button>
-                    <!-- Admin Tab (strictly hidden for non-admin) -->
                     <button id="tabAdminBtn" onclick="switchMainTab('admin')" class="hidden px-5 py-3 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 transition flex items-center gap-2">
                         <i class="fa-solid fa-user-shield text-base"></i> Admin Portal
                     </button>
@@ -258,7 +254,7 @@
                         <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                     </div>
                     <div id="calendarGrid" class="grid grid-cols-7 gap-2">
-                        <!-- Rendered dynamically -->
+                        <!-- Dynamic rendering -->
                     </div>
                 </div>
 
@@ -325,7 +321,7 @@
                 </div>
             </div>
 
-            <!-- TAB CONTENT 3: Admin Management Portal (Only for Raymond) -->
+            <!-- TAB CONTENT 3: Admin Management Portal (ONLY FOR RAYMOND) -->
             <div id="contentAdmin" class="hidden space-y-6">
                 
                 <!-- Admin Header -->
@@ -432,16 +428,16 @@
                                 </p>
                             </div>
                             <div class="flex flex-wrap items-center gap-2">
-                                <button onclick="runPriorityEnrollmentAlgorithm()" class="px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition flex items-center gap-1.5 text-xs sm:text-sm">
+                                <button onclick="clearAllCheckedEnrollments()" class="px-3.5 py-2.5 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl transition flex items-center gap-2 text-xs sm:text-sm border border-red-200">
+                                    <i class="fa-solid fa-eraser"></i> Clear All Checked
+                                </button>
+                                <button onclick="runPriorityEnrollmentAlgorithm()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition flex items-center gap-2 text-xs sm:text-sm">
                                     <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Assignment
                                 </button>
-                                <button onclick="clearAllAdminEnrollments()" class="px-3.5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow transition flex items-center gap-1.5 text-xs sm:text-sm">
-                                    <i class="fa-solid fa-rotate-left"></i> Clear All Checked
-                                </button>
-                                <button onclick="openPreviewRosterModal()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow transition flex items-center gap-1.5 text-xs sm:text-sm">
+                                <button onclick="openPreviewRosterModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow transition flex items-center gap-2 text-xs sm:text-sm">
                                     <i class="fa-solid fa-eye"></i> Preview Roster Summary
                                 </button>
-                                <button onclick="confirmAndPublishEnrollment()" class="px-3.5 py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow transition flex items-center gap-1.5 text-xs sm:text-sm">
+                                <button onclick="confirmAndPublishEnrollment()" class="px-4 py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow transition flex items-center gap-2 text-xs sm:text-sm">
                                     <i class="fa-solid fa-paper-plane"></i> Publish Schedule
                                 </button>
                             </div>
@@ -454,14 +450,14 @@
                                 <span>System Allocation Warnings & Conflict Report</span>
                             </div>
                             <div id="algorithmWarningContent" class="text-xs text-amber-800 space-y-1 pl-6 list-disc">
-                                <!-- Populated dynamically -->
+                                <!-- Dynamic -->
                             </div>
                         </div>
                     </div>
 
                     <!-- Daily Roster Cards -->
                     <div id="adminRosterContainer" class="space-y-4">
-                        <!-- Dynamic rendering -->
+                        <!-- Dynamic -->
                     </div>
                 </div>
 
@@ -481,11 +477,11 @@
                 <button onclick="closeModal('modalConfirmReg')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <p class="text-sm text-slate-600">
+            <p class="text-sm font-semibold text-slate-700 leading-relaxed">
                 You are about to submit your available dates for the active cohort.
             </p>
 
-            <!-- Textbox showing selected dates list with Weekday -->
+            <!-- Textbox showing selected dates list with Weekdays -->
             <div>
                 <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Summary of Selected Available Dates:</label>
                 <textarea id="regConfirmationSummaryText" readonly rows="6" 
@@ -506,6 +502,22 @@
                     Confirm & Submit Registration
                 </button>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1.5: Polished Submission Success Prompt -->
+    <div id="modalSubmissionSuccessPrompt" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 text-center">
+            <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 class="text-xl font-extrabold text-slate-900">Enrolment Request Submitted</h3>
+            <p class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 text-left font-medium">
+                Your enrolment requests have been successfully submitted. Please note that your submission does not mean the lessons are successfully enrolled. The final enrolment list is still pending confirmation.
+            </p>
+            <button onclick="closeModal('modalSubmissionSuccessPrompt')" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-lg transition">
+                Understood
+            </button>
         </div>
     </div>
 
@@ -543,7 +555,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Location Venue</label>
-                    <input type="text" id="lessonLocation" required placeholder="e.g. Victoria Park Court 1" value="Victoria Park Court 1"
+                    <input type="text" id="lessonLocation" required placeholder="Victoria Park Court 1" value="Victoria Park Court 1"
                            class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
                 </div>
 
@@ -555,53 +567,58 @@
         </div>
     </div>
 
-    <!-- MODAL 3: Forgot Password Modal with SMS OTP Verification -->
+    <!-- MODAL 3: Forgot Password Modal with OTP Verification -->
     <div id="modalForgotPassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-shield-halved text-tennis-600 mr-1"></i> OTP Reset Password</h3>
+                <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-key text-tennis-600 mr-1"></i> Reset / Find Password</h3>
                 <button onclick="closeModal('modalForgotPassword')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <!-- STEP 1: Verify Account & Request OTP -->
-            <form id="otpStep1Form" onsubmit="handleSendOTP(event)" class="space-y-4">
-                <p class="text-xs text-slate-500">Enter your username and registered contact phone number. An SMS OTP will be sent to verify your identity.</p>
+            <!-- Step 1: Request OTP -->
+            <form id="otpRequestForm" onsubmit="handleSendOtp(event)" class="space-y-4">
+                <p class="text-xs text-slate-500">Enter your registered username and phone number to receive a 6-digit OTP code.</p>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
-                    <input type="text" id="forgotUsername" required placeholder="Enter username (e.g. john)" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-tennis-500">
+                    <input type="text" id="forgotUsername" required placeholder="Enter username" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Registered Contact Phone</label>
-                    <input type="tel" id="forgotContact" required placeholder="Enter registered phone no. (e.g. 91234567)" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-tennis-500">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Registered Phone No.</label>
+                    <div class="flex gap-2">
+                        <select id="forgotCountryCode" class="bg-slate-100 border border-slate-300 text-slate-800 font-bold px-3 py-2 rounded-lg text-sm outline-none">
+                            <option value="+852">+852</option>
+                            <option value="+86">+86</option>
+                        </select>
+                        <input type="tel" id="forgotContact" required placeholder="91234567" class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
+                    </div>
                 </div>
 
                 <div class="flex items-center justify-end space-x-3 pt-2">
                     <button type="button" onclick="closeModal('modalForgotPassword')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow flex items-center gap-1.5">
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow flex items-center gap-2">
                         <i class="fa-solid fa-paper-plane"></i> Send OTP SMS
                     </button>
                 </div>
             </form>
 
-            <!-- STEP 2: Input OTP & New Password -->
-            <form id="otpStep2Form" onsubmit="handleVerifyOTPAndReset(event)" class="space-y-4 hidden">
+            <!-- Step 2: Input OTP & New Password -->
+            <form id="otpVerifyForm" onsubmit="handleVerifyOtpAndReset(event)" class="space-y-4 hidden">
                 <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800">
-                    <i class="fa-solid fa-mobile-screen mr-1"></i> SMS OTP generated! Enter code sent to your phone.
+                    <i class="fa-solid fa-mobile-screen mr-1 text-emerald-600"></i>
+                    SMS OTP code generated and sent to phone!
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Enter 6-Digit OTP Code</label>
-                    <input type="text" id="forgotOTPInput" required placeholder="e.g. 482910" maxlength="6" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-mono tracking-widest text-center text-lg outline-none focus:ring-2 focus:ring-tennis-500">
+                    <input type="text" id="otpInput" maxlength="6" required placeholder="123456" class="w-full px-3 py-2 font-mono text-center tracking-widest font-extrabold text-lg rounded-lg border border-slate-300 outline-none">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">New Password</label>
-                    <input type="password" id="forgotNewPassword" required placeholder="Enter new password" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-tennis-500">
+                    <input type="password" id="forgotNewPassword" required placeholder="Enter new password" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
                 </div>
 
                 <div class="flex items-center justify-end space-x-3 pt-2">
-                    <button type="button" onclick="resetOTPFormState()" class="px-3 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold">Back</button>
-                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow flex items-center gap-1.5">
-                        <i class="fa-solid fa-check-circle"></i> Verify OTP & Reset
-                    </button>
+                    <button type="button" onclick="resetOtpState()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold">Back</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow">Verify & Reset Password</button>
                 </div>
             </form>
         </div>
@@ -633,47 +650,41 @@
         </div>
     </div>
 
-    <!-- MODAL 5: User Enrolled Records History Modal -->
+    <!-- MODAL 4.5: Enrolled Records History Modal -->
     <div id="modalEnrolledRecords" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
                 <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-list-check text-tennis-600"></i> My Enrolled Records History
+                    <i class="fa-solid fa-history text-tennis-600"></i> My Enrolled Records History
                 </h3>
                 <button onclick="closeModal('modalEnrolledRecords')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <div class="text-xs text-slate-500">
-                Complete log of all confirmed tennis training lesson enrolments assigned to your account across all cohorts.
-            </div>
+            <p class="text-xs text-slate-500">Summary of all your past and current confirmed lesson enrollments across all cohorts.</p>
 
             <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
                 <table class="w-full text-left text-sm border-collapse">
                     <thead class="sticky top-0 bg-slate-100 text-slate-600 uppercase text-xs">
                         <tr>
                             <th class="py-3 px-4">Cohort</th>
-                            <th class="py-3 px-4">Date (Day)</th>
-                            <th class="py-3 px-4">Time</th>
+                            <th class="py-3 px-4">Date</th>
+                            <th class="py-3 px-4">Time & Location</th>
                             <th class="py-3 px-4">Level</th>
-                            <th class="py-3 px-4">Location</th>
                         </tr>
                     </thead>
-                    <tbody id="userEnrolledRecordsTableBody">
-                        <!-- Rendered dynamically -->
+                    <tbody id="enrolledRecordsTableBody">
+                        <!-- Dynamic -->
                     </tbody>
                 </table>
             </div>
 
-            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-                <div class="text-xs text-slate-500">Total Enrolled Sessions: <span id="enrolledRecordsTotalCount" class="font-bold text-tennis-700">0</span></div>
-                <button onclick="closeModal('modalEnrolledRecords')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-bold">
-                    Close Records
-                </button>
+            <div class="flex justify-end pt-2">
+                <button onclick="closeModal('modalEnrolledRecords')" class="px-5 py-2 bg-slate-800 text-white rounded-lg text-sm font-bold">Close</button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 6: Admin Preview Roster Summary -->
+    <!-- MODAL 5: Admin Preview Roster Summary -->
     <div id="modalPreviewRoster" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -699,7 +710,7 @@
                         </tr>
                     </thead>
                     <tbody id="previewRosterTableBody">
-                        <!-- Rendered dynamically -->
+                        <!-- Dynamic -->
                     </tbody>
                 </table>
             </div>
@@ -723,13 +734,13 @@
 
         let activeCohortId = 'c1';
 
-        // Default Admin Account
+        // Default Admin Account Raymond
         const DEFAULT_ADMIN = {
             id: 'admin_1',
             username: 'Raymond',
             password: '123456',
             fullName: 'Raymond (Admin)',
-            contact: '+852 9123 4567',
+            contact: '+852 91234567',
             isApproved: true,
             isAdmin: true
         };
@@ -737,15 +748,14 @@
         // Initial Seed Users
         const DEFAULT_USERS = [
             DEFAULT_ADMIN,
-            { id: 'u1', username: 'john', password: '123', fullName: 'CHAN Tai-man', contact: '91234567', isApproved: true, isAdmin: false },
-            { id: 'u2', username: 'alice', password: '123', fullName: 'Alice Wong', contact: '91112222', isApproved: true, isAdmin: false },
-            { id: 'u3', username: 'bob', password: '123', fullName: 'Bob Chan', contact: '93334444', isApproved: true, isAdmin: false },
-            { id: 'u4', username: 'sarah', password: '123', fullName: 'Sarah Lee', contact: '95556666', isApproved: false, isAdmin: false }
+            { id: 'u1', username: 'john', password: '123', fullName: 'CHAN Tai-man', contact: '+852 91234567', isApproved: true, isAdmin: false },
+            { id: 'u2', username: 'alice', password: '123', fullName: 'Alice Wong', contact: '+852 91112222', isApproved: true, isAdmin: false },
+            { id: 'u3', username: 'bob', password: '123', fullName: 'Bob Chan', contact: '+852 93334444', isApproved: true, isAdmin: false },
+            { id: 'u4', username: 'sarah', password: '123', fullName: 'Sarah Lee', contact: '+852 95556666', isApproved: false, isAdmin: false }
         ];
 
         // Seed Lessons
         const DEFAULT_LESSONS = [
-            // 1st Cohort Lessons
             { id: 'l1', cohortId: 'c1', date: '2026-12-05', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
             { id: 'l2', cohortId: 'c1', date: '2026-12-12', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
             { id: 'l3', cohortId: 'c1', date: '2026-12-19', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 2', capacity: 8 },
@@ -763,7 +773,6 @@
             { id: 'l14', cohortId: 'c1', date: '2027-01-17', level: 'Intermediate', startTime: '15:00', endTime: '17:00', location: 'Kowloon Park Court 1', capacity: 4 }
         ];
 
-        // Seed Registrations
         const DEFAULT_REGISTRATIONS = {
             'u1_c1': ['2026-12-05', '2026-12-12', '2026-12-19', '2026-12-26', '2027-01-09', '2027-01-16', '2027-01-23', '2027-01-30'],
             'u2_c1': ['2026-12-05', '2026-12-12', '2026-12-19', '2027-01-09', '2027-01-16'],
@@ -786,13 +795,11 @@
 
         let currentUser = null;
         let activeRegYear = 2026;
-        let activeRegMonth = 11; // 0-indexed (11 = Dec)
+        let activeRegMonth = 11;
         let tempSelectedDates = new Set();
         let myLessonsFilterActive = false;
-
-        // OTP Reset State
+        let currentGeneratedOtp = null;
         let otpTargetUser = null;
-        let generatedOTPCode = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             saveState();
@@ -898,9 +905,12 @@
         function handleRegister(e) {
             e.preventDefault();
             const fullName = document.getElementById('regFullName').value.trim();
-            const contact = document.getElementById('regContact').value.trim();
+            const countryCode = document.getElementById('regCountryCode').value;
+            const phoneNum = document.getElementById('regContact').value.trim();
             const username = document.getElementById('regUsername').value.trim();
             const password = document.getElementById('regPassword').value.trim();
+
+            const contact = `${countryCode} ${phoneNum}`;
 
             if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
                 showToast("Username already taken. Please choose another.", "error");
@@ -924,56 +934,57 @@
             document.getElementById('loginUsername').value = username;
             document.getElementById('loginPassword').value = '';
 
-            showToast("Registration request submitted! Please wait for Admin Raymond to verify and approve your account.", "info");
+            showToast("Registration request submitted! Please wait for Admin Raymond to verify your account.", "info");
         }
 
-        // OTP Password Reset Handlers
-        function handleSendOTP(e) {
+        // OTP Handler Functions
+        function handleSendOtp(e) {
             e.preventDefault();
             const username = document.getElementById('forgotUsername').value.trim();
-            const contact = document.getElementById('forgotContact').value.trim();
+            const code = document.getElementById('forgotCountryCode').value;
+            const phone = document.getElementById('forgotContact').value.trim();
+            const fullPhone = `${code} ${phone}`;
 
-            const u = users.find(x => x.username.toLowerCase() === username.toLowerCase() && x.contact === contact);
+            const u = users.find(x => x.username.toLowerCase() === username.toLowerCase() && (x.contact === fullPhone || x.contact.endsWith(phone)));
             if (!u) {
-                showToast("Verification failed. Username and contact number do not match.", "error");
+                showToast("Verification failed. Username and phone number record do not match.", "error");
                 return;
             }
 
+            // Generate 6-digit OTP code
+            currentGeneratedOtp = Math.floor(100000 + Math.random() * 900000).toString();
             otpTargetUser = u;
-            generatedOTPCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-            document.getElementById('otpStep1Form').classList.add('hidden');
-            document.getElementById('otpStep2Form').classList.remove('hidden');
+            document.getElementById('otpRequestForm').classList.add('hidden');
+            document.getElementById('otpVerifyForm').classList.remove('hidden');
 
-            showToast(`📲 SMS Sent to ${contact}! OTP Code: ${generatedOTPCode}`, "info");
+            showToast(`📲 Simulated SMS sent to ${fullPhone}! Code: ${currentGeneratedOtp}`, "info");
         }
 
-        function handleVerifyOTPAndReset(e) {
+        function handleVerifyOtpAndReset(e) {
             e.preventDefault();
-            const inputOTP = document.getElementById('forgotOTPInput').value.trim();
+            const inputCode = document.getElementById('otpInput').value.trim();
             const newPassword = document.getElementById('forgotNewPassword').value.trim();
 
-            if (inputOTP !== generatedOTPCode) {
-                showToast("Invalid OTP Code! Please check the SMS code and try again.", "error");
+            if (inputCode !== currentGeneratedOtp) {
+                showToast("Invalid OTP code. Please try again.", "error");
                 return;
             }
 
-            if (otpTargetUser) {
-                otpTargetUser.password = newPassword;
-                saveState();
-                closeModal('modalForgotPassword');
-                resetOTPFormState();
-                showToast("Identity verified! Password reset successfully. You can now log in.", "success");
-            }
+            otpTargetUser.password = newPassword;
+            saveState();
+
+            closeModal('modalForgotPassword');
+            resetOtpState();
+            showToast("Identity verified! Password updated successfully. You can now login.", "success");
         }
 
-        function resetOTPFormState() {
+        function resetOtpState() {
+            currentGeneratedOtp = null;
             otpTargetUser = null;
-            generatedOTPCode = null;
-            document.getElementById('otpStep1Form').reset();
-            document.getElementById('otpStep2Form').reset();
-            document.getElementById('otpStep1Form').classList.remove('hidden');
-            document.getElementById('otpStep2Form').classList.add('hidden');
+            document.getElementById('otpRequestForm').classList.remove('hidden');
+            document.getElementById('otpVerifyForm').classList.add('hidden');
+            document.getElementById('otpInput').value = '';
         }
 
         function handleChangePassword(e) {
@@ -1020,23 +1031,56 @@
                 container.innerHTML = `<div class="text-xs text-slate-400">Please sign in</div>`;
             } else {
                 container.innerHTML = `
-                    <div class="flex items-center space-x-2">
-                        <div class="text-right hidden sm:block mr-1">
+                    <div class="flex items-center space-x-2 sm:space-x-3">
+                        <div class="text-right hidden sm:block">
                             <div class="text-xs font-bold text-tennis-400 uppercase tracking-wider">${currentUser.isAdmin ? 'ADMIN' : 'STUDENT'}</div>
                             <div class="text-sm font-semibold text-white">${currentUser.fullName}</div>
                         </div>
-                        <button onclick="openEnrolledRecordsModal()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold transition border border-slate-700 flex items-center gap-1" title="Enrolled Records History">
-                            <i class="fa-solid fa-list-check text-tennis-400"></i> <span class="hidden md:inline">Enrolled Records</span>
+                        <button onclick="openEnrolledRecordsModal()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition border border-slate-700 flex items-center gap-1">
+                            <i class="fa-solid fa-history text-tennis-400"></i> Enrolled Records
                         </button>
-                        <button onclick="openModal('modalChangePassword')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold transition border border-slate-700" title="Change Password">
-                            <i class="fa-solid fa-key"></i> <span class="hidden md:inline">Change Password</span>
+                        <button onclick="openModal('modalChangePassword')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition border border-slate-700" title="Change Password">
+                            <i class="fa-solid fa-key"></i>
                         </button>
-                        <button onclick="handleLogout()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition flex items-center gap-1 border border-slate-700">
+                        <button onclick="handleLogout()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition flex items-center gap-1.5 border border-slate-700">
                             <i class="fa-solid fa-right-from-bracket"></i> Logout
                         </button>
                     </div>
                 `;
             }
+        }
+
+        function openEnrolledRecordsModal() {
+            const tbody = document.getElementById('enrolledRecordsTableBody');
+            tbody.innerHTML = '';
+
+            let totalEnrolledCount = 0;
+
+            lessons.forEach(l => {
+                const enrolled = enrollments[l.id] || [];
+                if (enrolled.includes(currentUser.id)) {
+                    totalEnrolledCount++;
+                    const c = COHORTS.find(x => x.id === l.cohortId);
+                    const dateObj = new Date(l.date);
+                    const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
+
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-100 hover:bg-slate-50";
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 font-bold text-slate-800">${c ? c.name : l.cohortId}</td>
+                        <td class="py-3 px-4 text-slate-700">${l.date} (${dayName})</td>
+                        <td class="py-3 px-4 text-slate-600">${l.startTime}-${l.endTime} @ ${l.location}</td>
+                        <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-xs font-bold bg-tennis-100 text-tennis-800">${l.level}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (totalEnrolledCount === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400">No confirmed lesson enrollments found across cohorts.</td></tr>`;
+            }
+
+            openModal('modalEnrolledRecords');
         }
 
         function updateTargetLessonsLabel() {
@@ -1053,12 +1097,10 @@
             const contentSched = document.getElementById('contentSchedule');
             const contentAdmin = document.getElementById('contentAdmin');
 
-            // Strictly check admin rights before showing admin button or tab
             if (currentUser && currentUser.isAdmin) {
                 btnAdmin.classList.remove('hidden');
             } else {
                 btnAdmin.classList.add('hidden');
-                if (tab === 'admin') tab = 'registration'; // Fallback if regular user attempts admin tab
             }
 
             [btnReg, btnSched, btnAdmin].forEach(btn => {
@@ -1182,18 +1224,18 @@
             const level = document.getElementById('regLevelSelect').value;
             const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-            let summary = `TENNIS TRAINING SYSTEM ENROLLMENT SUBMISSION\n`;
+            let summary = `AVAILABLE DATES SELECTION SUMMARY\n`;
             summary += `----------------------------------------\n`;
             summary += `Training Level: ${level}\n`;
             summary += `Total Available Dates Chosen: ${sortedDates.length} Days\n\n`;
-            summary += `SELECTED DATES DETAILS:\n`;
+            summary += `SELECTED DATES LIST:\n`;
 
             sortedDates.forEach((d, idx) => {
                 const dateObj = new Date(d);
                 const dayName = weekdays[dateObj.getDay()];
                 const lessonList = lessons.filter(l => l.cohortId === activeCohortId && l.date === d && l.level === level);
                 const lessonInfo = lessonList.map(l => `${l.startTime}-${l.endTime} @ ${l.location}`).join(', ');
-                summary += `${idx + 1}. ${d} (${dayName}) -> [${lessonInfo || 'Scheduled Lesson'}]\n`;
+                summary += `${idx + 1}. ${d} (${dayName}) -> [${lessonInfo || 'Scheduled Session'}]\n`;
             });
 
             document.getElementById('regConfirmationSummaryText').value = summary;
@@ -1206,7 +1248,7 @@
             saveState();
 
             closeModal('modalConfirmReg');
-            showToast("Registration availability successfully submitted to Admin Raymond!", "success");
+            openModal('modalSubmissionSuccessPrompt');
         }
 
         function toggleMyScheduleFilter() {
@@ -1249,7 +1291,7 @@
 
             if (isSchedulePublished) {
                 summaryTitle.textContent = `Confirmed for ${myEnrolledCount} Lessons`;
-                summarySub.textContent = ``;
+                summarySub.textContent = `Admin Raymond has finalized the enrollment schedule.`;
             } else {
                 summaryTitle.textContent = `Enrollment Pending Admin Approval`;
                 summarySub.textContent = ``;
@@ -1259,7 +1301,7 @@
                 container.innerHTML = `
                     <div class="col-span-full bg-white p-12 rounded-2xl text-center border border-slate-200">
                         <i class="fa-solid fa-calendar-xmark text-4xl text-slate-300 mb-3"></i>
-                        <p class="font-bold text-slate-600">No scheduled lessons found for this cohort filter.</p>
+                        <p class="font-bold text-slate-600">No scheduled lessons found for this filter.</p>
                     </div>
                 `;
                 return;
@@ -1308,44 +1350,6 @@
 
                 container.appendChild(card);
             });
-        }
-
-        // Open Enrolled Records Modal for User
-        function openEnrolledRecordsModal() {
-            const tbody = document.getElementById('userEnrolledRecordsTableBody');
-            tbody.innerHTML = '';
-
-            let totalSessions = 0;
-            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-
-            lessons.forEach(l => {
-                const enrolledUserIds = enrollments[l.id] || [];
-                if (enrolledUserIds.includes(currentUser?.id)) {
-                    totalSessions++;
-                    const c = COHORTS.find(x => x.id === l.cohortId);
-                    const cohortName = c ? c.name.split(':')[0] : 'Cohort';
-                    const dateObj = new Date(l.date);
-                    const dayName = weekdays[dateObj.getDay()];
-
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-slate-100 hover:bg-slate-50 transition";
-                    tr.innerHTML = `
-                        <td class="py-3 px-4 font-bold text-slate-800">${cohortName}</td>
-                        <td class="py-3 px-4 font-medium text-slate-900">${l.date} (${dayName})</td>
-                        <td class="py-3 px-4 text-slate-600">${l.startTime} - ${l.endTime}</td>
-                        <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-xs font-bold ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${l.level}</span></td>
-                        <td class="py-3 px-4 text-slate-600">${l.location}</td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-
-            if (totalSessions === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No confirmed lesson enrolments found in records.</td></tr>`;
-            }
-
-            document.getElementById('enrolledRecordsTotalCount').textContent = `${totalSessions} Sessions`;
-            openModal('modalEnrolledRecords');
         }
 
         function switchAdminSubTab(subTab) {
@@ -1563,15 +1567,14 @@
             showToast("Lesson slot removed.", "info");
         }
 
-        // Admin: Clear All Checked Users At Once
-        function clearAllAdminEnrollments() {
+        function clearAllCheckedEnrollments() {
             const cohortLessons = lessons.filter(l => l.cohortId === activeCohortId);
             cohortLessons.forEach(l => {
                 enrollments[l.id] = [];
             });
             saveState();
             renderAdminEnrollmentsView();
-            showToast("All user enrolment selections cleared for active cohort.", "info");
+            showToast("Cleared all checked user enrollments for the active cohort.", "info");
         }
 
         function runPriorityEnrollmentAlgorithm() {
@@ -1712,8 +1715,8 @@
             const cohortLessons = lessons.filter(l => l.cohortId === activeCohortId);
 
             cohortLessons.sort((a,b) => a.date.localeCompare(b.date)).forEach(l => {
-                const approvedUsers = users.filter(u => u.isApproved && !u.isAdmin);
-                const registeredUserIds = approvedUsers.filter(u => {
+                const approvedStudents = users.filter(u => u.isApproved && !u.isAdmin);
+                const registeredUserIds = approvedStudents.filter(u => {
                     const regKey = `${u.id}_${activeCohortId}`;
                     return (registrations[regKey] || []).includes(l.date);
                 }).map(u => u.id);
@@ -1785,7 +1788,7 @@
         function confirmAndPublishEnrollment() {
             isSchedulePublished = true;
             saveState();
-            showToast("Enrollment roster confirmed & published to Lesson Schedule!", "success");
+            showToast("Enrollment schedule confirmed & published to Lesson Schedule!", "success");
         }
 
         function openModal(modalId) {
@@ -1794,7 +1797,6 @@
 
         function closeModal(modalId) {
             document.getElementById(modalId).classList.add('hidden');
-            if (modalId === 'modalForgotPassword') resetOTPFormState();
         }
 
         function showToast(message, type = 'info') {
