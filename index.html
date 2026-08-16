@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TENNIS TRAINING SYSTEM - Registration & Scheduling</title>
+    <title>TENNIS TRAINING SYSTEM - Registration & Management</title>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -15,151 +16,185 @@
                             50: '#f0fdf4',
                             100: '#dcfce7',
                             200: '#bbf7d0',
+                            300: '#86efac',
                             400: '#4ade80',
                             500: '#22c55e',
                             600: '#16a34a',
                             700: '#15803d',
                             800: '#166534',
                             900: '#14532d',
-                            court: '#15803d',
-                            accent: '#eab308'
+                            accent: '#ccff00'
                         }
                     }
                 }
             }
         }
     </script>
-    <!-- FontAwesome Icons -->
+    
+    <!-- FontAwesome for UI Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Supabase JS Client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        .calendar-day-active { transition: all 0.2s ease-in-out; }
-        .calendar-day-active:hover { transform: translateY(-2px); }
+        
+        .calendar-day-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .calendar-day-card:hover {
+            transform: translateY(-2px);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #16a34a;
+        }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen flex flex-col text-slate-800">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Navigation Header -->
+    <!-- Header Bar -->
     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="w-10 h-10 rounded-full bg-tennis-500 flex items-center justify-center text-slate-900 font-black text-xl shadow-lg">
-                    <i class="fa-solid fa-baseball font-bold text-lg text-slate-900"></i>
+                    <i class="fa-solid fa-baseball text-slate-900"></i>
                 </div>
                 <div>
-                    <h1 class="font-extrabold text-lg sm:text-xl tracking-tight text-white flex items-center gap-2">
-                        TENNIS <span class="text-tennis-500">TRAINING SYSTEM</span>
+                    <h1 class="font-black text-lg sm:text-xl tracking-tight text-white flex items-center gap-1.5">
+                        TENNIS <span class="text-tennis-400">TRAINING SYSTEM</span>
                     </h1>
                 </div>
             </div>
 
-            <div id="navRight" class="flex items-center space-x-4">
-                <!-- Injected dynamically -->
+            <!-- Dynamic Header Controls -->
+            <div id="navRight" class="flex items-center space-x-3">
+                <!-- Injected via JS -->
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
     <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
 
-        <!-- VIEW: Login / Register Container -->
+        <!-- AUTHENTICATION VIEW -->
         <div id="authView" class="max-w-md mx-auto my-8 space-y-4">
 
-            <!-- Announcement Banner on Login Page -->
+            <!-- Cohort Announcement Banner -->
             <div id="loginAnnouncementBanner" class="p-4 rounded-xl bg-amber-50 border-l-4 border-amber-500 text-amber-900 shadow-sm flex items-start gap-3">
-                <i class="fa-solid fa-bullhorn text-amber-600 text-xl mt-0.5"></i>
+                <i class="fa-solid fa-bullhorn text-amber-600 text-lg mt-0.5 shrink-0"></i>
                 <div class="text-xs font-semibold leading-relaxed">
                     The training schedule for Dec 2026 - Feb 2027 has been released. Please login to view your confirmed sessions!
                 </div>
             </div>
 
+            <!-- Auth Form Card -->
             <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
                 <!-- Auth Tabs -->
                 <div class="flex border-b border-slate-200 bg-slate-50">
-                    <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-4 font-semibold text-center text-tennis-600 border-b-2 border-tennis-600 transition">
-                        <i class="fa-solid fa-right-to-bracket mr-2"></i> Login
+                    <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-4 font-bold text-center text-tennis-600 border-b-2 border-tennis-600 transition text-sm">
+                        <i class="fa-solid fa-right-to-bracket mr-1.5"></i> Login
                     </button>
-                    <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-4 font-semibold text-center text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition">
-                        <i class="fa-solid fa-user-plus mr-2"></i> Create Account
+                    <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-4 font-bold text-center text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition text-sm">
+                        <i class="fa-solid fa-user-plus mr-1.5"></i> Create Account
                     </button>
                 </div>
 
-                <!-- Login Form -->
+                <!-- LOGIN FORM -->
                 <div id="loginFormContainer" class="p-6 sm:p-8">
                     <div class="text-center mb-6">
                         <h2 class="text-2xl font-bold text-slate-800">Welcome Back</h2>
-                        <p class="text-sm text-slate-500 mt-1">Login to access lesson registration & schedule</p>
+                        <p class="text-xs text-slate-500 mt-1">Sign in to enrol in lessons and view your training schedule</p>
                     </div>
+                    
                     <form onsubmit="handleLogin(event)" class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user"></i></span>
-                                <input type="text" id="loginUsername" required placeholder="Enter username" 
-                                       class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 outline-none text-slate-800 transition">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user text-xs"></i></span>
+                                <input type="text" id="loginUsername" required placeholder="Username" 
+                                       class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 text-slate-800 outline-none text-sm transition">
                             </div>
                         </div>
+
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <label class="block text-xs font-bold text-slate-700 uppercase">Password</label>
-                                <button type="button" onclick="openModal('modalForgotPassword')" class="text-xs text-tennis-600 hover:text-tennis-800 font-semibold">
+                                <button type="button" onclick="openForgotPasswordModal()" class="text-xs text-tennis-600 hover:text-tennis-700 font-semibold transition">
                                     Forgot Password?
                                 </button>
                             </div>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock"></i></span>
-                                <input type="password" id="loginPassword" required placeholder="Enter password" 
-                                       class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 outline-none text-slate-800 transition">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock text-xs"></i></span>
+                                <input type="password" id="loginPassword" required placeholder="Password" 
+                                       class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 text-slate-800 outline-none text-sm transition">
                             </div>
                         </div>
-                        <button type="submit" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition flex items-center justify-center gap-2">
+
+                        <button type="submit" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 text-sm">
                             <span>Sign In</span> <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </form>
                 </div>
 
-                <!-- Register Form -->
+                <!-- REGISTER FORM -->
                 <div id="registerFormContainer" class="p-6 sm:p-8 hidden">
                     <div class="text-center mb-6">
-                        <h2 class="text-2xl font-bold text-slate-800">Student Account Signup</h2>
-                        <p class="text-sm text-slate-500 mt-1">Requires admin verification before logging in</p>
+                        <h2 class="text-2xl font-bold text-slate-800">Student Signup</h2>
+                        <p class="text-xs text-slate-500 mt-1">Requires admin verification before account activation</p>
                     </div>
+
                     <form onsubmit="handleRegister(event)" class="space-y-4">
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name <span class="text-red-500">*</span></label>
                             <input type="text" id="regFullName" required placeholder="CHAN Tai-man" 
-                                   class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 outline-none text-slate-800">
+                                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 text-slate-800 outline-none text-sm">
                         </div>
+
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contact Phone No. <span class="text-red-500">*</span></label>
-                            <div class="flex gap-2">
-                                <select id="regCountryCode" class="bg-slate-100 border border-slate-300 text-slate-800 font-bold px-3 py-2.5 rounded-lg text-sm outline-none focus:ring-2 focus:ring-tennis-500">
+                            <div class="flex items-center space-x-2">
+                                <select id="regCountryCode" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-tennis-500">
                                     <option value="+852">+852</option>
                                     <option value="+86">+86</option>
                                     <option value="+853">+853</option>
-                                    <option value="+886">+886</option>
+                                    <option value="+1">+1</option>
+                                    <option value="+44">+44</option>
                                 </select>
                                 <input type="tel" id="regContact" required placeholder="91234567" 
-                                       class="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 outline-none text-slate-800">
+                                       class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 text-slate-800 outline-none text-sm">
                             </div>
                         </div>
+
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Desired Username <span class="text-red-500">*</span></label>
                             <input type="text" id="regUsername" required placeholder="Create username" 
-                                   class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 outline-none text-slate-800">
+                                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 text-slate-800 outline-none text-sm">
                         </div>
+
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password <span class="text-red-500">*</span></label>
                             <input type="password" id="regPassword" required placeholder="Create password" 
-                                   class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 outline-none text-slate-800">
-                        </div>
-                        
-                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
-                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Admin verification required. Account approval takes up to 24 hours.
+                                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 text-slate-800 outline-none text-sm">
                         </div>
 
-                        <button type="submit" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition flex items-center justify-center gap-2">
+                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-600 shrink-0 mt-0.5"></i>
+                            <span>Admin verification required. Accounts must be approved by Raymond before logging in.</span>
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm">
                             <i class="fa-solid fa-paper-plane"></i> Submit Account Request
                         </button>
                     </form>
@@ -167,72 +202,71 @@
             </div>
         </div>
 
-        <!-- VIEW: Main User Dashboard Hub -->
+        <!-- MAIN DASHBOARD VIEW -->
         <div id="mainDashboardView" class="hidden space-y-6">
-            
-            <!-- Cohort & User Context Bar -->
+
+            <!-- Active Cohort Header Banner -->
             <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-800">
                 <div class="space-y-1">
                     <div class="inline-flex items-center gap-2">
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-tennis-500 text-slate-900">Active Cohort</span>
-                        <select id="userCohortSelect" onchange="changeActiveCohort(this.value)" class="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2 py-1 outline-none font-semibold">
+                        <select id="userCohortSelect" onchange="changeActiveCohort(this.value)" class="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 outline-none font-bold">
                             <option value="c1">1st Training Cohort: Dec 2026 - Feb 2027</option>
                             <option value="c2">2nd Training Cohort: Mar 2027 - May 2027</option>
                             <option value="c3">3rd Training Cohort: Jun 2027 - Aug 2027</option>
                         </select>
                     </div>
                     <h2 id="cohortTitleDisplay" class="text-2xl font-black text-white tracking-wide">1st Training Cohort: Dec 2026 - Feb 2027</h2>
-                    <p class="text-slate-400 text-sm flex items-center gap-2">
-                        <i class="fa-solid fa-bullseye text-tennis-500"></i> Target Assigned Lessons per Student: <span id="dashboardTargetLessons" class="font-bold text-tennis-400">8 Lessons</span>
+                    <p class="text-slate-400 text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye text-tennis-400"></i> Target Assigned Lessons per Student: <span id="dashboardTargetLessons" class="font-bold text-tennis-400">8 Lessons</span>
                     </p>
                 </div>
 
-                <!-- Main Navigation Choices -->
+                <!-- Primary Nav Choices -->
                 <div class="flex flex-wrap gap-2">
-                    <button id="tabLessonRegBtn" onclick="switchMainTab('registration')" class="px-5 py-3 rounded-xl font-bold text-sm shadow-md transition flex items-center gap-2 bg-tennis-600 text-white hover:bg-tennis-500">
+                    <button id="tabLessonRegBtn" onclick="switchMainTab('registration')" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2">
                         <i class="fa-solid fa-calendar-plus text-base"></i> Enrol Lessons
                     </button>
-                    <button id="tabLessonSchedBtn" onclick="switchMainTab('schedule')" class="px-5 py-3 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2">
+                    <button id="tabLessonSchedBtn" onclick="switchMainTab('schedule')" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2">
                         <i class="fa-solid fa-calendar-days text-base"></i> Check Confirmed Schedule
                     </button>
-                    <button id="tabAdminBtn" onclick="switchMainTab('admin')" class="hidden px-5 py-3 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 transition flex items-center gap-2">
+                    <button id="tabAdminBtn" onclick="switchMainTab('admin')" class="hidden px-5 py-2.5 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 transition flex items-center gap-2 shadow-md">
                         <i class="fa-solid fa-user-shield text-base"></i> Admin Portal
                     </button>
                 </div>
             </div>
 
-            <!-- TAB CONTENT 1: Lesson Registration -->
+            <!-- TAB 1: Enrol Lessons -->
             <div id="contentRegistration" class="space-y-6">
-                
-                <!-- Registration Filters Header -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+
+                <!-- Level & Month Selector Header -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                             <i class="fa-solid fa-calendar-check text-tennis-600"></i> Select Your Training Level and Month
                         </h3>
                     </div>
 
-                    <!-- Level Selector & Month Switcher -->
                     <div class="flex flex-wrap items-center gap-3">
                         <div>
-                            <label class="text-xs font-bold text-slate-500 uppercase block mb-1">Training Level</label>
-                            <select id="regLevelSelect" onchange="renderRegistrationCalendar()" class="bg-slate-100 border border-slate-300 text-slate-800 font-bold py-2 px-3 rounded-lg text-sm outline-none focus:ring-2 focus:ring-tennis-500">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Training Level</label>
+                            <select id="regLevelSelect" onchange="renderRegistrationCalendar()" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold py-2 px-3 rounded-xl text-xs outline-none focus:ring-2 focus:ring-tennis-500">
                                 <option value="Beginner">Beginner Level (Max 8/class)</option>
                                 <option value="Intermediate">Intermediate Level (Max 4/class)</option>
                             </select>
                         </div>
                         <div>
-                            <label class="text-xs font-bold text-slate-500 uppercase block mb-1">Cohort Month</label>
-                            <div class="flex items-center space-x-1 bg-slate-100 border border-slate-300 rounded-lg p-1">
-                                <button onclick="changeRegMonth(-1)" class="px-2 py-1 text-slate-600 hover:text-slate-900 rounded"><i class="fa-solid fa-chevron-left"></i></button>
-                                <span id="currentRegMonthLabel" class="font-bold text-slate-800 text-sm px-2">Dec 2026</span>
-                                <button onclick="changeRegMonth(1)" class="px-2 py-1 text-slate-600 hover:text-slate-900 rounded"><i class="fa-solid fa-chevron-right"></i></button>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Cohort Month</label>
+                            <div class="flex items-center space-x-1 bg-slate-50 border border-slate-300 rounded-xl p-1">
+                                <button onclick="changeRegMonth(-1)" class="px-2 py-1 text-slate-600 hover:text-slate-900 rounded"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                                <span id="currentRegMonthLabel" class="font-bold text-slate-800 text-xs px-2">Dec 2026</span>
+                                <button onclick="changeRegMonth(1)" class="px-2 py-1 text-slate-600 hover:text-slate-900 rounded"><i class="fa-solid fa-chevron-right text-xs"></i></button>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Registration Selection Summary & Submit Panel -->
+                <!-- Selection Summary & Review Action Bar -->
                 <div class="bg-tennis-50 border border-tennis-200 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div class="flex items-center space-x-3">
                         <div class="w-10 h-10 rounded-full bg-tennis-200 text-tennis-800 flex items-center justify-center font-bold text-lg">
@@ -240,26 +274,26 @@
                         </div>
                         <div>
                             <p class="text-sm font-bold text-tennis-900">Dates Selected for Enrollment</p>
-                            <p id="selectionHintText" class="text-xs text-tennis-700">Select all dates you can attend for maximum scheduling flexibility.</p>
+                            <p class="text-xs text-tennis-700">Select all dates you can attend for optimal scheduling assignments.</p>
                         </div>
                     </div>
-                    <button onclick="promptRegistrationConfirmation()" id="submitRegBtn" class="px-6 py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-lg shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <button onclick="promptRegistrationConfirmation()" id="submitRegBtn" class="px-6 py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm disabled:opacity-50">
                         <i class="fa-solid fa-check-double"></i> Review & Submit Availability
                     </button>
                 </div>
 
-                <!-- Interactive Monthly Calendar Grid -->
+                <!-- Calendar Grid Container -->
                 <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 overflow-hidden">
-                    <div class="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <div class="grid grid-cols-7 gap-2 mb-3 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
                         <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                     </div>
                     <div id="calendarGrid" class="grid grid-cols-7 gap-2">
-                        <!-- Dynamic rendering -->
+                        <!-- Dynamic Calendar Cells -->
                     </div>
                 </div>
 
-                <!-- Legend -->
-                <div class="flex items-center space-x-6 text-xs text-slate-500 justify-center">
+                <!-- Calendar Legend -->
+                <div class="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500">
                     <div class="flex items-center space-x-2">
                         <span class="w-3 h-3 rounded-full bg-emerald-500"></span> <span>Lesson Available</span>
                     </div>
@@ -267,197 +301,215 @@
                         <span class="w-3 h-3 rounded-full bg-tennis-600"></span> <span>Selected Date</span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <span class="w-3 h-3 rounded-full bg-slate-200"></span> <span>No Scheduled Lesson</span>
+                        <span class="w-3 h-3 rounded-full bg-slate-200"></span> <span>No Lesson Scheduled</span>
                     </div>
                 </div>
             </div>
 
-            <!-- TAB CONTENT 2: Lesson Schedule -->
+            <!-- TAB 2: Check Confirmed Schedule -->
             <div id="contentSchedule" class="hidden space-y-6">
+
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
                         <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
                             <i class="fa-solid fa-calendar-days text-tennis-600"></i> Confirmed Lesson Schedule
                         </h3>
-                        <p class="text-sm text-slate-500 mt-1">
-                            View confirmed classes and participant enrollments for <span id="scheduleCohortLabel">1st Training Cohort</span>.
+                        <p class="text-xs text-slate-500 mt-1">
+                            View confirmed class rosters for <span id="scheduleCohortLabel" class="text-slate-800 font-bold">1st Training Cohort</span>.
                         </p>
                     </div>
+
                     <div class="flex items-center space-x-3">
-                        <select id="schedLevelFilter" onchange="renderFinalSchedule()" class="bg-slate-100 border border-slate-300 text-slate-800 font-semibold py-2 px-3 rounded-lg text-sm outline-none">
+                        <select id="schedLevelFilter" onchange="renderFinalSchedule()" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold py-2 px-3 rounded-xl text-xs outline-none">
                             <option value="ALL">All Skill Levels</option>
                             <option value="Beginner">Beginner Level</option>
                             <option value="Intermediate">Intermediate Level</option>
                         </select>
-                        <button onclick="toggleMyScheduleFilter()" id="btnMyLessonsOnly" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg font-bold text-sm transition">
-                            <i class="fa-solid fa-user-check mr-1 text-tennis-600"></i> My Enrolled Lessons Only
+                        <button onclick="toggleMyScheduleFilter()" id="btnMyLessonsOnly" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-xs transition">
+                            <i class="fa-solid fa-user-check mr-1.5 text-tennis-600"></i> My Enrolled Lessons Only
                         </button>
                     </div>
                 </div>
 
-                <!-- Personal Enrollment Stats Card -->
-                <div id="personalScheduleStats" class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-lg border border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <!-- Personal Stats Card -->
+                <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-lg border border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
-                        <div class="text-xs uppercase text-tennis-400 font-bold">Your Status</div>
-                        <h4 id="userScheduleSummaryTitle" class="text-xl font-extrabold text-white mt-0.5">Checking enrollment...</h4>
-                        <p id="userScheduleSummarySub" class="text-sm text-slate-300"></p>
+                        <div class="text-[10px] uppercase text-tennis-400 font-bold tracking-wider">Your Enrollment Status</div>
+                        <h4 id="userScheduleSummaryTitle" class="text-xl font-bold text-white mt-0.5">Checking status...</h4>
                     </div>
-                    <div class="flex items-center space-x-4 bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                    <div class="flex items-center space-x-4 bg-slate-800/80 px-4 py-3 rounded-xl border border-slate-700">
                         <div class="text-center px-2">
                             <div id="statEnrolled" class="text-2xl font-black text-tennis-400">0</div>
-                            <div class="text-xs text-slate-400">Enrolled</div>
+                            <div class="text-[10px] text-slate-300 font-bold">Enrolled</div>
                         </div>
                         <div class="h-8 w-px bg-slate-700"></div>
                         <div class="text-center px-2">
-                            <div id="statTarget" class="text-2xl font-black text-slate-200">8</div>
-                            <div class="text-xs text-slate-400">Cohort Target</div>
+                            <div id="statTarget" class="text-2xl font-black text-white">8</div>
+                            <div class="text-[10px] text-slate-300 font-bold">Cohort Target</div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Schedule List Grid -->
+                <!-- Schedule Grid Container -->
                 <div id="scheduleListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Dynamic rendering -->
+                    <!-- Dynamic Schedule Cards -->
                 </div>
             </div>
 
-            <!-- TAB CONTENT 3: Admin Management Portal (ONLY FOR RAYMOND) -->
+            <!-- TAB 3: Admin Management Portal (Raymond Only) -->
             <div id="contentAdmin" class="hidden space-y-6">
-                
-                <!-- Admin Header -->
+
+                <!-- Admin Banner -->
                 <div class="bg-amber-50 border border-amber-200 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <div class="inline-flex items-center gap-1 text-xs font-bold uppercase text-amber-800 bg-amber-200 px-2.5 py-0.5 rounded-full mb-1">
-                            <i class="fa-solid fa-crown"></i> Admin Control Center
+                        <div class="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase text-amber-800 bg-amber-200 px-2.5 py-0.5 rounded-full mb-1">
+                            <i class="fa-solid fa-crown"></i> Admin Management Hub
                         </div>
-                        <h3 class="text-2xl font-extrabold text-slate-900">Welcome Admin Raymond</h3>
-                        <p class="text-sm text-slate-600 mt-1">Manage user account approvals, create/duplicate training sessions, and run priority auto-enrollments.</p>
+                        <h3 class="text-2xl font-bold text-slate-900">Welcome Admin Raymond</h3>
+                        <p class="text-xs text-slate-600 mt-1">Manage account approvals, lesson slots, and run priority auto-enrollment assignments.</p>
                     </div>
 
                     <!-- Target Lessons Config -->
                     <div class="bg-white p-3 rounded-xl border border-amber-300 shadow-sm flex items-center space-x-3">
-                        <i class="fa-solid fa-sliders text-amber-600 text-xl"></i>
+                        <i class="fa-solid fa-sliders text-amber-600 text-lg"></i>
                         <div>
-                            <label class="block text-xs font-bold text-slate-600">Cohort Target Lessons/User</label>
+                            <label class="block text-[10px] font-bold text-slate-600">Cohort Target Lessons/User</label>
                             <input type="number" id="adminCohortTargetInput" value="8" min="1" max="30" onchange="updateCohortTargetLessons(this.value)"
-                                   class="w-20 font-extrabold text-slate-800 border border-slate-300 rounded px-2 py-1 text-center text-sm outline-none focus:ring-2 focus:ring-amber-500">
+                                   class="w-20 font-bold text-slate-800 border border-slate-300 rounded-lg px-2 py-1 text-center text-xs outline-none focus:ring-2 focus:ring-amber-500">
                         </div>
                     </div>
                 </div>
 
-                <!-- Admin Action Sub-Tabs -->
+                <!-- Admin Sub Nav Tabs -->
                 <div class="flex border-b border-slate-200 gap-2">
-                    <button id="adminSubTabUsers" onclick="switchAdminSubTab('users')" class="py-3 px-5 font-bold text-sm border-b-2 border-amber-500 text-amber-700 bg-amber-50/50 rounded-t-lg transition flex items-center gap-2">
-                        <i class="fa-solid fa-user-check"></i> Account Approvals <span id="pendingBadgeCount" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-extrabold">0</span>
+                    <button id="adminSubTabUsers" onclick="switchAdminSubTab('users')" class="py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-user-check"></i> Account Approvals <span id="pendingBadgeCount" class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
                     </button>
-                    <button id="adminSubTabLessons" onclick="switchAdminSubTab('lessons')" class="py-3 px-5 font-bold text-sm text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2">
+                    <button id="adminSubTabLessons" onclick="switchAdminSubTab('lessons')" class="py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2">
                         <i class="fa-solid fa-calendar-plus"></i> Manage Lessons
                     </button>
-                    <button id="adminSubTabEnrollments" onclick="switchAdminSubTab('enrollments')" class="py-3 px-5 font-bold text-sm text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Enrollment & Priority Algorithm
+                    <button id="adminSubTabEnrollments" onclick="switchAdminSubTab('enrollments')" class="py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Priority Auto-Assignment
                     </button>
                 </div>
 
-                <!-- Admin Sub-View 1: User Approvals -->
+                <!-- SUB-TAB 1: Account Verification Requests -->
                 <div id="adminViewUsers" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                    <h4 class="font-bold text-slate-800 text-lg flex items-center gap-2">
-                        <i class="fa-solid fa-id-card text-amber-500"></i> Registered Account Verification Requests
-                    </h4>
-                    <p class="text-sm text-slate-500">Verify user details and contact number before granting access to class registration.</p>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                                <i class="fa-solid fa-id-card text-amber-500"></i> Account Verification Requests
+                            </h4>
+                            <p class="text-xs text-slate-500">Approve or reject student registrations before granting schedule access.</p>
+                        </div>
+                        <button onclick="exportUserDatabaseExcel()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow">
+                            <i class="fa-solid fa-file-excel"></i> Export Accounts (Excel)
+                        </button>
+                    </div>
+
+                    <!-- Pending Alert Banner -->
+                    <div id="adminPendingAlertBanner" class="hidden p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 items-center justify-between">
+                        <span class="flex items-center gap-2 font-bold">
+                            <i class="fa-solid fa-bell animate-bounce text-amber-600"></i>
+                            <span id="adminPendingAlertText">Pending registration requests require review!</span>
+                        </span>
+                    </div>
 
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm border-collapse">
+                        <table class="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs">
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold">
                                     <th class="py-3 px-4">Full Name</th>
                                     <th class="py-3 px-4">Contact Phone</th>
                                     <th class="py-3 px-4">Username</th>
                                     <th class="py-3 px-4">Status</th>
-                                    <th class="py-3 px-4 text-right">Action</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="userApprovalTableBody">
-                                <!-- Dynamic rendering -->
+                                <!-- Dynamic User Rows -->
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Admin Sub-View 2: Lesson Management -->
-                <div id="adminViewLessons" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                <!-- SUB-TAB 2: Manage Lessons -->
+                <div id="adminViewLessons" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h4 class="font-bold text-slate-800 text-lg">Add / Edit Training Lessons</h4>
-                            <p class="text-sm text-slate-500">Schedule available lesson slots for active cohort.</p>
+                            <h4 class="font-bold text-slate-800 text-base">Schedule Lessons</h4>
+                            <p class="text-xs text-slate-500">Create, edit, or duplicate available lesson slots for active cohort.</p>
                         </div>
-                        <button onclick="openAddLessonModal()" class="px-4 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-lg shadow text-sm flex items-center gap-2">
+                        <button onclick="openAddLessonModal()" class="px-4 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
                             <i class="fa-solid fa-plus"></i> Add New Lesson Slot
                         </button>
                     </div>
 
                     <div class="overflow-x-auto">
-                        <table class="w-full text-left text-sm border-collapse">
+                        <table class="w-full text-left text-xs border-collapse">
                             <thead>
-                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs">
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold">
                                     <th class="py-3 px-4">Date</th>
                                     <th class="py-3 px-4">Time</th>
                                     <th class="py-3 px-4">Level</th>
                                     <th class="py-3 px-4">Location</th>
-                                    <th class="py-3 px-4">Capacity Limit</th>
+                                    <th class="py-3 px-4">Capacity</th>
                                     <th class="py-3 px-4 text-right">Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="adminLessonsTableBody">
-                                <!-- Dynamic rendering -->
+                                <!-- Dynamic Lesson Rows -->
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- Admin Sub-View 3: Priority Enrollment & Auto-Assignment -->
-                <div id="adminViewEnrollments" class="hidden space-y-6">
-                    
+                <!-- SUB-TAB 3: Priority Auto-Enrollment & Roster Confirmation -->
+                <div id="adminViewEnrollments" class="hidden space-y-4">
                     <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                             <div>
-                                <h4 class="font-extrabold text-slate-900 text-xl flex items-center gap-2">
-                                    <i class="fa-solid fa-scale-balanced text-tennis-600"></i> Priority Auto-Enrollment & Roster Confirmation
+                                <h4 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                                    <i class="fa-solid fa-scale-balanced text-tennis-600"></i> Priority Auto-Enrollment & Confirmation
                                 </h4>
-                                <p class="text-sm text-slate-600 mt-1">
-                                    <strong>Priority Rule:</strong> If registration exceeds max capacity (Beginner: 8, Intermediate: 4), priority is given to students with <strong>fewer total available dates</strong> so everyone achieves an equal target of <span id="adminRuleTargetLessonsText" class="font-bold text-slate-900">8 lessons</span>.
+                                <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                                    <strong>Priority Rule:</strong> When class registrations exceed capacity (Beginner: 8, Intermediate: 4), priority is automatically assigned to students with <strong>fewer total available dates</strong> so everyone reaches their target of <span id="adminRuleTargetLessonsText" class="font-bold text-slate-900">8 lessons</span>.
                                 </p>
                             </div>
                             <div class="flex flex-wrap items-center gap-2">
-                                <button onclick="clearAllCheckedEnrollments()" class="px-3.5 py-2.5 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl transition flex items-center gap-2 text-xs sm:text-sm border border-red-200">
+                                <button onclick="runPriorityEnrollmentAlgorithm()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Assign
+                                </button>
+                                <button onclick="clearAllCheckedEnrollments()" class="px-3.5 py-2 bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 font-bold rounded-xl text-xs transition flex items-center gap-1.5">
                                     <i class="fa-solid fa-eraser"></i> Clear All Checked
                                 </button>
-                                <button onclick="runPriorityEnrollmentAlgorithm()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition flex items-center gap-2 text-xs sm:text-sm">
-                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Assignment
+                                <button onclick="openPreviewRosterModal()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-eye"></i> Preview Roster
                                 </button>
-                                <button onclick="openPreviewRosterModal()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow transition flex items-center gap-2 text-xs sm:text-sm">
-                                    <i class="fa-solid fa-eye"></i> Preview Roster Summary
+                                <button onclick="exportEnrollmentDatabaseExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow">
+                                    <i class="fa-solid fa-file-excel"></i> Export Enrolments (Excel)
                                 </button>
-                                <button onclick="confirmAndPublishEnrollment()" class="px-4 py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow transition flex items-center gap-2 text-xs sm:text-sm">
+                                <button onclick="confirmAndPublishEnrollment()" class="px-3.5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
                                     <i class="fa-solid fa-paper-plane"></i> Publish Schedule
                                 </button>
                             </div>
                         </div>
 
-                        <!-- System Warning / Conflict Alert Box -->
-                        <div id="algorithmWarningBox" class="hidden p-4 bg-amber-50 border border-amber-300 rounded-xl space-y-2">
-                            <div class="flex items-center space-x-2 text-amber-900 font-bold text-sm">
-                                <i class="fa-solid fa-triangle-exclamation text-amber-600 text-base"></i>
-                                <span>System Allocation Warnings & Conflict Report</span>
+                        <!-- Shortfall Box -->
+                        <div id="algorithmWarningBox" class="hidden p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
+                            <div class="flex items-center space-x-2 text-amber-900 font-bold text-xs">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                                <span>System Allocation Report</span>
                             </div>
-                            <div id="algorithmWarningContent" class="text-xs text-amber-800 space-y-1 pl-6 list-disc">
-                                <!-- Dynamic -->
-                            </div>
+                            <ul id="algorithmWarningContent" class="text-xs text-amber-800 space-y-1 pl-5 list-disc">
+                                <!-- Warnings injected -->
+                            </ul>
                         </div>
                     </div>
 
                     <!-- Daily Roster Cards -->
                     <div id="adminRosterContainer" class="space-y-4">
-                        <!-- Dynamic -->
+                        <!-- Dynamic Roster Cards -->
                     </div>
                 </div>
 
@@ -467,7 +519,9 @@
 
     </main>
 
-    <!-- MODAL 1: Registration Selection Confirmation Dialog -->
+    <!-- MODALS -->
+
+    <!-- MODAL 1: Confirm Selected Availability -->
     <div id="modalConfirmReg" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
@@ -477,255 +531,275 @@
                 <button onclick="closeModal('modalConfirmReg')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
             </div>
 
-            <p class="text-sm font-semibold text-slate-700 leading-relaxed">
+            <p class="text-xs text-slate-600 leading-relaxed">
                 You are about to submit your available dates for the active cohort.
             </p>
 
-            <!-- Textbox showing selected dates list with Weekdays -->
             <div>
-                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Summary of Selected Available Dates:</label>
+                <label class="block text-[10px] font-bold text-slate-700 uppercase mb-2">Summary of Selected Dates:</label>
                 <textarea id="regConfirmationSummaryText" readonly rows="6" 
                           class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-800 focus:outline-none resize-none leading-relaxed shadow-inner">
                 </textarea>
             </div>
 
-            <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 flex items-start gap-2">
-                <i class="fa-solid fa-circle-info text-blue-600 mt-0.5"></i>
-                <span>Providing more available dates improves your chances of being matched into full target lessons!</span>
-            </div>
-
             <div class="flex items-center justify-end space-x-3 pt-2">
-                <button onclick="closeModal('modalConfirmReg')" class="px-4 py-2 border border-slate-300 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-semibold">
+                <button onclick="closeModal('modalConfirmReg')" class="px-4 py-2 border border-slate-300 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-bold transition">
                     Edit Selection
                 </button>
-                <button onclick="submitFinalRegistration()" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow transition">
+                <button onclick="submitFinalRegistration()" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-xl text-xs font-bold shadow transition">
                     Confirm & Submit Registration
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 1.5: Polished Submission Success Prompt -->
-    <div id="modalSubmissionSuccessPrompt" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 text-center">
-            <div class="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto">
+    <!-- MODAL 2: Submission Received Notice -->
+    <div id="modalSubmissionSuccessNotice" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-center space-y-4">
+            <div class="w-16 h-16 rounded-full bg-tennis-100 border border-tennis-200 text-tennis-600 mx-auto flex items-center justify-center text-2xl">
                 <i class="fa-solid fa-circle-check"></i>
             </div>
-            <h3 class="text-xl font-extrabold text-slate-900">Enrolment Request Submitted</h3>
-            <p class="text-sm text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-xl border border-slate-200 text-left font-medium">
+            <h3 class="text-xl font-bold text-slate-900">Availability Received</h3>
+            <p class="text-xs text-slate-600 leading-relaxed px-2">
                 Your enrolment requests have been successfully submitted. Please note that your submission does not mean the lessons are successfully enrolled. The final enrolment list is still pending confirmation.
             </p>
-            <button onclick="closeModal('modalSubmissionSuccessPrompt')" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-lg transition">
+            <button onclick="closeModal('modalSubmissionSuccessNotice')" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition">
                 Understood
             </button>
         </div>
     </div>
 
-    <!-- MODAL 2: Admin Add/Edit Lesson Modal -->
+    <!-- MODAL 3: Update Phone -->
+    <div id="modalUpdatePhone" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-phone text-tennis-600 mr-2"></i> Update Contact Phone No.</h3>
+                <button onclick="closeModal('modalUpdatePhone')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleUpdatePhone(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">New Contact Number</label>
+                    <div class="flex items-center space-x-2">
+                        <select id="updateCountryCode" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl px-3 py-2.5 outline-none">
+                            <option value="+852">+852</option>
+                            <option value="+86">+86</option>
+                            <option value="+853">+853</option>
+                            <option value="+1">+1</option>
+                            <option value="+44">+44</option>
+                        </select>
+                        <input type="tel" id="updateContactPhone" required placeholder="91234567" 
+                               class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-slate-800 outline-none text-xs">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modalUpdatePhone')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">Save Phone No.</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: User Enrolled History -->
+    <div id="modalEnrolledRecords" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-tennis-600"></i> My Enrolled Records History
+                </h3>
+                <button onclick="closeModal('modalEnrolledRecords')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-50 text-slate-600 uppercase sticky top-0 font-bold">
+                        <tr>
+                            <th class="py-3 px-4">Cohort</th>
+                            <th class="py-3 px-4">Date</th>
+                            <th class="py-3 px-4">Time</th>
+                            <th class="py-3 px-4">Level</th>
+                            <th class="py-3 px-4">Location</th>
+                        </tr>
+                    </thead>
+                    <tbody id="enrolledHistoryTableBody">
+                        <!-- Dynamic Records -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="closeModal('modalEnrolledRecords')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: Forgot Password & OTP -->
+    <div id="modalForgotPassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-key text-tennis-600 mr-2"></i> Password Reset & OTP</h3>
+                <button onclick="closeModal('modalForgotPassword')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <!-- Step 1: Request OTP -->
+            <div id="forgotStep1">
+                <form onsubmit="handleSendOTP(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Username</label>
+                        <input type="text" id="forgotUsername" required placeholder="Username" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Registered Phone</label>
+                        <div class="flex items-center space-x-2">
+                            <select id="forgotCountryCode" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl px-3 py-2 outline-none">
+                                <option value="+852">+852</option>
+                                <option value="+86">+86</option>
+                            </select>
+                            <input type="tel" id="forgotContact" required placeholder="91234567" class="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">
+                        Send OTP SMS Code
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 2: Verify OTP -->
+            <div id="forgotStep2" class="hidden space-y-4">
+                <form onsubmit="handleVerifyOTPAndReset(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">6-Digit OTP Code</label>
+                        <input type="text" id="forgotOTPInput" required placeholder="Enter 6-digit OTP" maxlength="6" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-tennis-700 font-mono tracking-widest text-center font-bold text-base outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">New Password</label>
+                        <input type="password" id="forgotNewPassword" required placeholder="Enter new password" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">
+                        Verify OTP & Reset Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: Change Password -->
+    <div id="modalChangePassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-lock text-tennis-600 mr-2"></i> Change Password</h3>
+                <button onclick="closeModal('modalChangePassword')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleChangePassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Current Password</label>
+                    <input type="password" id="changeOldPassword" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">New Password</label>
+                    <input type="password" id="changeNewPassword" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modalChangePassword')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 7: Roster Preview -->
+    <div id="modalPreviewRoster" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-users text-indigo-600"></i> Roster Summary Preview
+                </h3>
+                <button onclick="closeModal('modalPreviewRoster')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-50 text-slate-600 uppercase sticky top-0 font-bold">
+                        <tr>
+                            <th class="py-3 px-4">Student Name</th>
+                            <th class="py-3 px-4">Contact</th>
+                            <th class="py-3 px-4 text-center">Avail. Provided</th>
+                            <th class="py-3 px-4 text-center">Enrolled Lessons</th>
+                            <th class="py-3 px-4 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewRosterTableBody">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                <div class="text-xs text-slate-500">Target per student: <span id="previewTargetCount" class="font-bold text-slate-800">8</span> lessons</div>
+                <button onclick="closeModal('modalPreviewRoster')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold">Close Preview</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 8: Add/Edit Lesson Slot -->
     <div id="modalLessonForm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 id="lessonModalTitle" class="text-lg font-bold text-slate-900">Add New Lesson</h3>
-                <button onclick="closeModal('modalLessonForm')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+                <h3 id="lessonModalTitle" class="text-base font-bold text-slate-900">Add New Lesson</h3>
+                <button onclick="closeModal('modalLessonForm')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-
             <form onsubmit="handleSaveLesson(event)" class="space-y-4">
                 <input type="hidden" id="lessonId">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Date <span class="text-red-500">*</span></label>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Date</label>
                     <input type="date" id="lessonDate" required min="2026-12-01" max="2027-12-31" 
-                           class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-tennis-500 outline-none">
+                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Level <span class="text-red-500">*</span></label>
-                    <select id="lessonLevel" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-tennis-500 outline-none bg-white">
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Level</label>
+                    <select id="lessonLevel" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
                         <option value="Beginner">Beginner (Capacity 8)</option>
                         <option value="Intermediate">Intermediate (Capacity 4)</option>
                     </select>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Start Time</label>
-                        <input type="time" id="lessonStartTime" required value="09:00" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Start Time</label>
+                        <input type="time" id="lessonStartTime" required value="09:00" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">End Time</label>
-                        <input type="time" id="lessonEndTime" required value="11:00" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">End Time</label>
+                        <input type="time" id="lessonEndTime" required value="11:00" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Location Venue</label>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Location Venue</label>
                     <input type="text" id="lessonLocation" required placeholder="Victoria Park Court 1" value="Victoria Park Court 1"
-                           class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
+                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
                 </div>
-
-                <div class="flex items-center justify-end space-x-3 pt-3">
-                    <button type="button" onclick="closeModal('modalLessonForm')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow">Save Lesson</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 3: Forgot Password Modal with OTP Verification -->
-    <div id="modalForgotPassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-key text-tennis-600 mr-1"></i> Reset / Find Password</h3>
-                <button onclick="closeModal('modalForgotPassword')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <!-- Step 1: Request OTP -->
-            <form id="otpRequestForm" onsubmit="handleSendOtp(event)" class="space-y-4">
-                <p class="text-xs text-slate-500">Enter your registered username and phone number to receive a 6-digit OTP code.</p>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
-                    <input type="text" id="forgotUsername" required placeholder="Enter username" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Registered Phone No.</label>
-                    <div class="flex gap-2">
-                        <select id="forgotCountryCode" class="bg-slate-100 border border-slate-300 text-slate-800 font-bold px-3 py-2 rounded-lg text-sm outline-none">
-                            <option value="+852">+852</option>
-                            <option value="+86">+86</option>
-                        </select>
-                        <input type="tel" id="forgotContact" required placeholder="91234567" class="flex-1 px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
-                    </div>
-                </div>
-
-                <div class="flex items-center justify-end space-x-3 pt-2">
-                    <button type="button" onclick="closeModal('modalForgotPassword')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow flex items-center gap-2">
-                        <i class="fa-solid fa-paper-plane"></i> Send OTP SMS
-                    </button>
-                </div>
-            </form>
-
-            <!-- Step 2: Input OTP & New Password -->
-            <form id="otpVerifyForm" onsubmit="handleVerifyOtpAndReset(event)" class="space-y-4 hidden">
-                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800">
-                    <i class="fa-solid fa-mobile-screen mr-1 text-emerald-600"></i>
-                    SMS OTP code generated and sent to phone!
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Enter 6-Digit OTP Code</label>
-                    <input type="text" id="otpInput" maxlength="6" required placeholder="123456" class="w-full px-3 py-2 font-mono text-center tracking-widest font-extrabold text-lg rounded-lg border border-slate-300 outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">New Password</label>
-                    <input type="password" id="forgotNewPassword" required placeholder="Enter new password" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
-                </div>
-
-                <div class="flex items-center justify-end space-x-3 pt-2">
-                    <button type="button" onclick="resetOtpState()" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold">Back</button>
-                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow">Verify & Reset Password</button>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modalLessonForm')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">Save Lesson</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL 4: Change Password Modal -->
-    <div id="modalChangePassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-lock text-tennis-600 mr-1"></i> Change Password</h3>
-                <button onclick="closeModal('modalChangePassword')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <form onsubmit="handleChangePassword(event)" class="space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Current Password</label>
-                    <input type="password" id="changeOldPassword" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">New Password</label>
-                    <input type="password" id="changeNewPassword" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
-                </div>
-
-                <div class="flex items-center justify-end space-x-3 pt-2">
-                    <button type="button" onclick="closeModal('modalChangePassword')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow">Update Password</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 4.5: Enrolled Records History Modal -->
-    <div id="modalEnrolledRecords" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-history text-tennis-600"></i> My Enrolled Records History
-                </h3>
-                <button onclick="closeModal('modalEnrolledRecords')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <p class="text-xs text-slate-500">Summary of all your past and current confirmed lesson enrollments across all cohorts.</p>
-
-            <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
-                <table class="w-full text-left text-sm border-collapse">
-                    <thead class="sticky top-0 bg-slate-100 text-slate-600 uppercase text-xs">
-                        <tr>
-                            <th class="py-3 px-4">Cohort</th>
-                            <th class="py-3 px-4">Date</th>
-                            <th class="py-3 px-4">Time & Location</th>
-                            <th class="py-3 px-4">Level</th>
-                        </tr>
-                    </thead>
-                    <tbody id="enrolledRecordsTableBody">
-                        <!-- Dynamic -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="flex justify-end pt-2">
-                <button onclick="closeModal('modalEnrolledRecords')" class="px-5 py-2 bg-slate-800 text-white rounded-lg text-sm font-bold">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 5: Admin Preview Roster Summary -->
-    <div id="modalPreviewRoster" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-users-rectangle text-indigo-600"></i> Roster Summary Preview
-                </h3>
-                <button onclick="closeModal('modalPreviewRoster')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <div class="text-xs text-slate-500">
-                Review all registered participants, their total enrolled lessons count, and target status before publishing.
-            </div>
-
-            <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
-                <table class="w-full text-left text-sm border-collapse">
-                    <thead class="sticky top-0 bg-slate-100 text-slate-600 uppercase text-xs">
-                        <tr>
-                            <th class="py-3 px-4">Student Name</th>
-                            <th class="py-3 px-4">Contact</th>
-                            <th class="py-3 px-4 text-center">Avail. Dates Provided</th>
-                            <th class="py-3 px-4 text-center">Enrolled Lessons</th>
-                            <th class="py-3 px-4 text-center">Target Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="previewRosterTableBody">
-                        <!-- Dynamic -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-                <div class="text-xs text-slate-500">Target per student: <span id="previewTargetCount" class="font-bold text-slate-800">8</span> lessons</div>
-                <button onclick="closeModal('modalPreviewRoster')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-bold">
-                    Close Preview
-                </button>
-            </div>
-        </div>
-    </div>
-
+    <!-- Supabase Initialization Script -->
     <script>
-        // Cohort Definitions
+        // INSERT YOUR SUPABASE CREDENTIALS HERE
+        const SUPABASE_URL = "https://your-project-id.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.your-anon-key";
+
+        let supabaseClient = null;
+
+        if (typeof window.supabase !== 'undefined' && SUPABASE_URL.includes("supabase.co")) {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("Connected to Supabase PostgreSQL Backend.");
+            } catch (err) {
+                console.log("Using Local Browser Storage fallback.");
+            }
+        }
+    </script>
+
+    <!-- Main Client Script -->
+    <script>
         const COHORTS = [
             { id: 'c1', name: '1st Training Cohort: Dec 2026 - Feb 2027', startYear: 2026, startMonth: 11, endYear: 2027, endMonth: 1 },
             { id: 'c2', name: '2nd Training Cohort: Mar 2027 - May 2027', startYear: 2027, startMonth: 2, endYear: 2027, endMonth: 4 },
@@ -734,7 +808,6 @@
 
         let activeCohortId = 'c1';
 
-        // Default Admin Account Raymond
         const DEFAULT_ADMIN = {
             id: 'admin_1',
             username: 'Raymond',
@@ -745,7 +818,6 @@
             isAdmin: true
         };
 
-        // Initial Seed Users
         const DEFAULT_USERS = [
             DEFAULT_ADMIN,
             { id: 'u1', username: 'john', password: '123', fullName: 'CHAN Tai-man', contact: '+852 91234567', isApproved: true, isAdmin: false },
@@ -754,7 +826,6 @@
             { id: 'u4', username: 'sarah', password: '123', fullName: 'Sarah Lee', contact: '+852 95556666', isApproved: false, isAdmin: false }
         ];
 
-        // Seed Lessons
         const DEFAULT_LESSONS = [
             { id: 'l1', cohortId: 'c1', date: '2026-12-05', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
             { id: 'l2', cohortId: 'c1', date: '2026-12-12', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
@@ -764,42 +835,35 @@
             { id: 'l6', cohortId: 'c1', date: '2027-01-16', level: 'Beginner', startTime: '10:00', endTime: '12:00', location: 'Kowloon Park Court 3', capacity: 8 },
             { id: 'l7', cohortId: 'c1', date: '2027-01-23', level: 'Beginner', startTime: '10:00', endTime: '12:00', location: 'Kowloon Park Court 3', capacity: 8 },
             { id: 'l8', cohortId: 'c1', date: '2027-01-30', level: 'Beginner', startTime: '10:00', endTime: '12:00', location: 'Kowloon Park Court 3', capacity: 8 },
-            { id: 'l9', cohortId: 'c1', date: '2027-02-06', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
-            { id: 'l10', cohortId: 'c1', date: '2027-02-13', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
-
-            { id: 'l11', cohortId: 'c1', date: '2026-12-06', level: 'Intermediate', startTime: '14:00', endTime: '16:00', location: 'Victoria Park Court 3', capacity: 4 },
-            { id: 'l12', cohortId: 'c1', date: '2026-12-13', level: 'Intermediate', startTime: '14:00', endTime: '16:00', location: 'Victoria Park Court 3', capacity: 4 },
-            { id: 'l13', cohortId: 'c1', date: '2027-01-10', level: 'Intermediate', startTime: '15:00', endTime: '17:00', location: 'Kowloon Park Court 1', capacity: 4 },
-            { id: 'l14', cohortId: 'c1', date: '2027-01-17', level: 'Intermediate', startTime: '15:00', endTime: '17:00', location: 'Kowloon Park Court 1', capacity: 4 }
+            { id: 'l9', cohortId: 'c1', date: '2026-12-06', level: 'Intermediate', startTime: '14:00', endTime: '16:00', location: 'Victoria Park Court 3', capacity: 4 },
+            { id: 'l10', cohortId: 'c1', date: '2026-12-13', level: 'Intermediate', startTime: '14:00', endTime: '16:00', location: 'Victoria Park Court 3', capacity: 4 }
         ];
 
         const DEFAULT_REGISTRATIONS = {
             'u1_c1': ['2026-12-05', '2026-12-12', '2026-12-19', '2026-12-26', '2027-01-09', '2027-01-16', '2027-01-23', '2027-01-30'],
             'u2_c1': ['2026-12-05', '2026-12-12', '2026-12-19', '2027-01-09', '2027-01-16'],
-            'u3_c1': ['2026-12-06', '2026-12-13', '2027-01-10', '2027-01-17']
+            'u3_c1': ['2026-12-06', '2026-12-13']
         };
 
         const DEFAULT_ENROLLMENTS = {
             'l1': ['u1', 'u2'],
-            'l2': ['u1', 'u2'],
-            'l3': ['u1', 'u2']
+            'l2': ['u1', 'u2']
         };
 
-        // Persistent App State
-        let users = JSON.parse(localStorage.getItem('ace_tennis_users')) || DEFAULT_USERS;
-        let lessons = JSON.parse(localStorage.getItem('ace_tennis_lessons')) || DEFAULT_LESSONS;
-        let registrations = JSON.parse(localStorage.getItem('ace_tennis_regs')) || DEFAULT_REGISTRATIONS;
-        let enrollments = JSON.parse(localStorage.getItem('ace_tennis_enrollments')) || DEFAULT_ENROLLMENTS;
+        // Persistent State
+        window.users = JSON.parse(localStorage.getItem('ace_tennis_users')) || DEFAULT_USERS;
+        window.lessons = JSON.parse(localStorage.getItem('ace_tennis_lessons')) || DEFAULT_LESSONS;
+        window.registrations = JSON.parse(localStorage.getItem('ace_tennis_regs')) || DEFAULT_REGISTRATIONS;
+        window.enrollments = JSON.parse(localStorage.getItem('ace_tennis_enrollments')) || DEFAULT_ENROLLMENTS;
         let cohortTargetLessons = parseInt(localStorage.getItem('ace_tennis_target_lessons')) || 8;
         let isSchedulePublished = JSON.parse(localStorage.getItem('ace_tennis_published')) || false;
 
-        let currentUser = null;
+        window.currentUser = null;
         let activeRegYear = 2026;
         let activeRegMonth = 11;
         let tempSelectedDates = new Set();
         let myLessonsFilterActive = false;
-        let currentGeneratedOtp = null;
-        let otpTargetUser = null;
+        let generatedOTPCode = null;
 
         window.addEventListener('DOMContentLoaded', () => {
             saveState();
@@ -807,18 +871,40 @@
         });
 
         function saveState() {
-            localStorage.setItem('ace_tennis_users', JSON.stringify(users));
-            localStorage.setItem('ace_tennis_lessons', JSON.stringify(lessons));
-            localStorage.setItem('ace_tennis_regs', JSON.stringify(registrations));
-            localStorage.setItem('ace_tennis_enrollments', JSON.stringify(enrollments));
+            localStorage.setItem('ace_tennis_users', JSON.stringify(window.users));
+            localStorage.setItem('ace_tennis_lessons', JSON.stringify(window.lessons));
+            localStorage.setItem('ace_tennis_regs', JSON.stringify(window.registrations));
+            localStorage.setItem('ace_tennis_enrollments', JSON.stringify(window.enrollments));
             localStorage.setItem('ace_tennis_target_lessons', cohortTargetLessons);
             localStorage.setItem('ace_tennis_published', JSON.stringify(isSchedulePublished));
+
+            if (supabaseClient) {
+                syncToSupabaseBackend();
+            }
+        }
+
+        async function syncToSupabaseBackend() {
+            try {
+                for (const u of window.users) {
+                    await supabaseClient.from('users').upsert({
+                        id: u.id,
+                        username: u.username,
+                        password: u.password,
+                        full_name: u.fullName,
+                        contact: u.contact,
+                        is_approved: u.isApproved,
+                        is_admin: u.isAdmin
+                    });
+                }
+            } catch (err) {
+                console.log("Supabase live sync:", err);
+            }
         }
 
         function checkAutoLoginSession() {
             const savedUserId = sessionStorage.getItem('ace_tennis_current_user');
             if (savedUserId) {
-                const found = users.find(u => u.id === savedUserId);
+                const found = window.users.find(u => u.id === savedUserId);
                 if (found && found.isApproved) {
                     loginUserSuccess(found);
                     return;
@@ -837,14 +923,15 @@
                 document.getElementById('scheduleCohortLabel').textContent = c.name;
             }
 
-            if (currentUser) {
-                const key = `${currentUser.id}_${activeCohortId}`;
-                tempSelectedDates = new Set(registrations[key] || []);
+            if (window.currentUser) {
+                const key = `${window.currentUser.id}_${activeCohortId}`;
+                tempSelectedDates = new Set(window.registrations[key] || []);
             }
 
             renderRegistrationCalendar();
             renderFinalSchedule();
-            if (currentUser?.isAdmin) {
+            if (window.currentUser?.isAdmin) {
+                renderAdminUsersTable();
                 renderAdminLessonsTable();
                 renderAdminEnrollmentsView();
             }
@@ -859,13 +946,13 @@
             if (tab === 'login') {
                 loginForm.classList.remove('hidden');
                 regForm.classList.add('hidden');
-                tabLoginBtn.className = "flex-1 py-4 font-semibold text-center text-tennis-600 border-b-2 border-tennis-600 transition";
-                tabRegBtn.className = "flex-1 py-4 font-semibold text-center text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition";
+                tabLoginBtn.className = "flex-1 py-4 font-bold text-center text-tennis-600 border-b-2 border-tennis-600 transition text-sm";
+                tabRegBtn.className = "flex-1 py-4 font-bold text-center text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition text-sm";
             } else {
                 loginForm.classList.add('hidden');
                 regForm.classList.remove('hidden');
-                tabRegBtn.className = "flex-1 py-4 font-semibold text-center text-tennis-600 border-b-2 border-tennis-600 transition";
-                tabLoginBtn.className = "flex-1 py-4 font-semibold text-center text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition";
+                tabRegBtn.className = "flex-1 py-4 font-bold text-center text-tennis-600 border-b-2 border-tennis-600 transition text-sm";
+                tabLoginBtn.className = "flex-1 py-4 font-bold text-center text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition text-sm";
             }
         }
 
@@ -874,45 +961,37 @@
             const usernameInput = document.getElementById('loginUsername').value.trim();
             const passwordInput = document.getElementById('loginPassword').value.trim();
 
-            const foundUser = users.find(u => u.username.toLowerCase() === usernameInput.toLowerCase());
+            const foundUser = window.users.find(u => u.username.toLowerCase() === usernameInput.toLowerCase());
 
             if (!foundUser) {
-                showToast("Account not found. Please check your username or register.", "error");
+                showToast("Account not found. Please check your username.", "error");
                 return;
             }
 
             if (foundUser.password !== passwordInput) {
-                showToast("Invalid password. Please try again.", "error");
+                showToast("Invalid password.", "error");
                 return;
             }
 
             if (!foundUser.isApproved) {
-                showToast("Your account is pending admin approval. Admin Raymond will review your details shortly.", "warning");
+                showToast("Account pending admin approval. Please wait for Raymond's verification.", "warning");
                 return;
             }
 
             sessionStorage.setItem('ace_tennis_current_user', foundUser.id);
             loginUserSuccess(foundUser);
             showToast(`Welcome back, ${foundUser.fullName}!`, "success");
-
-            if (isSchedulePublished) {
-                setTimeout(() => {
-                    showToast("📲 Notification: The training schedule for Dec 2026 - Feb 2027 has been released!", "info");
-                }, 1000);
-            }
         }
 
         function handleRegister(e) {
             e.preventDefault();
             const fullName = document.getElementById('regFullName').value.trim();
             const countryCode = document.getElementById('regCountryCode').value;
-            const phoneNum = document.getElementById('regContact').value.trim();
+            const contactNo = document.getElementById('regContact').value.trim();
             const username = document.getElementById('regUsername').value.trim();
             const password = document.getElementById('regPassword').value.trim();
 
-            const contact = `${countryCode} ${phoneNum}`;
-
-            if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+            if (window.users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
                 showToast("Username already taken. Please choose another.", "error");
                 return;
             }
@@ -922,69 +1001,123 @@
                 username,
                 password,
                 fullName,
-                contact,
+                contact: `${countryCode} ${contactNo}`,
                 isApproved: false,
                 isAdmin: false
             };
 
-            users.push(newUser);
+            window.users.push(newUser);
             saveState();
 
             switchAuthTab('login');
             document.getElementById('loginUsername').value = username;
             document.getElementById('loginPassword').value = '';
 
-            showToast("Registration request submitted! Please wait for Admin Raymond to verify your account.", "info");
+            showToast("Registration request submitted! Awaiting Admin Raymond's approval.", "info");
         }
 
-        // OTP Handler Functions
-        function handleSendOtp(e) {
+        function openForgotPasswordModal() {
+            document.getElementById('forgotStep1').classList.remove('hidden');
+            document.getElementById('forgotStep2').classList.add('hidden');
+            openModal('modalForgotPassword');
+        }
+
+        function handleSendOTP(e) {
             e.preventDefault();
             const username = document.getElementById('forgotUsername').value.trim();
-            const code = document.getElementById('forgotCountryCode').value;
+            const countryCode = document.getElementById('forgotCountryCode').value;
             const phone = document.getElementById('forgotContact').value.trim();
-            const fullPhone = `${code} ${phone}`;
+            const fullPhone = `${countryCode} ${phone}`;
 
-            const u = users.find(x => x.username.toLowerCase() === username.toLowerCase() && (x.contact === fullPhone || x.contact.endsWith(phone)));
+            const u = window.users.find(x => x.username.toLowerCase() === username.toLowerCase() && (x.contact === fullPhone || x.contact.includes(phone)));
             if (!u) {
-                showToast("Verification failed. Username and phone number record do not match.", "error");
+                showToast("Verification failed. Details do not match.", "error");
                 return;
             }
 
-            // Generate 6-digit OTP code
-            currentGeneratedOtp = Math.floor(100000 + Math.random() * 900000).toString();
-            otpTargetUser = u;
+            generatedOTPCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-            document.getElementById('otpRequestForm').classList.add('hidden');
-            document.getElementById('otpVerifyForm').classList.remove('hidden');
+            document.getElementById('forgotStep1').classList.add('hidden');
+            document.getElementById('forgotStep2').classList.remove('hidden');
 
-            showToast(`📲 Simulated SMS sent to ${fullPhone}! Code: ${currentGeneratedOtp}`, "info");
+            showToast(`Simulated SMS Sent to ${fullPhone}! OTP Code: ${generatedOTPCode}`, "warning");
         }
 
-        function handleVerifyOtpAndReset(e) {
+        function handleVerifyOTPAndReset(e) {
             e.preventDefault();
-            const inputCode = document.getElementById('otpInput').value.trim();
+            const inputOTP = document.getElementById('forgotOTPInput').value.trim();
             const newPassword = document.getElementById('forgotNewPassword').value.trim();
+            const username = document.getElementById('forgotUsername').value.trim();
 
-            if (inputCode !== currentGeneratedOtp) {
-                showToast("Invalid OTP code. Please try again.", "error");
+            if (inputOTP !== generatedOTPCode) {
+                showToast("Invalid OTP Verification Code.", "error");
                 return;
             }
 
-            otpTargetUser.password = newPassword;
-            saveState();
-
-            closeModal('modalForgotPassword');
-            resetOtpState();
-            showToast("Identity verified! Password updated successfully. You can now login.", "success");
+            const u = window.users.find(x => x.username.toLowerCase() === username.toLowerCase());
+            if (u) {
+                u.password = newPassword;
+                saveState();
+                closeModal('modalForgotPassword');
+                showToast("Password reset successfully! You can now log in.", "success");
+            }
         }
 
-        function resetOtpState() {
-            currentGeneratedOtp = null;
-            otpTargetUser = null;
-            document.getElementById('otpRequestForm').classList.remove('hidden');
-            document.getElementById('otpVerifyForm').classList.add('hidden');
-            document.getElementById('otpInput').value = '';
+        function openUpdatePhoneModal() {
+            if (!window.currentUser) return;
+            const parts = window.currentUser.contact.split(' ');
+            if (parts.length > 1) {
+                document.getElementById('updateCountryCode').value = parts[0];
+                document.getElementById('updateContactPhone').value = parts[1];
+            } else {
+                document.getElementById('updateContactPhone').value = window.currentUser.contact;
+            }
+            openModal('modalUpdatePhone');
+        }
+
+        function handleUpdatePhone(e) {
+            e.preventDefault();
+            const code = document.getElementById('updateCountryCode').value;
+            const num = document.getElementById('updateContactPhone').value.trim();
+            
+            window.currentUser.contact = `${code} ${num}`;
+            const idx = window.users.findIndex(x => x.id === window.currentUser.id);
+            if (idx !== -1) window.users[idx].contact = window.currentUser.contact;
+
+            saveState();
+            closeModal('modalUpdatePhone');
+            renderHeaderNav();
+            showToast("Contact phone number updated!", "success");
+        }
+
+        function openEnrolledRecordsModal() {
+            const tbody = document.getElementById('enrolledHistoryTableBody');
+            tbody.innerHTML = '';
+
+            let count = 0;
+            window.lessons.forEach(l => {
+                const roster = window.enrollments[l.id] || [];
+                if (roster.includes(window.currentUser?.id)) {
+                    count++;
+                    const c = COHORTS.find(x => x.id === l.cohortId);
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-100 hover:bg-slate-50";
+                    tr.innerHTML = `
+                        <td class="py-2.5 px-4 font-bold text-tennis-700">${c ? c.name.split(':')[0] : l.cohortId}</td>
+                        <td class="py-2.5 px-4 font-bold text-slate-800">${l.date}</td>
+                        <td class="py-2.5 px-4 text-slate-600">${l.startTime} - ${l.endTime}</td>
+                        <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${l.level==='Beginner'?'bg-blue-100 text-blue-800':'bg-purple-100 text-purple-800'}">${l.level}</span></td>
+                        <td class="py-2.5 px-4 text-slate-600">${l.location}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (count === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No confirmed enrollment history records found.</td></tr>`;
+            }
+
+            openModal('modalEnrolledRecords');
         }
 
         function handleChangePassword(e) {
@@ -992,24 +1125,27 @@
             const oldPass = document.getElementById('changeOldPassword').value.trim();
             const newPass = document.getElementById('changeNewPassword').value.trim();
 
-            if (currentUser.password !== oldPass) {
+            if (window.currentUser.password !== oldPass) {
                 showToast("Current password incorrect.", "error");
                 return;
             }
 
-            currentUser.password = newPass;
+            window.currentUser.password = newPass;
+            const idx = window.users.findIndex(x => x.id === window.currentUser.id);
+            if (idx !== -1) window.users[idx].password = newPass;
+
             saveState();
             closeModal('modalChangePassword');
             showToast("Password updated successfully!", "success");
         }
 
         function loginUserSuccess(user) {
-            currentUser = user;
+            window.currentUser = user;
             document.getElementById('authView').classList.add('hidden');
             document.getElementById('mainDashboardView').classList.remove('hidden');
 
-            const key = `${currentUser.id}_${activeCohortId}`;
-            tempSelectedDates = new Set(registrations[key] || []);
+            const key = `${window.currentUser.id}_${activeCohortId}`;
+            tempSelectedDates = new Set(window.registrations[key] || []);
 
             renderHeaderNav();
             updateTargetLessonsLabel();
@@ -1018,7 +1154,7 @@
 
         function handleLogout() {
             sessionStorage.removeItem('ace_tennis_current_user');
-            currentUser = null;
+            window.currentUser = null;
             document.getElementById('authView').classList.remove('hidden');
             document.getElementById('mainDashboardView').classList.add('hidden');
             renderHeaderNav();
@@ -1027,60 +1163,31 @@
 
         function renderHeaderNav() {
             const container = document.getElementById('navRight');
-            if (!currentUser) {
-                container.innerHTML = `<div class="text-xs text-slate-400">Please sign in</div>`;
+            if (!window.currentUser) {
+                container.innerHTML = `<div class="text-xs text-slate-400 font-semibold">Sign in required</div>`;
             } else {
                 container.innerHTML = `
-                    <div class="flex items-center space-x-2 sm:space-x-3">
-                        <div class="text-right hidden sm:block">
-                            <div class="text-xs font-bold text-tennis-400 uppercase tracking-wider">${currentUser.isAdmin ? 'ADMIN' : 'STUDENT'}</div>
-                            <div class="text-sm font-semibold text-white">${currentUser.fullName}</div>
+                    <div class="flex items-center space-x-2">
+                        <div class="text-right hidden sm:block mr-2">
+                            <div class="text-[10px] font-black text-tennis-400 uppercase">${window.currentUser.isAdmin ? 'ADMIN' : 'STUDENT'}</div>
+                            <div class="text-xs font-bold text-white">${window.currentUser.fullName}</div>
                         </div>
-                        <button onclick="openEnrolledRecordsModal()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition border border-slate-700 flex items-center gap-1">
-                            <i class="fa-solid fa-history text-tennis-400"></i> Enrolled Records
+                        <button onclick="openEnrolledRecordsModal()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition border border-slate-700 flex items-center gap-1" title="Enrolled Records">
+                            <i class="fa-solid fa-clock-rotate-left text-tennis-400"></i>
+                            <span class="hidden md:inline">Enrolled Records</span>
                         </button>
-                        <button onclick="openModal('modalChangePassword')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition border border-slate-700" title="Change Password">
+                        <button onclick="openUpdatePhoneModal()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition border border-slate-700" title="Update Phone">
+                            <i class="fa-solid fa-phone text-tennis-400"></i>
+                        </button>
+                        <button onclick="openModal('modalChangePassword')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition border border-slate-700" title="Change Password">
                             <i class="fa-solid fa-key"></i>
                         </button>
-                        <button onclick="handleLogout()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition flex items-center gap-1.5 border border-slate-700">
-                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        <button onclick="handleLogout()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition flex items-center gap-1 border border-slate-700">
+                            <i class="fa-solid fa-right-from-bracket"></i>
                         </button>
                     </div>
                 `;
             }
-        }
-
-        function openEnrolledRecordsModal() {
-            const tbody = document.getElementById('enrolledRecordsTableBody');
-            tbody.innerHTML = '';
-
-            let totalEnrolledCount = 0;
-
-            lessons.forEach(l => {
-                const enrolled = enrollments[l.id] || [];
-                if (enrolled.includes(currentUser.id)) {
-                    totalEnrolledCount++;
-                    const c = COHORTS.find(x => x.id === l.cohortId);
-                    const dateObj = new Date(l.date);
-                    const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
-
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-slate-100 hover:bg-slate-50";
-                    tr.innerHTML = `
-                        <td class="py-3 px-4 font-bold text-slate-800">${c ? c.name : l.cohortId}</td>
-                        <td class="py-3 px-4 text-slate-700">${l.date} (${dayName})</td>
-                        <td class="py-3 px-4 text-slate-600">${l.startTime}-${l.endTime} @ ${l.location}</td>
-                        <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-xs font-bold bg-tennis-100 text-tennis-800">${l.level}</span></td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-
-            if (totalEnrolledCount === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center py-6 text-slate-400">No confirmed lesson enrollments found across cohorts.</td></tr>`;
-            }
-
-            openModal('modalEnrolledRecords');
         }
 
         function updateTargetLessonsLabel() {
@@ -1097,28 +1204,28 @@
             const contentSched = document.getElementById('contentSchedule');
             const contentAdmin = document.getElementById('contentAdmin');
 
-            if (currentUser && currentUser.isAdmin) {
+            if (window.currentUser && window.currentUser.isAdmin) {
                 btnAdmin.classList.remove('hidden');
             } else {
                 btnAdmin.classList.add('hidden');
             }
 
             [btnReg, btnSched, btnAdmin].forEach(btn => {
-                btn.className = "px-5 py-3 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2";
+                btn.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2";
             });
 
             [contentReg, contentSched, contentAdmin].forEach(c => c.classList.add('hidden'));
 
             if (tab === 'registration') {
-                btnReg.className = "px-5 py-3 rounded-xl font-bold text-sm bg-tennis-600 text-white shadow-md transition flex items-center gap-2";
+                btnReg.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2";
                 contentReg.classList.remove('hidden');
                 renderRegistrationCalendar();
             } else if (tab === 'schedule') {
-                btnSched.className = "px-5 py-3 rounded-xl font-bold text-sm bg-tennis-600 text-white shadow-md transition flex items-center gap-2";
+                btnSched.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2";
                 contentSched.classList.remove('hidden');
                 renderFinalSchedule();
-            } else if (tab === 'admin' && currentUser?.isAdmin) {
-                btnAdmin.className = "px-5 py-3 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 shadow-md transition flex items-center gap-2";
+            } else if (tab === 'admin' && window.currentUser?.isAdmin) {
+                btnAdmin.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-md transition flex items-center gap-2";
                 contentAdmin.classList.remove('hidden');
                 switchAdminSubTab('users');
             }
@@ -1156,46 +1263,46 @@
                 const dayStr = String(day).padStart(2, '0');
                 const dateKey = `${activeRegYear}-${monthStr}-${dayStr}`;
 
-                const matchedLessons = lessons.filter(l => l.cohortId === activeCohortId && l.date === dateKey && l.level === selectedLevel);
+                const matchedLessons = window.lessons.filter(l => l.cohortId === activeCohortId && l.date === dateKey && l.level === selectedLevel);
                 const isSelected = tempSelectedDates.has(dateKey);
 
                 const card = document.createElement('div');
-                card.className = "min-h-[90px] border rounded-xl p-2 flex flex-col justify-between transition calendar-day-active relative ";
+                card.className = "min-h-[85px] border rounded-2xl p-2.5 flex flex-col justify-between calendar-day-card relative ";
 
                 if (matchedLessons.length > 0) {
                     if (isSelected) {
-                        card.className += "bg-tennis-600 text-white border-tennis-700 shadow-md ring-2 ring-tennis-400 cursor-pointer";
+                        card.className += "bg-tennis-600 text-white border-tennis-700 shadow-md cursor-pointer font-bold";
                     } else {
                         card.className += "bg-emerald-50/70 border-emerald-300 hover:bg-emerald-100/80 cursor-pointer";
                     }
 
                     let lessonBadges = matchedLessons.map(l => `
-                        <div class="text-[10px] ${isSelected ? 'bg-tennis-700 text-white' : 'bg-emerald-200 text-emerald-900'} px-1.5 py-0.5 rounded font-bold truncate">
+                        <div class="text-[9px] ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-200 text-emerald-900'} px-1.5 py-0.5 rounded-lg font-bold truncate">
                             <i class="fa-solid fa-clock"></i> ${l.startTime}
                         </div>
                     `).join('');
 
                     card.innerHTML = `
                         <div class="flex items-center justify-between">
-                            <span class="font-extrabold text-sm ${isSelected ? 'text-white' : 'text-slate-800'}">${day}</span>
-                            <span class="${isSelected ? 'text-white' : 'text-emerald-700'} text-xs font-black">
+                            <span class="font-bold text-xs ${isSelected ? 'text-white' : 'text-slate-800'}">${day}</span>
+                            <span class="${isSelected ? 'text-white' : 'text-emerald-600'} text-xs">
                                 <i class="fa-solid ${isSelected ? 'fa-square-check' : 'fa-square'}"></i>
                             </span>
                         </div>
-                        <div class="space-y-1 mt-1">
+                        <div class="space-y-1 my-1">
                             ${lessonBadges}
                         </div>
-                        <div class="text-[9px] ${isSelected ? 'text-tennis-100' : 'text-slate-500'} truncate">
+                        <div class="text-[9px] ${isSelected ? 'text-tennis-100 font-bold' : 'text-slate-500'} truncate">
                             ${matchedLessons[0].location}
                         </div>
                     `;
 
                     card.onclick = () => toggleDateSelection(dateKey);
                 } else {
-                    card.className += "bg-slate-50 border-slate-200 opacity-60 text-slate-400";
+                    card.className += "bg-slate-50 border-slate-200 text-slate-400";
                     card.innerHTML = `
-                        <span class="font-medium text-sm text-slate-400">${day}</span>
-                        <span class="text-[10px] italic text-slate-300">No class</span>
+                        <span class="font-medium text-xs text-slate-400">${day}</span>
+                        <span class="text-[9px] italic text-slate-300">No class</span>
                     `;
                 }
 
@@ -1224,16 +1331,16 @@
             const level = document.getElementById('regLevelSelect').value;
             const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-            let summary = `AVAILABLE DATES SELECTION SUMMARY\n`;
+            let summary = `TENNIS TRAINING SYSTEM AVAILABILITY SUBMISSION\n`;
             summary += `----------------------------------------\n`;
             summary += `Training Level: ${level}\n`;
             summary += `Total Available Dates Chosen: ${sortedDates.length} Days\n\n`;
-            summary += `SELECTED DATES LIST:\n`;
+            summary += `SELECTED DATES DETAILS:\n`;
 
             sortedDates.forEach((d, idx) => {
                 const dateObj = new Date(d);
                 const dayName = weekdays[dateObj.getDay()];
-                const lessonList = lessons.filter(l => l.cohortId === activeCohortId && l.date === d && l.level === level);
+                const lessonList = window.lessons.filter(l => l.cohortId === activeCohortId && l.date === d && l.level === level);
                 const lessonInfo = lessonList.map(l => `${l.startTime}-${l.endTime} @ ${l.location}`).join(', ');
                 summary += `${idx + 1}. ${d} (${dayName}) -> [${lessonInfo || 'Scheduled Session'}]\n`;
             });
@@ -1243,21 +1350,21 @@
         }
 
         function submitFinalRegistration() {
-            const key = `${currentUser.id}_${activeCohortId}`;
-            registrations[key] = Array.from(tempSelectedDates);
+            const key = `${window.currentUser.id}_${activeCohortId}`;
+            window.registrations[key] = Array.from(tempSelectedDates);
             saveState();
 
             closeModal('modalConfirmReg');
-            openModal('modalSubmissionSuccessPrompt');
+            openModal('modalSubmissionSuccessNotice');
         }
 
         function toggleMyScheduleFilter() {
             myLessonsFilterActive = !myLessonsFilterActive;
             const btn = document.getElementById('btnMyLessonsOnly');
             if (myLessonsFilterActive) {
-                btn.className = "px-4 py-2 bg-tennis-600 text-white rounded-lg font-bold text-sm transition shadow";
+                btn.className = "px-4 py-2 bg-tennis-600 text-white font-bold rounded-xl text-xs transition shadow";
             } else {
-                btn.className = "px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg font-bold text-sm transition";
+                btn.className = "px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-xs transition";
             }
             renderFinalSchedule();
         }
@@ -1267,18 +1374,18 @@
             const levelFilter = document.getElementById('schedLevelFilter').value;
             container.innerHTML = '';
 
-            let filteredLessons = lessons.filter(l => l.cohortId === activeCohortId);
+            let filteredLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
             if (levelFilter !== 'ALL') {
                 filteredLessons = filteredLessons.filter(l => l.level === levelFilter);
             }
 
-            if (myLessonsFilterActive && currentUser) {
-                filteredLessons = filteredLessons.filter(l => (enrollments[l.id] || []).includes(currentUser.id));
+            if (myLessonsFilterActive && window.currentUser) {
+                filteredLessons = filteredLessons.filter(l => (window.enrollments[l.id] || []).includes(window.currentUser.id));
             }
 
             let myEnrolledCount = 0;
-            lessons.filter(l => l.cohortId === activeCohortId).forEach(l => {
-                if ((enrollments[l.id] || []).includes(currentUser?.id)) {
+            window.lessons.filter(l => l.cohortId === activeCohortId).forEach(l => {
+                if ((window.enrollments[l.id] || []).includes(window.currentUser?.id)) {
                     myEnrolledCount++;
                 }
             });
@@ -1287,32 +1394,29 @@
             document.getElementById('statTarget').textContent = cohortTargetLessons;
 
             const summaryTitle = document.getElementById('userScheduleSummaryTitle');
-            const summarySub = document.getElementById('userScheduleSummarySub');
 
             if (isSchedulePublished) {
                 summaryTitle.textContent = `Confirmed for ${myEnrolledCount} Lessons`;
-                summarySub.textContent = `Admin Raymond has finalized the enrollment schedule.`;
             } else {
                 summaryTitle.textContent = `Enrollment Pending Admin Approval`;
-                summarySub.textContent = ``;
             }
 
             if (filteredLessons.length === 0) {
                 container.innerHTML = `
                     <div class="col-span-full bg-white p-12 rounded-2xl text-center border border-slate-200">
                         <i class="fa-solid fa-calendar-xmark text-4xl text-slate-300 mb-3"></i>
-                        <p class="font-bold text-slate-600">No scheduled lessons found for this filter.</p>
+                        <p class="font-bold text-slate-500">No scheduled lessons match your selected filter.</p>
                     </div>
                 `;
                 return;
             }
 
             filteredLessons.sort((a,b) => a.date.localeCompare(b.date)).forEach(l => {
-                const enrolledUserIds = enrollments[l.id] || [];
-                const isMeEnrolled = currentUser && enrolledUserIds.includes(currentUser.id);
+                const enrolledUserIds = window.enrollments[l.id] || [];
+                const isMeEnrolled = window.currentUser && enrolledUserIds.includes(window.currentUser.id);
 
                 const enrolledUserNames = enrolledUserIds.map(uid => {
-                    const u = users.find(x => x.id === uid);
+                    const u = window.users.find(x => x.id === uid);
                     return u ? u.fullName : 'Unknown';
                 });
 
@@ -1325,24 +1429,24 @@
                 card.innerHTML = `
                     <div class="flex items-start justify-between">
                         <div>
-                            <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
                                 ${l.level}
                             </span>
-                            <h4 class="font-black text-slate-900 text-lg mt-1">${l.date} (${dayName})</h4>
+                            <h4 class="font-bold text-slate-900 text-lg mt-1">${l.date} (${dayName})</h4>
                         </div>
-                        ${isMeEnrolled ? '<span class="bg-tennis-500 text-slate-900 text-xs px-2.5 py-1 rounded-full font-black"><i class="fa-solid fa-check"></i> Enrolled</span>' : ''}
+                        ${isMeEnrolled ? '<span class="bg-tennis-600 text-white text-[10px] px-2.5 py-1 rounded-full font-bold"><i class="fa-solid fa-check"></i> Enrolled</span>' : ''}
                     </div>
 
                     <div class="space-y-1 text-xs text-slate-600">
                         <div class="flex items-center gap-2"><i class="fa-solid fa-clock text-tennis-600 w-4"></i> ${l.startTime} - ${l.endTime}</div>
                         <div class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-tennis-600 w-4"></i> ${l.location}</div>
-                        <div class="flex items-center gap-2"><i class="fa-solid fa-users text-tennis-600 w-4"></i> Capacity: ${enrolledUserIds.length} / ${l.capacity} Participants</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-users text-tennis-600 w-4"></i> Roster Capacity: ${enrolledUserIds.length} / ${l.capacity}</div>
                     </div>
 
                     <div class="border-t border-slate-100 pt-3">
-                        <div class="text-[11px] font-bold text-slate-400 uppercase mb-1">Confirmed Roster:</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1.5">Confirmed Participants:</div>
                         ${enrolledUserNames.length > 0 
-                            ? `<div class="flex flex-wrap gap-1">${enrolledUserNames.map(name => `<span class="bg-slate-100 text-slate-800 text-xs px-2 py-0.5 rounded font-medium">${name}</span>`).join('')}</div>`
+                            ? `<div class="flex flex-wrap gap-1">${enrolledUserNames.map(name => `<span class="bg-slate-100 text-slate-800 text-[11px] px-2 py-0.5 rounded-lg font-bold border border-slate-200">${name}</span>`).join('')}</div>`
                             : `<span class="text-xs text-slate-400 italic">No students enrolled yet.</span>`
                         }
                     </div>
@@ -1362,21 +1466,21 @@
             const viewEnrollments = document.getElementById('adminViewEnrollments');
 
             [btnUsers, btnLessons, btnEnrollments].forEach(b => {
-                b.className = "py-3 px-5 font-bold text-sm text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2";
+                b.className = "py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2";
             });
 
             [viewUsers, viewLessons, viewEnrollments].forEach(v => v.classList.add('hidden'));
 
             if (subTab === 'users') {
-                btnUsers.className = "py-3 px-5 font-bold text-sm border-b-2 border-amber-500 text-amber-700 bg-amber-50/50 rounded-t-lg transition flex items-center gap-2";
+                btnUsers.className = "py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2";
                 viewUsers.classList.remove('hidden');
                 renderAdminUsersTable();
             } else if (subTab === 'lessons') {
-                btnLessons.className = "py-3 px-5 font-bold text-sm border-b-2 border-amber-500 text-amber-700 bg-amber-50/50 rounded-t-lg transition flex items-center gap-2";
+                btnLessons.className = "py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2";
                 viewLessons.classList.remove('hidden');
                 renderAdminLessonsTable();
             } else if (subTab === 'enrollments') {
-                btnEnrollments.className = "py-3 px-5 font-bold text-sm border-b-2 border-amber-500 text-amber-700 bg-amber-50/50 rounded-t-lg transition flex items-center gap-2";
+                btnEnrollments.className = "py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2";
                 viewEnrollments.classList.remove('hidden');
                 renderAdminEnrollmentsView();
             }
@@ -1386,12 +1490,22 @@
             const tbody = document.getElementById('userApprovalTableBody');
             tbody.innerHTML = '';
 
-            const nonAdminUsers = users.filter(u => !u.isAdmin);
-            const pendingCount = nonAdminUsers.filter(u => !u.isApproved).length;
-            document.getElementById('pendingBadgeCount').textContent = pendingCount;
+            const nonAdminUsers = window.users.filter(u => !u.isAdmin);
+            const pendingUsers = nonAdminUsers.filter(u => !u.isApproved);
+            document.getElementById('pendingBadgeCount').textContent = pendingUsers.length;
+
+            const banner = document.getElementById('adminPendingAlertBanner');
+            if (pendingUsers.length > 0) {
+                banner.classList.remove('hidden');
+                banner.classList.add('flex');
+                document.getElementById('adminPendingAlertText').textContent = `Attention Admin Raymond: ${pendingUsers.length} user account(s) are pending approval!`;
+            } else {
+                banner.classList.add('hidden');
+                banner.classList.remove('flex');
+            }
 
             if (nonAdminUsers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No registered student accounts yet.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No registered student accounts found.</td></tr>`;
                 return;
             }
 
@@ -1401,26 +1515,20 @@
 
                 tr.innerHTML = `
                     <td class="py-3 px-4 font-bold text-slate-800">${u.fullName}</td>
-                    <td class="py-3 px-4 text-slate-600">${u.contact}</td>
-                    <td class="py-3 px-4 font-mono text-xs text-slate-600">${u.username}</td>
+                    <td class="py-3 px-4 text-slate-600 font-mono">${u.contact}</td>
+                    <td class="py-3 px-4 font-mono text-slate-500">${u.username}</td>
                     <td class="py-3 px-4">
                         ${u.isApproved 
-                            ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800"><i class="fa-solid fa-check-circle mr-1"></i> Approved</span>`
-                            : `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800"><i class="fa-solid fa-clock mr-1"></i> Pending Verification</span>`
+                            ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800"><i class="fa-solid fa-check-circle mr-1"></i> Approved</span>`
+                            : `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 animate-pulse"><i class="fa-solid fa-clock mr-1"></i> Pending Review</span>`
                         }
                     </td>
-                    <td class="py-3 px-4 text-right space-x-2">
+                    <td class="py-3 px-4 text-right space-x-1.5">
                         ${!u.isApproved ? `
-                            <button onclick="approveUser('${u.id}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold shadow">
-                                Approve
-                            </button>
-                            <button onclick="rejectUser('${u.id}')" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-bold shadow">
-                                Reject
-                            </button>
+                            <button onclick="approveUser('${u.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow">Approve</button>
+                            <button onclick="rejectUser('${u.id}')" class="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-bold border border-red-200">Reject</button>
                         ` : `
-                            <button onclick="revokeUser('${u.id}')" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-bold">
-                                Revoke
-                            </button>
+                            <button onclick="revokeUser('${u.id}')" class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold">Revoke</button>
                         `}
                     </td>
                 `;
@@ -1429,24 +1537,24 @@
         }
 
         function approveUser(userId) {
-            const u = users.find(x => x.id === userId);
+            const u = window.users.find(x => x.id === userId);
             if (u) {
                 u.isApproved = true;
                 saveState();
                 renderAdminUsersTable();
-                showToast(`Account for ${u.fullName} approved!`, "success");
+                showToast(`Account approved for ${u.fullName}!`, "success");
             }
         }
 
         function rejectUser(userId) {
-            users = users.filter(x => x.id !== userId);
+            window.users = window.users.filter(x => x.id !== userId);
             saveState();
             renderAdminUsersTable();
-            showToast("User account rejected & removed.", "info");
+            showToast("User account request rejected.", "info");
         }
 
         function revokeUser(userId) {
-            const u = users.find(x => x.id === userId);
+            const u = window.users.find(x => x.id === userId);
             if (u) {
                 u.isApproved = false;
                 saveState();
@@ -1459,14 +1567,14 @@
             cohortTargetLessons = parseInt(val) || 8;
             saveState();
             updateTargetLessonsLabel();
-            showToast(`Cohort target lessons updated to ${cohortTargetLessons} per user.`, "info");
+            showToast(`Cohort target lessons set to ${cohortTargetLessons} per user.`, "info");
         }
 
         function renderAdminLessonsTable() {
             const tbody = document.getElementById('adminLessonsTableBody');
             tbody.innerHTML = '';
 
-            const cohortLessons = lessons.filter(l => l.cohortId === activeCohortId);
+            const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
 
             cohortLessons.sort((a,b) => a.date.localeCompare(b.date)).forEach(l => {
                 const tr = document.createElement('tr');
@@ -1475,19 +1583,13 @@
                 tr.innerHTML = `
                     <td class="py-3 px-4 font-bold text-slate-800">${l.date}</td>
                     <td class="py-3 px-4 text-slate-600">${l.startTime} - ${l.endTime}</td>
-                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-xs font-bold ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${l.level}</span></td>
+                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${l.level}</span></td>
                     <td class="py-3 px-4 text-slate-600">${l.location}</td>
-                    <td class="py-3 px-4 font-extrabold text-slate-700">${l.capacity} Max</td>
-                    <td class="py-3 px-4 text-right space-x-2">
-                        <button onclick="duplicateLesson('${l.id}')" class="px-2.5 py-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded text-xs font-bold">
-                            <i class="fa-solid fa-copy"></i> Duplicate
-                        </button>
-                        <button onclick="openEditLessonModal('${l.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-bold">
-                            <i class="fa-solid fa-pen"></i> Edit
-                        </button>
-                        <button onclick="deleteLesson('${l.id}')" class="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs font-bold">
-                            <i class="fa-solid fa-trash"></i> Delete
-                        </button>
+                    <td class="py-3 px-4 font-bold text-slate-800">${l.capacity} Max</td>
+                    <td class="py-3 px-4 text-right space-x-1.5">
+                        <button onclick="duplicateLesson('${l.id}')" class="px-2 py-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-copy"></i> Duplicate</button>
+                        <button onclick="openEditLessonModal('${l.id}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button onclick="deleteLesson('${l.id}')" class="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-trash"></i> Delete</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -1495,17 +1597,17 @@
         }
 
         function duplicateLesson(lessonId) {
-            const l = lessons.find(x => x.id === lessonId);
+            const l = window.lessons.find(x => x.id === lessonId);
             if (!l) return;
 
             const cloned = {
                 ...l,
-                id: 'l_' + Date.now(),
+                id: 'l_' + Date.now()
             };
-            lessons.push(cloned);
+            window.lessons.push(cloned);
             saveState();
             renderAdminLessonsTable();
-            showToast(`Lesson entry duplicated for ${cloned.date}`, "success");
+            showToast(`Duplicated lesson slot for ${cloned.date}`, "success");
         }
 
         function openAddLessonModal() {
@@ -1520,7 +1622,7 @@
         }
 
         function openEditLessonModal(lessonId) {
-            const l = lessons.find(x => x.id === lessonId);
+            const l = window.lessons.find(x => x.id === lessonId);
             if (!l) return;
 
             document.getElementById('lessonModalTitle').textContent = "Edit Lesson Slot";
@@ -1544,64 +1646,54 @@
             const capacity = level === 'Beginner' ? 8 : 4;
 
             if (id) {
-                const idx = lessons.findIndex(x => x.id === id);
+                const idx = window.lessons.findIndex(x => x.id === id);
                 if (idx !== -1) {
-                    lessons[idx] = { id, cohortId: activeCohortId, date, level, startTime, endTime, location, capacity };
+                    window.lessons[idx] = { id, cohortId: activeCohortId, date, level, startTime, endTime, location, capacity };
                 }
             } else {
                 const newLesson = { id: 'l_' + Date.now(), cohortId: activeCohortId, date, level, startTime, endTime, location, capacity };
-                lessons.push(newLesson);
+                window.lessons.push(newLesson);
             }
 
             saveState();
             closeModal('modalLessonForm');
             renderAdminLessonsTable();
-            showToast("Lesson details updated successfully!", "success");
+            showToast("Lesson details updated!", "success");
         }
 
         function deleteLesson(id) {
-            lessons = lessons.filter(x => x.id !== id);
-            delete enrollments[id];
+            window.lessons = window.lessons.filter(x => x.id !== id);
+            delete window.enrollments[id];
             saveState();
             renderAdminLessonsTable();
-            showToast("Lesson slot removed.", "info");
-        }
-
-        function clearAllCheckedEnrollments() {
-            const cohortLessons = lessons.filter(l => l.cohortId === activeCohortId);
-            cohortLessons.forEach(l => {
-                enrollments[l.id] = [];
-            });
-            saveState();
-            renderAdminEnrollmentsView();
-            showToast("Cleared all checked user enrollments for the active cohort.", "info");
+            showToast("Lesson slot deleted.", "info");
         }
 
         function runPriorityEnrollmentAlgorithm() {
-            let cohortLessons = lessons.filter(l => l.cohortId === activeCohortId);
+            let cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
 
-            let newEnrollments = { ...enrollments };
+            let newEnrollments = { ...window.enrollments };
             cohortLessons.forEach(l => { newEnrollments[l.id] = []; });
 
             let userAssignedCounts = {};
-            users.filter(u => u.isApproved && !u.isAdmin).forEach(u => {
+            window.users.filter(u => u.isApproved && !u.isAdmin).forEach(u => {
                 userAssignedCounts[u.id] = 0;
             });
 
             let userTotalAvailabilityCount = {};
             Object.keys(userAssignedCounts).forEach(uid => {
                 const regKey = `${uid}_${activeCohortId}`;
-                const userDates = registrations[regKey] || [];
+                const userDates = window.registrations[regKey] || [];
                 userTotalAvailabilityCount[uid] = userDates.length;
             });
 
             let warnings = [];
 
             Object.keys(userAssignedCounts).forEach(uid => {
-                const user = users.find(u => u.id === uid);
+                const user = window.users.find(u => u.id === uid);
                 const availCount = userTotalAvailabilityCount[uid];
                 if (availCount < cohortTargetLessons) {
-                    warnings.push(`⚠️ <strong>${user.fullName}</strong> provided only ${availCount} available dates (Shortfall of ${cohortTargetLessons - availCount} lessons from target ${cohortTargetLessons}).`);
+                    warnings.push(`⚠️ <strong>${user.fullName}</strong> provided only ${availCount} available dates (Target: ${cohortTargetLessons}).`);
                 }
             });
 
@@ -1610,7 +1702,7 @@
             sortedLessons.forEach(lesson => {
                 const registeredUserIds = Object.keys(userAssignedCounts).filter(uid => {
                     const regKey = `${uid}_${activeCohortId}`;
-                    return (registrations[regKey] || []).includes(lesson.date);
+                    return (window.registrations[regKey] || []).includes(lesson.date);
                 });
 
                 let candidates = registeredUserIds.filter(uid => userAssignedCounts[uid] < cohortTargetLessons);
@@ -1633,19 +1725,19 @@
                 });
 
                 if (candidates.length > maxCap) {
-                    warnings.push(`ℹ️ Date <strong>${lesson.date} (${lesson.level})</strong>: Oversubscribed (${candidates.length} applicants for ${maxCap} seats). Priority given to users with fewer total available dates.`);
+                    warnings.push(`ℹ️ Date <strong>${lesson.date} (${lesson.level})</strong>: Capacity exceeded (${candidates.length} applicants for ${maxCap} seats). Priority given to users with fewer available dates.`);
                 }
             });
 
             Object.keys(userAssignedCounts).forEach(uid => {
-                const user = users.find(u => u.id === uid);
+                const user = window.users.find(u => u.id === uid);
                 const assigned = userAssignedCounts[uid];
                 if (assigned < cohortTargetLessons) {
-                    warnings.push(`🚨 <strong>${user.fullName}</strong> was assigned ${assigned}/${cohortTargetLessons} target lessons due to preference limits.`);
+                    warnings.push(`🚨 <strong>${user.fullName}</strong> assigned ${assigned}/${cohortTargetLessons} target lessons due to availability limits.`);
                 }
             });
 
-            enrollments = newEnrollments;
+            window.enrollments = newEnrollments;
             saveState();
 
             renderAdminEnrollmentsView();
@@ -1659,7 +1751,17 @@
                 warnBox.classList.add('hidden');
             }
 
-            showToast("Priority auto-enrollment algorithm executed!", "success");
+            showToast("Priority enrollment algorithm completed!", "success");
+        }
+
+        function clearAllCheckedEnrollments() {
+            const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
+            cohortLessons.forEach(l => {
+                window.enrollments[l.id] = [];
+            });
+            saveState();
+            renderAdminEnrollmentsView();
+            showToast("Cleared all checked enrollment rosters.", "info");
         }
 
         function openPreviewRosterModal() {
@@ -1667,39 +1769,39 @@
             tbody.innerHTML = '';
             document.getElementById('previewTargetCount').textContent = cohortTargetLessons;
 
-            const approvedStudents = users.filter(u => u.isApproved && !u.isAdmin);
-            const cohortLessons = lessons.filter(l => l.cohortId === activeCohortId);
+            const approvedStudents = window.users.filter(u => u.isApproved && !u.isAdmin);
+            const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
 
             if (approvedStudents.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No approved students in system.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No approved students found.</td></tr>`;
                 openModal('modalPreviewRoster');
                 return;
             }
 
             approvedStudents.forEach(u => {
                 const regKey = `${u.id}_${activeCohortId}`;
-                const availDates = (registrations[regKey] || []).length;
+                const availDates = (window.registrations[regKey] || []).length;
 
                 let enrolledCount = 0;
                 cohortLessons.forEach(l => {
-                    if ((enrollments[l.id] || []).includes(u.id)) {
+                    if ((window.enrollments[l.id] || []).includes(u.id)) {
                         enrolledCount++;
                     }
                 });
 
                 const tr = document.createElement('tr');
-                tr.className = "border-b border-slate-100 hover:bg-slate-50 transition";
+                tr.className = "border-b border-slate-100 hover:bg-slate-50";
 
-                let statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800">Target Reached (${enrolledCount}/${cohortTargetLessons})</span>`;
+                let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Target Reached (${enrolledCount}/${cohortTargetLessons})</span>`;
                 if (enrolledCount < cohortTargetLessons) {
-                    statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">Shortfall (${enrolledCount}/${cohortTargetLessons})</span>`;
+                    statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Shortfall (${enrolledCount}/${cohortTargetLessons})</span>`;
                 }
 
                 tr.innerHTML = `
                     <td class="py-3 px-4 font-bold text-slate-800">${u.fullName}</td>
-                    <td class="py-3 px-4 text-slate-600">${u.contact}</td>
+                    <td class="py-3 px-4 text-slate-600 font-mono">${u.contact}</td>
                     <td class="py-3 px-4 text-center font-bold text-slate-700">${availDates} Days</td>
-                    <td class="py-3 px-4 text-center font-black text-tennis-700 text-base">${enrolledCount} Lessons</td>
+                    <td class="py-3 px-4 text-center font-bold text-tennis-700 text-sm">${enrolledCount} Lessons</td>
                     <td class="py-3 px-4 text-center">${statusBadge}</td>
                 `;
                 tbody.appendChild(tr);
@@ -1712,30 +1814,30 @@
             const container = document.getElementById('adminRosterContainer');
             container.innerHTML = '';
 
-            const cohortLessons = lessons.filter(l => l.cohortId === activeCohortId);
+            const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
 
             cohortLessons.sort((a,b) => a.date.localeCompare(b.date)).forEach(l => {
-                const approvedStudents = users.filter(u => u.isApproved && !u.isAdmin);
-                const registeredUserIds = approvedStudents.filter(u => {
-                    const regKey = `${u.id}_${activeCohortId}`;
-                    return (registrations[regKey] || []).includes(l.date);
-                }).map(u => u.id);
+                const approvedStudents = window.users.filter(u => u.isApproved && !u.isAdmin);
+                const registeredUserIds = approvedStudents.map(u => u.id).filter(uid => {
+                    const regKey = `${uid}_${activeCohortId}`;
+                    return (window.registrations[regKey] || []).includes(l.date);
+                });
 
-                const enrolledIds = enrollments[l.id] || [];
+                const enrolledIds = window.enrollments[l.id] || [];
 
                 const card = document.createElement('div');
                 card.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3";
 
                 let applicantCheckboxes = registeredUserIds.map(uid => {
-                    const u = users.find(x => x.id === uid);
+                    const u = window.users.find(x => x.id === uid);
                     const isChecked = enrolledIds.includes(uid);
                     const regKey = `${uid}_${activeCohortId}`;
-                    const totalAvail = (registrations[regKey] || []).length;
+                    const totalAvail = (window.registrations[regKey] || []).length;
 
                     return `
-                        <label class="flex items-center justify-between p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs cursor-pointer">
+                        <label class="flex items-center justify-between p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs cursor-pointer">
                             <div class="flex items-center space-x-2">
-                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleManualEnrollment('${l.id}', '${uid}')" class="rounded text-tennis-600 focus:ring-tennis-500">
+                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleManualEnrollment('${l.id}', '${uid}')" class="rounded border-slate-300 text-tennis-600 focus:ring-tennis-500">
                                 <span class="font-bold text-slate-800">${u.fullName}</span>
                             </div>
                             <span class="text-[10px] text-slate-500 font-mono">Avail: ${totalAvail} days</span>
@@ -1744,14 +1846,14 @@
                 }).join('');
 
                 if (registeredUserIds.length === 0) {
-                    applicantCheckboxes = `<span class="text-xs text-slate-400 italic">No users registered availability for this day.</span>`;
+                    applicantCheckboxes = `<span class="text-xs text-slate-400 italic">No users submitted availability for this date.</span>`;
                 }
 
                 card.innerHTML = `
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
                         <div>
-                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${l.level}</span>
-                            <h5 class="font-black text-slate-900 text-base inline ml-2">${l.date}</h5>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${l.level}</span>
+                            <h5 class="font-bold text-slate-900 text-base inline ml-2">${l.date}</h5>
                             <span class="text-xs text-slate-500 ml-2">(${l.startTime} - ${l.endTime})</span>
                         </div>
                         <div class="text-xs font-bold ${enrolledIds.length > l.capacity ? 'text-red-600' : 'text-slate-600'}">
@@ -1760,7 +1862,7 @@
                     </div>
 
                     <div>
-                        <div class="text-[11px] font-bold text-slate-400 uppercase mb-2">Registered Applicants (Check to confirm seat):</div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Registered Applicants (Check to confirm seat):</div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                             ${applicantCheckboxes}
                         </div>
@@ -1772,13 +1874,13 @@
         }
 
         function toggleManualEnrollment(lessonId, userId) {
-            if (!enrollments[lessonId]) enrollments[lessonId] = [];
-            const idx = enrollments[lessonId].indexOf(userId);
+            if (!window.enrollments[lessonId]) window.enrollments[lessonId] = [];
+            const idx = window.enrollments[lessonId].indexOf(userId);
 
             if (idx === -1) {
-                enrollments[lessonId].push(userId);
+                window.enrollments[lessonId].push(userId);
             } else {
-                enrollments[lessonId].splice(idx, 1);
+                window.enrollments[lessonId].splice(idx, 1);
             }
 
             saveState();
@@ -1788,25 +1890,83 @@
         function confirmAndPublishEnrollment() {
             isSchedulePublished = true;
             saveState();
-            showToast("Enrollment schedule confirmed & published to Lesson Schedule!", "success");
+            showToast("Enrollment schedule confirmed & published!", "success");
+        }
+
+        function exportUserDatabaseExcel() {
+            let csvContent = "\uFEFF";
+            csvContent += "User ID,Full Name,Contact Phone,Username,Status,Is Admin\n";
+
+            window.users.forEach(u => {
+                const status = u.isApproved ? "Approved" : "Pending Verification";
+                const role = u.isAdmin ? "Admin" : "Student";
+                csvContent += `"${u.id}","${u.fullName}","${u.contact}","${u.username}","${status}","${role}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `tennis_user_accounts_${activeCohortId}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("User accounts exported to CSV/Excel!", "success");
+        }
+
+        function exportEnrollmentDatabaseExcel() {
+            let csvContent = "\uFEFF";
+            csvContent += "Cohort,Lesson ID,Date,Weekday,Level,Location,StartTime,EndTime,Enrolled Student ID,Enrolled Student Name,Contact\n";
+
+            const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            cohortLessons.forEach(l => {
+                const dateObj = new Date(l.date);
+                const dayName = weekdays[dateObj.getDay()];
+                const enrolledUserIds = window.enrollments[l.id] || [];
+
+                if (enrolledUserIds.length === 0) {
+                    csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","N/A","No Students Enrolled","N/A"\n`;
+                } else {
+                    enrolledUserIds.forEach(uid => {
+                        const u = window.users.find(x => x.id === uid);
+                        const name = u ? u.fullName : "Unknown";
+                        const contact = u ? u.contact : "N/A";
+                        csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","${uid}","${name}","${contact}"\n`;
+                    });
+                }
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `tennis_enrolment_database_${activeCohortId}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Enrolment database exported to CSV/Excel!", "success");
         }
 
         function openModal(modalId) {
-            document.getElementById(modalId).classList.remove('hidden');
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.remove('hidden');
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.add('hidden');
         }
 
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
-            let bgColor = 'bg-slate-900 text-white';
-            if (type === 'success') bgColor = 'bg-tennis-600 text-white';
-            if (type === 'error') bgColor = 'bg-red-600 text-white';
-            if (type === 'warning') bgColor = 'bg-amber-500 text-slate-950 font-bold';
+            let bgColor = 'bg-slate-900 text-white border-slate-700';
+            if (type === 'success') bgColor = 'bg-tennis-600 text-white font-bold border-tennis-500';
+            if (type === 'error') bgColor = 'bg-red-600 text-white border-red-500';
+            if (type === 'warning') bgColor = 'bg-amber-500 text-slate-950 font-bold border-amber-400';
 
-            toast.className = `fixed bottom-5 right-5 z-50 px-5 py-3 rounded-xl shadow-2xl text-sm transition-all duration-300 transform translate-y-2 flex items-center gap-2 ${bgColor}`;
+            toast.className = `fixed bottom-5 right-5 z-50 px-5 py-3 rounded-xl shadow-2xl text-xs transition-all duration-300 transform translate-y-2 flex items-center gap-2 border ${bgColor}`;
             toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
 
             document.body.appendChild(toast);
