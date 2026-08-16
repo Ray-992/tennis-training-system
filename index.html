@@ -1,0 +1,1819 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TENNIS TRAINING SYSTEM - Registration & Scheduling</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        tennis: {
+                            50: '#f0fdf4',
+                            100: '#dcfce7',
+                            200: '#bbf7d0',
+                            400: '#4ade80',
+                            500: '#22c55e',
+                            600: '#16a34a',
+                            700: '#15803d',
+                            800: '#166534',
+                            900: '#14532d',
+                            court: '#15803d',
+                            accent: '#eab308'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .calendar-day-active {
+            transition: all 0.2s ease-in-out;
+        }
+        .calendar-day-active:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col text-slate-800">
+
+    <!-- Navigation Header -->
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-tennis-500 flex items-center justify-center text-slate-900 font-black text-xl shadow-lg">
+                    <i class="fa-solid fa-baseball font-bold text-lg text-slate-900"></i>
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-lg sm:text-xl tracking-tight text-white flex items-center gap-2">
+                        TENNIS <span class="text-tennis-500">TRAINING SYSTEM</span>
+                    </h1>
+                </div>
+            </div>
+
+            <div id="navRight" class="flex items-center space-x-3">
+                <!-- User Profile & Navigation injected dynamically -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- VIEW: Login / Register Container -->
+        <div id="authView" class="max-w-md mx-auto my-8 space-y-4">
+
+            <!-- Announcement Banner on Login Page -->
+            <div id="loginAnnouncementBanner" class="p-4 rounded-xl bg-amber-50 border-l-4 border-amber-500 text-amber-900 shadow-sm flex items-start gap-3">
+                <i class="fa-solid fa-bullhorn text-amber-600 text-xl mt-0.5"></i>
+                <div class="text-xs font-semibold leading-relaxed">
+                    The training schedule for Dec 2026 - Feb 2027 has been released. Please login to view your confirmed sessions!
+                </div>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
+                <!-- Auth Tabs -->
+                <div class="flex border-b border-slate-200 bg-slate-50">
+                    <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-4 font-semibold text-center text-tennis-600 border-b-2 border-tennis-600 transition">
+                        <i class="fa-solid fa-right-to-bracket mr-2"></i> Login
+                    </button>
+                    <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-4 font-semibold text-center text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition">
+                        <i class="fa-solid fa-user-plus mr-2"></i> Create Account
+                    </button>
+                </div>
+
+                <!-- Login Form -->
+                <div id="loginFormContainer" class="p-6 sm:p-8">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold text-slate-800">Welcome Back</h2>
+                        <p class="text-sm text-slate-500 mt-1">Login to access lesson registration & schedule</p>
+                    </div>
+                    <form onsubmit="handleLogin(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user"></i></span>
+                                <input type="text" id="loginUsername" required placeholder="Enter username (e.g., Raymond)" 
+                                       class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 outline-none text-slate-800 transition">
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-xs font-bold text-slate-700 uppercase">Password</label>
+                                <button type="button" onclick="openModal('modalForgotPassword')" class="text-xs text-tennis-600 hover:text-tennis-800 font-semibold">
+                                    Forgot Password?
+                                </button>
+                            </div>
+                            <div class="relative">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock"></i></span>
+                                <input type="password" id="loginPassword" required placeholder="Enter password (e.g., 123456)" 
+                                       class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 outline-none text-slate-800 transition">
+                            </div>
+                        </div>
+                        <button type="submit" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition flex items-center justify-center gap-2">
+                            <span>Sign In</span> <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                    </form>
+                    
+                    <div class="mt-6 p-3 bg-slate-50 rounded-lg border border-slate-200 text-xs text-slate-600 space-y-1">
+                        <p class="font-semibold text-slate-700"><i class="fa-solid fa-key text-tennis-600 mr-1"></i> Demo Credentials:</p>
+                        <p>• Admin: <span class="font-mono bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">Raymond</span> / Password: <span class="font-mono bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">123456</span></p>
+                        <p>• Student: <span class="font-mono bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">john</span> / Password: <span class="font-mono bg-slate-200 px-1.5 py-0.5 rounded text-slate-800">123</span></p>
+                    </div>
+                </div>
+
+                <!-- Register Form -->
+                <div id="registerFormContainer" class="p-6 sm:p-8 hidden">
+                    <div class="text-center mb-6">
+                        <h2 class="text-2xl font-bold text-slate-800">Student Account Signup</h2>
+                        <p class="text-sm text-slate-500 mt-1">Requires admin verification before logging in</p>
+                    </div>
+                    <form onsubmit="handleRegister(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name <span class="text-red-500">*</span></label>
+                            <input type="text" id="regFullName" required placeholder="CHAN Tai-man" 
+                                   class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 outline-none text-slate-800">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contact Phone No. <span class="text-red-500">*</span></label>
+                            <input type="tel" id="regContact" required placeholder="91234567" 
+                                   class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 outline-none text-slate-800">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Desired Username <span class="text-red-500">*</span></label>
+                            <input type="text" id="regUsername" required placeholder="Create username" 
+                                   class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 outline-none text-slate-800">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password <span class="text-red-500">*</span></label>
+                            <input type="password" id="regPassword" required placeholder="Create password" 
+                                   class="w-full px-4 py-2.5 rounded-lg border border-slate-300 focus:ring-2 focus:ring-tennis-500 outline-none text-slate-800">
+                        </div>
+                        
+                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                            <i class="fa-solid fa-triangle-exclamation mr-1"></i> Admin verification required. Account approval takes up to 24 hours.
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-lg shadow-md hover:shadow-lg transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-paper-plane"></i> Submit Account Request
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- VIEW: Main User Dashboard Hub -->
+        <div id="mainDashboardView" class="hidden space-y-6">
+            
+            <!-- Cohort & User Context Bar -->
+            <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-800">
+                <div class="space-y-1">
+                    <div class="inline-flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-tennis-500 text-slate-900">Active Cohort</span>
+                        <!-- Multi-Cohort Selection Dropdown -->
+                        <select id="userCohortSelect" onchange="changeActiveCohort(this.value)" class="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2 py-1 outline-none font-semibold">
+                            <option value="c1">1st Training Cohort: Dec 2026 - Feb 2027</option>
+                            <option value="c2">2nd Training Cohort: Mar 2027 - May 2027</option>
+                            <option value="c3">3rd Training Cohort: Jun 2027 - Aug 2027</option>
+                        </select>
+                    </div>
+                    <h2 id="cohortTitleDisplay" class="text-2xl font-black text-white tracking-wide">1st Training Cohort: Dec 2026 - Feb 2027</h2>
+                    <p class="text-slate-400 text-sm flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye text-tennis-500"></i> Target Assigned Lessons per Student: <span id="dashboardTargetLessons" class="font-bold text-tennis-400">8 Lessons</span>
+                    </p>
+                </div>
+
+                <!-- Main Navigation Choices -->
+                <div class="flex flex-wrap gap-2">
+                    <button id="tabLessonRegBtn" onclick="switchMainTab('registration')" class="px-5 py-3 rounded-xl font-bold text-sm shadow-md transition flex items-center gap-2 bg-tennis-600 text-white hover:bg-tennis-500">
+                        <i class="fa-solid fa-calendar-plus text-base"></i> Enrol Lessons
+                    </button>
+                    <button id="tabLessonSchedBtn" onclick="switchMainTab('schedule')" class="px-5 py-3 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-days text-base"></i> Check Confirmed Schedule
+                    </button>
+                    <!-- Admin Tab (strictly hidden for non-admin) -->
+                    <button id="tabAdminBtn" onclick="switchMainTab('admin')" class="hidden px-5 py-3 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 transition flex items-center gap-2">
+                        <i class="fa-solid fa-user-shield text-base"></i> Admin Portal
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT 1: Lesson Registration -->
+            <div id="contentRegistration" class="space-y-6">
+                
+                <!-- Registration Filters Header -->
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-check text-tennis-600"></i> Select Your Training Level and Month
+                        </h3>
+                    </div>
+
+                    <!-- Level Selector & Month Switcher -->
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase block mb-1">Training Level</label>
+                            <select id="regLevelSelect" onchange="renderRegistrationCalendar()" class="bg-slate-100 border border-slate-300 text-slate-800 font-bold py-2 px-3 rounded-lg text-sm outline-none focus:ring-2 focus:ring-tennis-500">
+                                <option value="Beginner">Beginner Level (Max 8/class)</option>
+                                <option value="Intermediate">Intermediate Level (Max 4/class)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase block mb-1">Cohort Month</label>
+                            <div class="flex items-center space-x-1 bg-slate-100 border border-slate-300 rounded-lg p-1">
+                                <button onclick="changeRegMonth(-1)" class="px-2 py-1 text-slate-600 hover:text-slate-900 rounded"><i class="fa-solid fa-chevron-left"></i></button>
+                                <span id="currentRegMonthLabel" class="font-bold text-slate-800 text-sm px-2">Dec 2026</span>
+                                <button onclick="changeRegMonth(1)" class="px-2 py-1 text-slate-600 hover:text-slate-900 rounded"><i class="fa-solid fa-chevron-right"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Registration Selection Summary & Submit Panel -->
+                <div class="bg-tennis-50 border border-tennis-200 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-tennis-200 text-tennis-800 flex items-center justify-center font-bold text-lg">
+                            <span id="selectedCountBadge">0</span>
+                        </div>
+                        <div>
+                            <p class="text-sm font-bold text-tennis-900">Dates Selected for Enrollment</p>
+                            <p id="selectionHintText" class="text-xs text-tennis-700">Select all dates you can attend for maximum scheduling flexibility.</p>
+                        </div>
+                    </div>
+                    <button onclick="promptRegistrationConfirmation()" id="submitRegBtn" class="px-6 py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-lg shadow-md transition flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <i class="fa-solid fa-check-double"></i> Review & Submit Availability
+                    </button>
+                </div>
+
+                <!-- Interactive Monthly Calendar Grid -->
+                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 overflow-hidden">
+                    <div class="grid grid-cols-7 gap-2 mb-2 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                    </div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-2">
+                        <!-- Rendered dynamically -->
+                    </div>
+                </div>
+
+                <!-- Legend -->
+                <div class="flex items-center space-x-6 text-xs text-slate-500 justify-center">
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500"></span> <span>Lesson Available</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 rounded-full bg-tennis-600"></span> <span>Selected Date</span>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <span class="w-3 h-3 rounded-full bg-slate-200"></span> <span>No Scheduled Lesson</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB CONTENT 2: Lesson Schedule -->
+            <div id="contentSchedule" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-days text-tennis-600"></i> Confirmed Lesson Schedule
+                        </h3>
+                        <p class="text-sm text-slate-500 mt-1">
+                            View confirmed classes and participant enrollments for <span id="scheduleCohortLabel">1st Training Cohort</span>.
+                        </p>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <select id="schedLevelFilter" onchange="renderFinalSchedule()" class="bg-slate-100 border border-slate-300 text-slate-800 font-semibold py-2 px-3 rounded-lg text-sm outline-none">
+                            <option value="ALL">All Skill Levels</option>
+                            <option value="Beginner">Beginner Level</option>
+                            <option value="Intermediate">Intermediate Level</option>
+                        </select>
+                        <button onclick="toggleMyScheduleFilter()" id="btnMyLessonsOnly" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg font-bold text-sm transition">
+                            <i class="fa-solid fa-user-check mr-1 text-tennis-600"></i> My Enrolled Lessons Only
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Personal Enrollment Stats Card -->
+                <div id="personalScheduleStats" class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-lg border border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div class="text-xs uppercase text-tennis-400 font-bold">Your Status</div>
+                        <h4 id="userScheduleSummaryTitle" class="text-xl font-extrabold text-white mt-0.5">Checking enrollment...</h4>
+                        <p id="userScheduleSummarySub" class="text-sm text-slate-300"></p>
+                    </div>
+                    <div class="flex items-center space-x-4 bg-slate-800/80 p-3 rounded-xl border border-slate-700">
+                        <div class="text-center px-2">
+                            <div id="statEnrolled" class="text-2xl font-black text-tennis-400">0</div>
+                            <div class="text-xs text-slate-400">Enrolled</div>
+                        </div>
+                        <div class="h-8 w-px bg-slate-700"></div>
+                        <div class="text-center px-2">
+                            <div id="statTarget" class="text-2xl font-black text-slate-200">8</div>
+                            <div class="text-xs text-slate-400">Cohort Target</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule List Grid -->
+                <div id="scheduleListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Dynamic rendering -->
+                </div>
+            </div>
+
+            <!-- TAB CONTENT 3: Admin Management Portal (Only for Raymond) -->
+            <div id="contentAdmin" class="hidden space-y-6">
+                
+                <!-- Admin Header -->
+                <div class="bg-amber-50 border border-amber-200 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-1 text-xs font-bold uppercase text-amber-800 bg-amber-200 px-2.5 py-0.5 rounded-full mb-1">
+                            <i class="fa-solid fa-crown"></i> Admin Control Center
+                        </div>
+                        <h3 class="text-2xl font-extrabold text-slate-900">Welcome Admin Raymond</h3>
+                        <p class="text-sm text-slate-600 mt-1">Manage user account approvals, create/duplicate training sessions, and run priority auto-enrollments.</p>
+                    </div>
+
+                    <!-- Target Lessons Config -->
+                    <div class="bg-white p-3 rounded-xl border border-amber-300 shadow-sm flex items-center space-x-3">
+                        <i class="fa-solid fa-sliders text-amber-600 text-xl"></i>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-600">Cohort Target Lessons/User</label>
+                            <input type="number" id="adminCohortTargetInput" value="8" min="1" max="30" onchange="updateCohortTargetLessons(this.value)"
+                                   class="w-20 font-extrabold text-slate-800 border border-slate-300 rounded px-2 py-1 text-center text-sm outline-none focus:ring-2 focus:ring-amber-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Action Sub-Tabs -->
+                <div class="flex border-b border-slate-200 gap-2">
+                    <button id="adminSubTabUsers" onclick="switchAdminSubTab('users')" class="py-3 px-5 font-bold text-sm border-b-2 border-amber-500 text-amber-700 bg-amber-50/50 rounded-t-lg transition flex items-center gap-2">
+                        <i class="fa-solid fa-user-check"></i> Account Approvals <span id="pendingBadgeCount" class="bg-red-500 text-white text-xs px-2 py-0.5 rounded-full font-extrabold">0</span>
+                    </button>
+                    <button id="adminSubTabLessons" onclick="switchAdminSubTab('lessons')" class="py-3 px-5 font-bold text-sm text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-plus"></i> Manage Lessons
+                    </button>
+                    <button id="adminSubTabEnrollments" onclick="switchAdminSubTab('enrollments')" class="py-3 px-5 font-bold text-sm text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Enrollment & Priority Algorithm
+                    </button>
+                </div>
+
+                <!-- Admin Sub-View 1: User Approvals -->
+                <div id="adminViewUsers" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <h4 class="font-bold text-slate-800 text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-id-card text-amber-500"></i> Registered Account Verification Requests
+                    </h4>
+                    <p class="text-sm text-slate-500">Verify user details and contact number before granting access to class registration.</p>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs">
+                                    <th class="py-3 px-4">Full Name</th>
+                                    <th class="py-3 px-4">Contact Phone</th>
+                                    <th class="py-3 px-4">Username</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4 text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userApprovalTableBody">
+                                <!-- Dynamic rendering -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Admin Sub-View 2: Lesson Management -->
+                <div id="adminViewLessons" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-lg">Add / Edit Training Lessons</h4>
+                            <p class="text-sm text-slate-500">Schedule available lesson slots for active cohort.</p>
+                        </div>
+                        <button onclick="openAddLessonModal()" class="px-4 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-lg shadow text-sm flex items-center gap-2">
+                            <i class="fa-solid fa-plus"></i> Add New Lesson Slot
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs">
+                                    <th class="py-3 px-4">Date</th>
+                                    <th class="py-3 px-4">Time</th>
+                                    <th class="py-3 px-4">Level</th>
+                                    <th class="py-3 px-4">Location</th>
+                                    <th class="py-3 px-4">Capacity Limit</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminLessonsTableBody">
+                                <!-- Dynamic rendering -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Admin Sub-View 3: Priority Enrollment & Auto-Assignment -->
+                <div id="adminViewEnrollments" class="hidden space-y-6">
+                    
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                            <div>
+                                <h4 class="font-extrabold text-slate-900 text-xl flex items-center gap-2">
+                                    <i class="fa-solid fa-scale-balanced text-tennis-600"></i> Priority Auto-Enrollment & Roster Confirmation
+                                </h4>
+                                <p class="text-sm text-slate-600 mt-1">
+                                    <strong>Priority Rule:</strong> If registration exceeds max capacity (Beginner: 8, Intermediate: 4), priority is given to students with <strong>fewer total available dates</strong> so everyone achieves an equal target of <span id="adminRuleTargetLessonsText" class="font-bold text-slate-900">8 lessons</span>.
+                                </p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button onclick="runPriorityEnrollmentAlgorithm()" class="px-3.5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow transition flex items-center gap-1.5 text-xs sm:text-sm">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Assignment
+                                </button>
+                                <button onclick="clearAllAdminEnrollments()" class="px-3.5 py-2.5 bg-rose-600 hover:bg-rose-700 text-white font-bold rounded-xl shadow transition flex items-center gap-1.5 text-xs sm:text-sm">
+                                    <i class="fa-solid fa-rotate-left"></i> Clear All Checked
+                                </button>
+                                <button onclick="openPreviewRosterModal()" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl shadow transition flex items-center gap-1.5 text-xs sm:text-sm">
+                                    <i class="fa-solid fa-eye"></i> Preview Roster Summary
+                                </button>
+                                <button onclick="confirmAndPublishEnrollment()" class="px-3.5 py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow transition flex items-center gap-1.5 text-xs sm:text-sm">
+                                    <i class="fa-solid fa-paper-plane"></i> Publish Schedule
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- System Warning / Conflict Alert Box -->
+                        <div id="algorithmWarningBox" class="hidden p-4 bg-amber-50 border border-amber-300 rounded-xl space-y-2">
+                            <div class="flex items-center space-x-2 text-amber-900 font-bold text-sm">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-600 text-base"></i>
+                                <span>System Allocation Warnings & Conflict Report</span>
+                            </div>
+                            <div id="algorithmWarningContent" class="text-xs text-amber-800 space-y-1 pl-6 list-disc">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Daily Roster Cards -->
+                    <div id="adminRosterContainer" class="space-y-4">
+                        <!-- Dynamic rendering -->
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- MODAL 1: Registration Selection Confirmation Dialog -->
+    <div id="modalConfirmReg" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-check text-tennis-600"></i> Confirm Selected Availability
+                </h3>
+                <button onclick="closeModal('modalConfirmReg')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <p class="text-sm text-slate-600">
+                You are about to submit your available dates for the active cohort.
+            </p>
+
+            <!-- Textbox showing selected dates list with Weekday -->
+            <div>
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-2">Summary of Selected Available Dates:</label>
+                <textarea id="regConfirmationSummaryText" readonly rows="6" 
+                          class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-800 focus:outline-none resize-none leading-relaxed shadow-inner">
+                </textarea>
+            </div>
+
+            <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 flex items-start gap-2">
+                <i class="fa-solid fa-circle-info text-blue-600 mt-0.5"></i>
+                <span>Providing more available dates improves your chances of being matched into full target lessons!</span>
+            </div>
+
+            <div class="flex items-center justify-end space-x-3 pt-2">
+                <button onclick="closeModal('modalConfirmReg')" class="px-4 py-2 border border-slate-300 text-slate-600 hover:bg-slate-100 rounded-lg text-sm font-semibold">
+                    Edit Selection
+                </button>
+                <button onclick="submitFinalRegistration()" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow transition">
+                    Confirm & Submit Registration
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Admin Add/Edit Lesson Modal -->
+    <div id="modalLessonForm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 id="lessonModalTitle" class="text-lg font-bold text-slate-900">Add New Lesson</h3>
+                <button onclick="closeModal('modalLessonForm')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form onsubmit="handleSaveLesson(event)" class="space-y-4">
+                <input type="hidden" id="lessonId">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Date <span class="text-red-500">*</span></label>
+                    <input type="date" id="lessonDate" required min="2026-12-01" max="2027-12-31" 
+                           class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-tennis-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Level <span class="text-red-500">*</span></label>
+                    <select id="lessonLevel" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:ring-2 focus:ring-tennis-500 outline-none bg-white">
+                        <option value="Beginner">Beginner (Capacity 8)</option>
+                        <option value="Intermediate">Intermediate (Capacity 4)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Start Time</label>
+                        <input type="time" id="lessonStartTime" required value="09:00" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase mb-1">End Time</label>
+                        <input type="time" id="lessonEndTime" required value="11:00" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Location Venue</label>
+                    <input type="text" id="lessonLocation" required placeholder="e.g. Victoria Park Court 1" value="Victoria Park Court 1"
+                           class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-3">
+                    <button type="button" onclick="closeModal('modalLessonForm')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow">Save Lesson</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Forgot Password Modal with SMS OTP Verification -->
+    <div id="modalForgotPassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-shield-halved text-tennis-600 mr-1"></i> OTP Reset Password</h3>
+                <button onclick="closeModal('modalForgotPassword')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- STEP 1: Verify Account & Request OTP -->
+            <form id="otpStep1Form" onsubmit="handleSendOTP(event)" class="space-y-4">
+                <p class="text-xs text-slate-500">Enter your username and registered contact phone number. An SMS OTP will be sent to verify your identity.</p>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
+                    <input type="text" id="forgotUsername" required placeholder="Enter username (e.g. john)" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-tennis-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Registered Contact Phone</label>
+                    <input type="tel" id="forgotContact" required placeholder="Enter registered phone no. (e.g. 91234567)" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-tennis-500">
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('modalForgotPassword')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow flex items-center gap-1.5">
+                        <i class="fa-solid fa-paper-plane"></i> Send OTP SMS
+                    </button>
+                </div>
+            </form>
+
+            <!-- STEP 2: Input OTP & New Password -->
+            <form id="otpStep2Form" onsubmit="handleVerifyOTPAndReset(event)" class="space-y-4 hidden">
+                <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800">
+                    <i class="fa-solid fa-mobile-screen mr-1"></i> SMS OTP generated! Enter code sent to your phone.
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Enter 6-Digit OTP Code</label>
+                    <input type="text" id="forgotOTPInput" required placeholder="e.g. 482910" maxlength="6" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm font-mono tracking-widest text-center text-lg outline-none focus:ring-2 focus:ring-tennis-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">New Password</label>
+                    <input type="password" id="forgotNewPassword" required placeholder="Enter new password" class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none focus:ring-2 focus:ring-tennis-500">
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-2">
+                    <button type="button" onclick="resetOTPFormState()" class="px-3 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold">Back</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow flex items-center gap-1.5">
+                        <i class="fa-solid fa-check-circle"></i> Verify OTP & Reset
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Change Password Modal -->
+    <div id="modalChangePassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-bold text-slate-900"><i class="fa-solid fa-lock text-tennis-600 mr-1"></i> Change Password</h3>
+                <button onclick="closeModal('modalChangePassword')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form onsubmit="handleChangePassword(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Current Password</label>
+                    <input type="password" id="changeOldPassword" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">New Password</label>
+                    <input type="password" id="changeNewPassword" required class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm outline-none">
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeModal('modalChangePassword')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-lg text-sm font-semibold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-sm font-bold shadow">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 5: User Enrolled Records History Modal -->
+    <div id="modalEnrolledRecords" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-list-check text-tennis-600"></i> My Enrolled Records History
+                </h3>
+                <button onclick="closeModal('modalEnrolledRecords')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="text-xs text-slate-500">
+                Complete log of all confirmed tennis training lesson enrolments assigned to your account across all cohorts.
+            </div>
+
+            <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead class="sticky top-0 bg-slate-100 text-slate-600 uppercase text-xs">
+                        <tr>
+                            <th class="py-3 px-4">Cohort</th>
+                            <th class="py-3 px-4">Date (Day)</th>
+                            <th class="py-3 px-4">Time</th>
+                            <th class="py-3 px-4">Level</th>
+                            <th class="py-3 px-4">Location</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userEnrolledRecordsTableBody">
+                        <!-- Rendered dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                <div class="text-xs text-slate-500">Total Enrolled Sessions: <span id="enrolledRecordsTotalCount" class="font-bold text-tennis-700">0</span></div>
+                <button onclick="closeModal('modalEnrolledRecords')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-bold">
+                    Close Records
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 6: Admin Preview Roster Summary -->
+    <div id="modalPreviewRoster" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-users-rectangle text-indigo-600"></i> Roster Summary Preview
+                </h3>
+                <button onclick="closeModal('modalPreviewRoster')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="text-xs text-slate-500">
+                Review all registered participants, their total enrolled lessons count, and target status before publishing.
+            </div>
+
+            <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
+                <table class="w-full text-left text-sm border-collapse">
+                    <thead class="sticky top-0 bg-slate-100 text-slate-600 uppercase text-xs">
+                        <tr>
+                            <th class="py-3 px-4">Student Name</th>
+                            <th class="py-3 px-4">Contact</th>
+                            <th class="py-3 px-4 text-center">Avail. Dates Provided</th>
+                            <th class="py-3 px-4 text-center">Enrolled Lessons</th>
+                            <th class="py-3 px-4 text-center">Target Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewRosterTableBody">
+                        <!-- Rendered dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                <div class="text-xs text-slate-500">Target per student: <span id="previewTargetCount" class="font-bold text-slate-800">8</span> lessons</div>
+                <button onclick="closeModal('modalPreviewRoster')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-sm font-bold">
+                    Close Preview
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Cohort Definitions
+        const COHORTS = [
+            { id: 'c1', name: '1st Training Cohort: Dec 2026 - Feb 2027', startYear: 2026, startMonth: 11, endYear: 2027, endMonth: 1 },
+            { id: 'c2', name: '2nd Training Cohort: Mar 2027 - May 2027', startYear: 2027, startMonth: 2, endYear: 2027, endMonth: 4 },
+            { id: 'c3', name: '3rd Training Cohort: Jun 2027 - Aug 2027', startYear: 2027, startMonth: 5, endYear: 2027, endMonth: 7 }
+        ];
+
+        let activeCohortId = 'c1';
+
+        // Default Admin Account
+        const DEFAULT_ADMIN = {
+            id: 'admin_1',
+            username: 'Raymond',
+            password: '123456',
+            fullName: 'Raymond (Admin)',
+            contact: '+852 9123 4567',
+            isApproved: true,
+            isAdmin: true
+        };
+
+        // Initial Seed Users
+        const DEFAULT_USERS = [
+            DEFAULT_ADMIN,
+            { id: 'u1', username: 'john', password: '123', fullName: 'CHAN Tai-man', contact: '91234567', isApproved: true, isAdmin: false },
+            { id: 'u2', username: 'alice', password: '123', fullName: 'Alice Wong', contact: '91112222', isApproved: true, isAdmin: false },
+            { id: 'u3', username: 'bob', password: '123', fullName: 'Bob Chan', contact: '93334444', isApproved: true, isAdmin: false },
+            { id: 'u4', username: 'sarah', password: '123', fullName: 'Sarah Lee', contact: '95556666', isApproved: false, isAdmin: false }
+        ];
+
+        // Seed Lessons
+        const DEFAULT_LESSONS = [
+            // 1st Cohort Lessons
+            { id: 'l1', cohortId: 'c1', date: '2026-12-05', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
+            { id: 'l2', cohortId: 'c1', date: '2026-12-12', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
+            { id: 'l3', cohortId: 'c1', date: '2026-12-19', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 2', capacity: 8 },
+            { id: 'l4', cohortId: 'c1', date: '2026-12-26', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 2', capacity: 8 },
+            { id: 'l5', cohortId: 'c1', date: '2027-01-09', level: 'Beginner', startTime: '10:00', endTime: '12:00', location: 'Kowloon Park Court 3', capacity: 8 },
+            { id: 'l6', cohortId: 'c1', date: '2027-01-16', level: 'Beginner', startTime: '10:00', endTime: '12:00', location: 'Kowloon Park Court 3', capacity: 8 },
+            { id: 'l7', cohortId: 'c1', date: '2027-01-23', level: 'Beginner', startTime: '10:00', endTime: '12:00', location: 'Kowloon Park Court 3', capacity: 8 },
+            { id: 'l8', cohortId: 'c1', date: '2027-01-30', level: 'Beginner', startTime: '10:00', endTime: '12:00', location: 'Kowloon Park Court 3', capacity: 8 },
+            { id: 'l9', cohortId: 'c1', date: '2027-02-06', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
+            { id: 'l10', cohortId: 'c1', date: '2027-02-13', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
+
+            { id: 'l11', cohortId: 'c1', date: '2026-12-06', level: 'Intermediate', startTime: '14:00', endTime: '16:00', location: 'Victoria Park Court 3', capacity: 4 },
+            { id: 'l12', cohortId: 'c1', date: '2026-12-13', level: 'Intermediate', startTime: '14:00', endTime: '16:00', location: 'Victoria Park Court 3', capacity: 4 },
+            { id: 'l13', cohortId: 'c1', date: '2027-01-10', level: 'Intermediate', startTime: '15:00', endTime: '17:00', location: 'Kowloon Park Court 1', capacity: 4 },
+            { id: 'l14', cohortId: 'c1', date: '2027-01-17', level: 'Intermediate', startTime: '15:00', endTime: '17:00', location: 'Kowloon Park Court 1', capacity: 4 }
+        ];
+
+        // Seed Registrations
+        const DEFAULT_REGISTRATIONS = {
+            'u1_c1': ['2026-12-05', '2026-12-12', '2026-12-19', '2026-12-26', '2027-01-09', '2027-01-16', '2027-01-23', '2027-01-30'],
+            'u2_c1': ['2026-12-05', '2026-12-12', '2026-12-19', '2027-01-09', '2027-01-16'],
+            'u3_c1': ['2026-12-06', '2026-12-13', '2027-01-10', '2027-01-17']
+        };
+
+        const DEFAULT_ENROLLMENTS = {
+            'l1': ['u1', 'u2'],
+            'l2': ['u1', 'u2'],
+            'l3': ['u1', 'u2']
+        };
+
+        // Persistent App State
+        let users = JSON.parse(localStorage.getItem('ace_tennis_users')) || DEFAULT_USERS;
+        let lessons = JSON.parse(localStorage.getItem('ace_tennis_lessons')) || DEFAULT_LESSONS;
+        let registrations = JSON.parse(localStorage.getItem('ace_tennis_regs')) || DEFAULT_REGISTRATIONS;
+        let enrollments = JSON.parse(localStorage.getItem('ace_tennis_enrollments')) || DEFAULT_ENROLLMENTS;
+        let cohortTargetLessons = parseInt(localStorage.getItem('ace_tennis_target_lessons')) || 8;
+        let isSchedulePublished = JSON.parse(localStorage.getItem('ace_tennis_published')) || false;
+
+        let currentUser = null;
+        let activeRegYear = 2026;
+        let activeRegMonth = 11; // 0-indexed (11 = Dec)
+        let tempSelectedDates = new Set();
+        let myLessonsFilterActive = false;
+
+        // OTP Reset State
+        let otpTargetUser = null;
+        let generatedOTPCode = null;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            saveState();
+            checkAutoLoginSession();
+        });
+
+        function saveState() {
+            localStorage.setItem('ace_tennis_users', JSON.stringify(users));
+            localStorage.setItem('ace_tennis_lessons', JSON.stringify(lessons));
+            localStorage.setItem('ace_tennis_regs', JSON.stringify(registrations));
+            localStorage.setItem('ace_tennis_enrollments', JSON.stringify(enrollments));
+            localStorage.setItem('ace_tennis_target_lessons', cohortTargetLessons);
+            localStorage.setItem('ace_tennis_published', JSON.stringify(isSchedulePublished));
+        }
+
+        function checkAutoLoginSession() {
+            const savedUserId = sessionStorage.getItem('ace_tennis_current_user');
+            if (savedUserId) {
+                const found = users.find(u => u.id === savedUserId);
+                if (found && found.isApproved) {
+                    loginUserSuccess(found);
+                    return;
+                }
+            }
+            renderHeaderNav();
+        }
+
+        function changeActiveCohort(cohortId) {
+            activeCohortId = cohortId;
+            const c = COHORTS.find(x => x.id === cohortId);
+            if (c) {
+                activeRegYear = c.startYear;
+                activeRegMonth = c.startMonth;
+                document.getElementById('cohortTitleDisplay').textContent = c.name;
+                document.getElementById('scheduleCohortLabel').textContent = c.name;
+            }
+
+            if (currentUser) {
+                const key = `${currentUser.id}_${activeCohortId}`;
+                tempSelectedDates = new Set(registrations[key] || []);
+            }
+
+            renderRegistrationCalendar();
+            renderFinalSchedule();
+            if (currentUser?.isAdmin) {
+                renderAdminLessonsTable();
+                renderAdminEnrollmentsView();
+            }
+        }
+
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('loginFormContainer');
+            const regForm = document.getElementById('registerFormContainer');
+            const tabLoginBtn = document.getElementById('tabLoginBtn');
+            const tabRegBtn = document.getElementById('tabRegisterBtn');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+                tabLoginBtn.className = "flex-1 py-4 font-semibold text-center text-tennis-600 border-b-2 border-tennis-600 transition";
+                tabRegBtn.className = "flex-1 py-4 font-semibold text-center text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition";
+            } else {
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                tabRegBtn.className = "flex-1 py-4 font-semibold text-center text-tennis-600 border-b-2 border-tennis-600 transition";
+                tabLoginBtn.className = "flex-1 py-4 font-semibold text-center text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition";
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('loginUsername').value.trim();
+            const passwordInput = document.getElementById('loginPassword').value.trim();
+
+            const foundUser = users.find(u => u.username.toLowerCase() === usernameInput.toLowerCase());
+
+            if (!foundUser) {
+                showToast("Account not found. Please check your username or register.", "error");
+                return;
+            }
+
+            if (foundUser.password !== passwordInput) {
+                showToast("Invalid password. Please try again.", "error");
+                return;
+            }
+
+            if (!foundUser.isApproved) {
+                showToast("Your account is pending admin approval. Admin Raymond will review your details shortly.", "warning");
+                return;
+            }
+
+            sessionStorage.setItem('ace_tennis_current_user', foundUser.id);
+            loginUserSuccess(foundUser);
+            showToast(`Welcome back, ${foundUser.fullName}!`, "success");
+
+            if (isSchedulePublished) {
+                setTimeout(() => {
+                    showToast("📲 Notification: The training schedule for Dec 2026 - Feb 2027 has been released!", "info");
+                }, 1000);
+            }
+        }
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const fullName = document.getElementById('regFullName').value.trim();
+            const contact = document.getElementById('regContact').value.trim();
+            const username = document.getElementById('regUsername').value.trim();
+            const password = document.getElementById('regPassword').value.trim();
+
+            if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+                showToast("Username already taken. Please choose another.", "error");
+                return;
+            }
+
+            const newUser = {
+                id: 'u_' + Date.now(),
+                username,
+                password,
+                fullName,
+                contact,
+                isApproved: false,
+                isAdmin: false
+            };
+
+            users.push(newUser);
+            saveState();
+
+            switchAuthTab('login');
+            document.getElementById('loginUsername').value = username;
+            document.getElementById('loginPassword').value = '';
+
+            showToast("Registration request submitted! Please wait for Admin Raymond to verify and approve your account.", "info");
+        }
+
+        // OTP Password Reset Handlers
+        function handleSendOTP(e) {
+            e.preventDefault();
+            const username = document.getElementById('forgotUsername').value.trim();
+            const contact = document.getElementById('forgotContact').value.trim();
+
+            const u = users.find(x => x.username.toLowerCase() === username.toLowerCase() && x.contact === contact);
+            if (!u) {
+                showToast("Verification failed. Username and contact number do not match.", "error");
+                return;
+            }
+
+            otpTargetUser = u;
+            generatedOTPCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            document.getElementById('otpStep1Form').classList.add('hidden');
+            document.getElementById('otpStep2Form').classList.remove('hidden');
+
+            showToast(`📲 SMS Sent to ${contact}! OTP Code: ${generatedOTPCode}`, "info");
+        }
+
+        function handleVerifyOTPAndReset(e) {
+            e.preventDefault();
+            const inputOTP = document.getElementById('forgotOTPInput').value.trim();
+            const newPassword = document.getElementById('forgotNewPassword').value.trim();
+
+            if (inputOTP !== generatedOTPCode) {
+                showToast("Invalid OTP Code! Please check the SMS code and try again.", "error");
+                return;
+            }
+
+            if (otpTargetUser) {
+                otpTargetUser.password = newPassword;
+                saveState();
+                closeModal('modalForgotPassword');
+                resetOTPFormState();
+                showToast("Identity verified! Password reset successfully. You can now log in.", "success");
+            }
+        }
+
+        function resetOTPFormState() {
+            otpTargetUser = null;
+            generatedOTPCode = null;
+            document.getElementById('otpStep1Form').reset();
+            document.getElementById('otpStep2Form').reset();
+            document.getElementById('otpStep1Form').classList.remove('hidden');
+            document.getElementById('otpStep2Form').classList.add('hidden');
+        }
+
+        function handleChangePassword(e) {
+            e.preventDefault();
+            const oldPass = document.getElementById('changeOldPassword').value.trim();
+            const newPass = document.getElementById('changeNewPassword').value.trim();
+
+            if (currentUser.password !== oldPass) {
+                showToast("Current password incorrect.", "error");
+                return;
+            }
+
+            currentUser.password = newPass;
+            saveState();
+            closeModal('modalChangePassword');
+            showToast("Password updated successfully!", "success");
+        }
+
+        function loginUserSuccess(user) {
+            currentUser = user;
+            document.getElementById('authView').classList.add('hidden');
+            document.getElementById('mainDashboardView').classList.remove('hidden');
+
+            const key = `${currentUser.id}_${activeCohortId}`;
+            tempSelectedDates = new Set(registrations[key] || []);
+
+            renderHeaderNav();
+            updateTargetLessonsLabel();
+            switchMainTab('registration');
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('ace_tennis_current_user');
+            currentUser = null;
+            document.getElementById('authView').classList.remove('hidden');
+            document.getElementById('mainDashboardView').classList.add('hidden');
+            renderHeaderNav();
+            showToast("Logged out successfully.", "info");
+        }
+
+        function renderHeaderNav() {
+            const container = document.getElementById('navRight');
+            if (!currentUser) {
+                container.innerHTML = `<div class="text-xs text-slate-400">Please sign in</div>`;
+            } else {
+                container.innerHTML = `
+                    <div class="flex items-center space-x-2">
+                        <div class="text-right hidden sm:block mr-1">
+                            <div class="text-xs font-bold text-tennis-400 uppercase tracking-wider">${currentUser.isAdmin ? 'ADMIN' : 'STUDENT'}</div>
+                            <div class="text-sm font-semibold text-white">${currentUser.fullName}</div>
+                        </div>
+                        <button onclick="openEnrolledRecordsModal()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold transition border border-slate-700 flex items-center gap-1" title="Enrolled Records History">
+                            <i class="fa-solid fa-list-check text-tennis-400"></i> <span class="hidden md:inline">Enrolled Records</span>
+                        </button>
+                        <button onclick="openModal('modalChangePassword')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-bold transition border border-slate-700" title="Change Password">
+                            <i class="fa-solid fa-key"></i> <span class="hidden md:inline">Change Password</span>
+                        </button>
+                        <button onclick="handleLogout()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs font-bold transition flex items-center gap-1 border border-slate-700">
+                            <i class="fa-solid fa-right-from-bracket"></i> Logout
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function updateTargetLessonsLabel() {
+            document.getElementById('dashboardTargetLessons').textContent = `${cohortTargetLessons} Lessons`;
+            document.getElementById('adminRuleTargetLessonsText').textContent = `${cohortTargetLessons} lessons`;
+        }
+
+        function switchMainTab(tab) {
+            const btnReg = document.getElementById('tabLessonRegBtn');
+            const btnSched = document.getElementById('tabLessonSchedBtn');
+            const btnAdmin = document.getElementById('tabAdminBtn');
+
+            const contentReg = document.getElementById('contentRegistration');
+            const contentSched = document.getElementById('contentSchedule');
+            const contentAdmin = document.getElementById('contentAdmin');
+
+            // Strictly check admin rights before showing admin button or tab
+            if (currentUser && currentUser.isAdmin) {
+                btnAdmin.classList.remove('hidden');
+            } else {
+                btnAdmin.classList.add('hidden');
+                if (tab === 'admin') tab = 'registration'; // Fallback if regular user attempts admin tab
+            }
+
+            [btnReg, btnSched, btnAdmin].forEach(btn => {
+                btn.className = "px-5 py-3 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2";
+            });
+
+            [contentReg, contentSched, contentAdmin].forEach(c => c.classList.add('hidden'));
+
+            if (tab === 'registration') {
+                btnReg.className = "px-5 py-3 rounded-xl font-bold text-sm bg-tennis-600 text-white shadow-md transition flex items-center gap-2";
+                contentReg.classList.remove('hidden');
+                renderRegistrationCalendar();
+            } else if (tab === 'schedule') {
+                btnSched.className = "px-5 py-3 rounded-xl font-bold text-sm bg-tennis-600 text-white shadow-md transition flex items-center gap-2";
+                contentSched.classList.remove('hidden');
+                renderFinalSchedule();
+            } else if (tab === 'admin' && currentUser?.isAdmin) {
+                btnAdmin.className = "px-5 py-3 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 shadow-md transition flex items-center gap-2";
+                contentAdmin.classList.remove('hidden');
+                switchAdminSubTab('users');
+            }
+        }
+
+        function changeRegMonth(delta) {
+            activeRegMonth += delta;
+            if (activeRegMonth > 11) {
+                activeRegMonth = 0;
+                activeRegYear++;
+            } else if (activeRegMonth < 0) {
+                activeRegMonth = 11;
+                activeRegYear--;
+            }
+            renderRegistrationCalendar();
+        }
+
+        function renderRegistrationCalendar() {
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            document.getElementById('currentRegMonthLabel').textContent = `${monthNames[activeRegMonth]} ${activeRegYear}`;
+
+            const selectedLevel = document.getElementById('regLevelSelect').value;
+            const grid = document.getElementById('calendarGrid');
+            grid.innerHTML = '';
+
+            const firstDay = new Date(activeRegYear, activeRegMonth, 1).getDay();
+            const daysInMonth = new Date(activeRegYear, activeRegMonth + 1, 0).getDate();
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const monthStr = String(activeRegMonth + 1).padStart(2, '0');
+                const dayStr = String(day).padStart(2, '0');
+                const dateKey = `${activeRegYear}-${monthStr}-${dayStr}`;
+
+                const matchedLessons = lessons.filter(l => l.cohortId === activeCohortId && l.date === dateKey && l.level === selectedLevel);
+                const isSelected = tempSelectedDates.has(dateKey);
+
+                const card = document.createElement('div');
+                card.className = "min-h-[90px] border rounded-xl p-2 flex flex-col justify-between transition calendar-day-active relative ";
+
+                if (matchedLessons.length > 0) {
+                    if (isSelected) {
+                        card.className += "bg-tennis-600 text-white border-tennis-700 shadow-md ring-2 ring-tennis-400 cursor-pointer";
+                    } else {
+                        card.className += "bg-emerald-50/70 border-emerald-300 hover:bg-emerald-100/80 cursor-pointer";
+                    }
+
+                    let lessonBadges = matchedLessons.map(l => `
+                        <div class="text-[10px] ${isSelected ? 'bg-tennis-700 text-white' : 'bg-emerald-200 text-emerald-900'} px-1.5 py-0.5 rounded font-bold truncate">
+                            <i class="fa-solid fa-clock"></i> ${l.startTime}
+                        </div>
+                    `).join('');
+
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="font-extrabold text-sm ${isSelected ? 'text-white' : 'text-slate-800'}">${day}</span>
+                            <span class="${isSelected ? 'text-white' : 'text-emerald-700'} text-xs font-black">
+                                <i class="fa-solid ${isSelected ? 'fa-square-check' : 'fa-square'}"></i>
+                            </span>
+                        </div>
+                        <div class="space-y-1 mt-1">
+                            ${lessonBadges}
+                        </div>
+                        <div class="text-[9px] ${isSelected ? 'text-tennis-100' : 'text-slate-500'} truncate">
+                            ${matchedLessons[0].location}
+                        </div>
+                    `;
+
+                    card.onclick = () => toggleDateSelection(dateKey);
+                } else {
+                    card.className += "bg-slate-50 border-slate-200 opacity-60 text-slate-400";
+                    card.innerHTML = `
+                        <span class="font-medium text-sm text-slate-400">${day}</span>
+                        <span class="text-[10px] italic text-slate-300">No class</span>
+                    `;
+                }
+
+                grid.appendChild(card);
+            }
+
+            document.getElementById('selectedCountBadge').textContent = tempSelectedDates.size;
+        }
+
+        function toggleDateSelection(dateKey) {
+            if (tempSelectedDates.has(dateKey)) {
+                tempSelectedDates.delete(dateKey);
+            } else {
+                tempSelectedDates.add(dateKey);
+            }
+            renderRegistrationCalendar();
+        }
+
+        function promptRegistrationConfirmation() {
+            if (tempSelectedDates.size === 0) {
+                showToast("Please select at least one available lesson date first.", "warning");
+                return;
+            }
+
+            const sortedDates = Array.from(tempSelectedDates).sort();
+            const level = document.getElementById('regLevelSelect').value;
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            let summary = `TENNIS TRAINING SYSTEM ENROLLMENT SUBMISSION\n`;
+            summary += `----------------------------------------\n`;
+            summary += `Training Level: ${level}\n`;
+            summary += `Total Available Dates Chosen: ${sortedDates.length} Days\n\n`;
+            summary += `SELECTED DATES DETAILS:\n`;
+
+            sortedDates.forEach((d, idx) => {
+                const dateObj = new Date(d);
+                const dayName = weekdays[dateObj.getDay()];
+                const lessonList = lessons.filter(l => l.cohortId === activeCohortId && l.date === d && l.level === level);
+                const lessonInfo = lessonList.map(l => `${l.startTime}-${l.endTime} @ ${l.location}`).join(', ');
+                summary += `${idx + 1}. ${d} (${dayName}) -> [${lessonInfo || 'Scheduled Lesson'}]\n`;
+            });
+
+            document.getElementById('regConfirmationSummaryText').value = summary;
+            openModal('modalConfirmReg');
+        }
+
+        function submitFinalRegistration() {
+            const key = `${currentUser.id}_${activeCohortId}`;
+            registrations[key] = Array.from(tempSelectedDates);
+            saveState();
+
+            closeModal('modalConfirmReg');
+            showToast("Registration availability successfully submitted to Admin Raymond!", "success");
+        }
+
+        function toggleMyScheduleFilter() {
+            myLessonsFilterActive = !myLessonsFilterActive;
+            const btn = document.getElementById('btnMyLessonsOnly');
+            if (myLessonsFilterActive) {
+                btn.className = "px-4 py-2 bg-tennis-600 text-white rounded-lg font-bold text-sm transition shadow";
+            } else {
+                btn.className = "px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-lg font-bold text-sm transition";
+            }
+            renderFinalSchedule();
+        }
+
+        function renderFinalSchedule() {
+            const container = document.getElementById('scheduleListContainer');
+            const levelFilter = document.getElementById('schedLevelFilter').value;
+            container.innerHTML = '';
+
+            let filteredLessons = lessons.filter(l => l.cohortId === activeCohortId);
+            if (levelFilter !== 'ALL') {
+                filteredLessons = filteredLessons.filter(l => l.level === levelFilter);
+            }
+
+            if (myLessonsFilterActive && currentUser) {
+                filteredLessons = filteredLessons.filter(l => (enrollments[l.id] || []).includes(currentUser.id));
+            }
+
+            let myEnrolledCount = 0;
+            lessons.filter(l => l.cohortId === activeCohortId).forEach(l => {
+                if ((enrollments[l.id] || []).includes(currentUser?.id)) {
+                    myEnrolledCount++;
+                }
+            });
+
+            document.getElementById('statEnrolled').textContent = myEnrolledCount;
+            document.getElementById('statTarget').textContent = cohortTargetLessons;
+
+            const summaryTitle = document.getElementById('userScheduleSummaryTitle');
+            const summarySub = document.getElementById('userScheduleSummarySub');
+
+            if (isSchedulePublished) {
+                summaryTitle.textContent = `Confirmed for ${myEnrolledCount} Lessons`;
+                summarySub.textContent = ``;
+            } else {
+                summaryTitle.textContent = `Enrollment Pending Admin Approval`;
+                summarySub.textContent = ``;
+            }
+
+            if (filteredLessons.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white p-12 rounded-2xl text-center border border-slate-200">
+                        <i class="fa-solid fa-calendar-xmark text-4xl text-slate-300 mb-3"></i>
+                        <p class="font-bold text-slate-600">No scheduled lessons found for this cohort filter.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredLessons.sort((a,b) => a.date.localeCompare(b.date)).forEach(l => {
+                const enrolledUserIds = enrollments[l.id] || [];
+                const isMeEnrolled = currentUser && enrolledUserIds.includes(currentUser.id);
+
+                const enrolledUserNames = enrolledUserIds.map(uid => {
+                    const u = users.find(x => x.id === uid);
+                    return u ? u.fullName : 'Unknown';
+                });
+
+                const dateObj = new Date(l.date);
+                const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
+
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-2xl p-5 border shadow-sm space-y-4 ${isMeEnrolled ? 'border-tennis-500 ring-2 ring-tennis-200' : 'border-slate-200'}`;
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="px-2.5 py-0.5 rounded-full text-xs font-extrabold ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
+                                ${l.level}
+                            </span>
+                            <h4 class="font-black text-slate-900 text-lg mt-1">${l.date} (${dayName})</h4>
+                        </div>
+                        ${isMeEnrolled ? '<span class="bg-tennis-500 text-slate-900 text-xs px-2.5 py-1 rounded-full font-black"><i class="fa-solid fa-check"></i> Enrolled</span>' : ''}
+                    </div>
+
+                    <div class="space-y-1 text-xs text-slate-600">
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-clock text-tennis-600 w-4"></i> ${l.startTime} - ${l.endTime}</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-tennis-600 w-4"></i> ${l.location}</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-users text-tennis-600 w-4"></i> Capacity: ${enrolledUserIds.length} / ${l.capacity} Participants</div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-3">
+                        <div class="text-[11px] font-bold text-slate-400 uppercase mb-1">Confirmed Roster:</div>
+                        ${enrolledUserNames.length > 0 
+                            ? `<div class="flex flex-wrap gap-1">${enrolledUserNames.map(name => `<span class="bg-slate-100 text-slate-800 text-xs px-2 py-0.5 rounded font-medium">${name}</span>`).join('')}</div>`
+                            : `<span class="text-xs text-slate-400 italic">No students enrolled yet.</span>`
+                        }
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        // Open Enrolled Records Modal for User
+        function openEnrolledRecordsModal() {
+            const tbody = document.getElementById('userEnrolledRecordsTableBody');
+            tbody.innerHTML = '';
+
+            let totalSessions = 0;
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            lessons.forEach(l => {
+                const enrolledUserIds = enrollments[l.id] || [];
+                if (enrolledUserIds.includes(currentUser?.id)) {
+                    totalSessions++;
+                    const c = COHORTS.find(x => x.id === l.cohortId);
+                    const cohortName = c ? c.name.split(':')[0] : 'Cohort';
+                    const dateObj = new Date(l.date);
+                    const dayName = weekdays[dateObj.getDay()];
+
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-100 hover:bg-slate-50 transition";
+                    tr.innerHTML = `
+                        <td class="py-3 px-4 font-bold text-slate-800">${cohortName}</td>
+                        <td class="py-3 px-4 font-medium text-slate-900">${l.date} (${dayName})</td>
+                        <td class="py-3 px-4 text-slate-600">${l.startTime} - ${l.endTime}</td>
+                        <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-xs font-bold ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${l.level}</span></td>
+                        <td class="py-3 px-4 text-slate-600">${l.location}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (totalSessions === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No confirmed lesson enrolments found in records.</td></tr>`;
+            }
+
+            document.getElementById('enrolledRecordsTotalCount').textContent = `${totalSessions} Sessions`;
+            openModal('modalEnrolledRecords');
+        }
+
+        function switchAdminSubTab(subTab) {
+            const btnUsers = document.getElementById('adminSubTabUsers');
+            const btnLessons = document.getElementById('adminSubTabLessons');
+            const btnEnrollments = document.getElementById('adminSubTabEnrollments');
+
+            const viewUsers = document.getElementById('adminViewUsers');
+            const viewLessons = document.getElementById('adminViewLessons');
+            const viewEnrollments = document.getElementById('adminViewEnrollments');
+
+            [btnUsers, btnLessons, btnEnrollments].forEach(b => {
+                b.className = "py-3 px-5 font-bold text-sm text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2";
+            });
+
+            [viewUsers, viewLessons, viewEnrollments].forEach(v => v.classList.add('hidden'));
+
+            if (subTab === 'users') {
+                btnUsers.className = "py-3 px-5 font-bold text-sm border-b-2 border-amber-500 text-amber-700 bg-amber-50/50 rounded-t-lg transition flex items-center gap-2";
+                viewUsers.classList.remove('hidden');
+                renderAdminUsersTable();
+            } else if (subTab === 'lessons') {
+                btnLessons.className = "py-3 px-5 font-bold text-sm border-b-2 border-amber-500 text-amber-700 bg-amber-50/50 rounded-t-lg transition flex items-center gap-2";
+                viewLessons.classList.remove('hidden');
+                renderAdminLessonsTable();
+            } else if (subTab === 'enrollments') {
+                btnEnrollments.className = "py-3 px-5 font-bold text-sm border-b-2 border-amber-500 text-amber-700 bg-amber-50/50 rounded-t-lg transition flex items-center gap-2";
+                viewEnrollments.classList.remove('hidden');
+                renderAdminEnrollmentsView();
+            }
+        }
+
+        function renderAdminUsersTable() {
+            const tbody = document.getElementById('userApprovalTableBody');
+            tbody.innerHTML = '';
+
+            const nonAdminUsers = users.filter(u => !u.isAdmin);
+            const pendingCount = nonAdminUsers.filter(u => !u.isApproved).length;
+            document.getElementById('pendingBadgeCount').textContent = pendingCount;
+
+            if (nonAdminUsers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No registered student accounts yet.</td></tr>`;
+                return;
+            }
+
+            nonAdminUsers.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-50 transition";
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">${u.fullName}</td>
+                    <td class="py-3 px-4 text-slate-600">${u.contact}</td>
+                    <td class="py-3 px-4 font-mono text-xs text-slate-600">${u.username}</td>
+                    <td class="py-3 px-4">
+                        ${u.isApproved 
+                            ? `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800"><i class="fa-solid fa-check-circle mr-1"></i> Approved</span>`
+                            : `<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800"><i class="fa-solid fa-clock mr-1"></i> Pending Verification</span>`
+                        }
+                    </td>
+                    <td class="py-3 px-4 text-right space-x-2">
+                        ${!u.isApproved ? `
+                            <button onclick="approveUser('${u.id}')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold shadow">
+                                Approve
+                            </button>
+                            <button onclick="rejectUser('${u.id}')" class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-bold shadow">
+                                Reject
+                            </button>
+                        ` : `
+                            <button onclick="revokeUser('${u.id}')" class="px-3 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-xs font-bold">
+                                Revoke
+                            </button>
+                        `}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function approveUser(userId) {
+            const u = users.find(x => x.id === userId);
+            if (u) {
+                u.isApproved = true;
+                saveState();
+                renderAdminUsersTable();
+                showToast(`Account for ${u.fullName} approved!`, "success");
+            }
+        }
+
+        function rejectUser(userId) {
+            users = users.filter(x => x.id !== userId);
+            saveState();
+            renderAdminUsersTable();
+            showToast("User account rejected & removed.", "info");
+        }
+
+        function revokeUser(userId) {
+            const u = users.find(x => x.id === userId);
+            if (u) {
+                u.isApproved = false;
+                saveState();
+                renderAdminUsersTable();
+                showToast(`Account access revoked for ${u.fullName}.`, "info");
+            }
+        }
+
+        function updateCohortTargetLessons(val) {
+            cohortTargetLessons = parseInt(val) || 8;
+            saveState();
+            updateTargetLessonsLabel();
+            showToast(`Cohort target lessons updated to ${cohortTargetLessons} per user.`, "info");
+        }
+
+        function renderAdminLessonsTable() {
+            const tbody = document.getElementById('adminLessonsTableBody');
+            tbody.innerHTML = '';
+
+            const cohortLessons = lessons.filter(l => l.cohortId === activeCohortId);
+
+            cohortLessons.sort((a,b) => a.date.localeCompare(b.date)).forEach(l => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-50 transition";
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">${l.date}</td>
+                    <td class="py-3 px-4 text-slate-600">${l.startTime} - ${l.endTime}</td>
+                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded text-xs font-bold ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${l.level}</span></td>
+                    <td class="py-3 px-4 text-slate-600">${l.location}</td>
+                    <td class="py-3 px-4 font-extrabold text-slate-700">${l.capacity} Max</td>
+                    <td class="py-3 px-4 text-right space-x-2">
+                        <button onclick="duplicateLesson('${l.id}')" class="px-2.5 py-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded text-xs font-bold">
+                            <i class="fa-solid fa-copy"></i> Duplicate
+                        </button>
+                        <button onclick="openEditLessonModal('${l.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-bold">
+                            <i class="fa-solid fa-pen"></i> Edit
+                        </button>
+                        <button onclick="deleteLesson('${l.id}')" class="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs font-bold">
+                            <i class="fa-solid fa-trash"></i> Delete
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function duplicateLesson(lessonId) {
+            const l = lessons.find(x => x.id === lessonId);
+            if (!l) return;
+
+            const cloned = {
+                ...l,
+                id: 'l_' + Date.now(),
+            };
+            lessons.push(cloned);
+            saveState();
+            renderAdminLessonsTable();
+            showToast(`Lesson entry duplicated for ${cloned.date}`, "success");
+        }
+
+        function openAddLessonModal() {
+            document.getElementById('lessonModalTitle').textContent = "Add New Lesson Slot";
+            document.getElementById('lessonId').value = '';
+            document.getElementById('lessonDate').value = '2026-12-05';
+            document.getElementById('lessonLevel').value = 'Beginner';
+            document.getElementById('lessonStartTime').value = '09:00';
+            document.getElementById('lessonEndTime').value = '11:00';
+            document.getElementById('lessonLocation').value = 'Victoria Park Court 1';
+            openModal('modalLessonForm');
+        }
+
+        function openEditLessonModal(lessonId) {
+            const l = lessons.find(x => x.id === lessonId);
+            if (!l) return;
+
+            document.getElementById('lessonModalTitle').textContent = "Edit Lesson Slot";
+            document.getElementById('lessonId').value = l.id;
+            document.getElementById('lessonDate').value = l.date;
+            document.getElementById('lessonLevel').value = l.level;
+            document.getElementById('lessonStartTime').value = l.startTime;
+            document.getElementById('lessonEndTime').value = l.endTime;
+            document.getElementById('lessonLocation').value = l.location;
+            openModal('modalLessonForm');
+        }
+
+        function handleSaveLesson(e) {
+            e.preventDefault();
+            const id = document.getElementById('lessonId').value;
+            const date = document.getElementById('lessonDate').value;
+            const level = document.getElementById('lessonLevel').value;
+            const startTime = document.getElementById('lessonStartTime').value;
+            const endTime = document.getElementById('lessonEndTime').value;
+            const location = document.getElementById('lessonLocation').value;
+            const capacity = level === 'Beginner' ? 8 : 4;
+
+            if (id) {
+                const idx = lessons.findIndex(x => x.id === id);
+                if (idx !== -1) {
+                    lessons[idx] = { id, cohortId: activeCohortId, date, level, startTime, endTime, location, capacity };
+                }
+            } else {
+                const newLesson = { id: 'l_' + Date.now(), cohortId: activeCohortId, date, level, startTime, endTime, location, capacity };
+                lessons.push(newLesson);
+            }
+
+            saveState();
+            closeModal('modalLessonForm');
+            renderAdminLessonsTable();
+            showToast("Lesson details updated successfully!", "success");
+        }
+
+        function deleteLesson(id) {
+            lessons = lessons.filter(x => x.id !== id);
+            delete enrollments[id];
+            saveState();
+            renderAdminLessonsTable();
+            showToast("Lesson slot removed.", "info");
+        }
+
+        // Admin: Clear All Checked Users At Once
+        function clearAllAdminEnrollments() {
+            const cohortLessons = lessons.filter(l => l.cohortId === activeCohortId);
+            cohortLessons.forEach(l => {
+                enrollments[l.id] = [];
+            });
+            saveState();
+            renderAdminEnrollmentsView();
+            showToast("All user enrolment selections cleared for active cohort.", "info");
+        }
+
+        function runPriorityEnrollmentAlgorithm() {
+            let cohortLessons = lessons.filter(l => l.cohortId === activeCohortId);
+
+            let newEnrollments = { ...enrollments };
+            cohortLessons.forEach(l => { newEnrollments[l.id] = []; });
+
+            let userAssignedCounts = {};
+            users.filter(u => u.isApproved && !u.isAdmin).forEach(u => {
+                userAssignedCounts[u.id] = 0;
+            });
+
+            let userTotalAvailabilityCount = {};
+            Object.keys(userAssignedCounts).forEach(uid => {
+                const regKey = `${uid}_${activeCohortId}`;
+                const userDates = registrations[regKey] || [];
+                userTotalAvailabilityCount[uid] = userDates.length;
+            });
+
+            let warnings = [];
+
+            Object.keys(userAssignedCounts).forEach(uid => {
+                const user = users.find(u => u.id === uid);
+                const availCount = userTotalAvailabilityCount[uid];
+                if (availCount < cohortTargetLessons) {
+                    warnings.push(`⚠️ <strong>${user.fullName}</strong> provided only ${availCount} available dates (Shortfall of ${cohortTargetLessons - availCount} lessons from target ${cohortTargetLessons}).`);
+                }
+            });
+
+            const sortedLessons = [...cohortLessons].sort((a,b) => a.date.localeCompare(b.date));
+
+            sortedLessons.forEach(lesson => {
+                const registeredUserIds = Object.keys(userAssignedCounts).filter(uid => {
+                    const regKey = `${uid}_${activeCohortId}`;
+                    return (registrations[regKey] || []).includes(lesson.date);
+                });
+
+                let candidates = registeredUserIds.filter(uid => userAssignedCounts[uid] < cohortTargetLessons);
+
+                candidates.sort((a, b) => {
+                    const availA = userTotalAvailabilityCount[a];
+                    const availB = userTotalAvailabilityCount[b];
+                    if (availA !== availB) {
+                        return availA - availB;
+                    }
+                    return userAssignedCounts[a] - userAssignedCounts[b];
+                });
+
+                const maxCap = lesson.capacity;
+                const selectedUsers = candidates.slice(0, maxCap);
+
+                newEnrollments[lesson.id] = selectedUsers;
+                selectedUsers.forEach(uid => {
+                    userAssignedCounts[uid]++;
+                });
+
+                if (candidates.length > maxCap) {
+                    warnings.push(`ℹ️ Date <strong>${lesson.date} (${lesson.level})</strong>: Oversubscribed (${candidates.length} applicants for ${maxCap} seats). Priority given to users with fewer total available dates.`);
+                }
+            });
+
+            Object.keys(userAssignedCounts).forEach(uid => {
+                const user = users.find(u => u.id === uid);
+                const assigned = userAssignedCounts[uid];
+                if (assigned < cohortTargetLessons) {
+                    warnings.push(`🚨 <strong>${user.fullName}</strong> was assigned ${assigned}/${cohortTargetLessons} target lessons due to preference limits.`);
+                }
+            });
+
+            enrollments = newEnrollments;
+            saveState();
+
+            renderAdminEnrollmentsView();
+
+            const warnBox = document.getElementById('algorithmWarningBox');
+            const warnContent = document.getElementById('algorithmWarningContent');
+            if (warnings.length > 0) {
+                warnBox.classList.remove('hidden');
+                warnContent.innerHTML = warnings.map(w => `<li>${w}</li>`).join('');
+            } else {
+                warnBox.classList.add('hidden');
+            }
+
+            showToast("Priority auto-enrollment algorithm executed!", "success");
+        }
+
+        function openPreviewRosterModal() {
+            const tbody = document.getElementById('previewRosterTableBody');
+            tbody.innerHTML = '';
+            document.getElementById('previewTargetCount').textContent = cohortTargetLessons;
+
+            const approvedStudents = users.filter(u => u.isApproved && !u.isAdmin);
+            const cohortLessons = lessons.filter(l => l.cohortId === activeCohortId);
+
+            if (approvedStudents.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No approved students in system.</td></tr>`;
+                openModal('modalPreviewRoster');
+                return;
+            }
+
+            approvedStudents.forEach(u => {
+                const regKey = `${u.id}_${activeCohortId}`;
+                const availDates = (registrations[regKey] || []).length;
+
+                let enrolledCount = 0;
+                cohortLessons.forEach(l => {
+                    if ((enrollments[l.id] || []).includes(u.id)) {
+                        enrolledCount++;
+                    }
+                });
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-50 transition";
+
+                let statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-emerald-100 text-emerald-800">Target Reached (${enrolledCount}/${cohortTargetLessons})</span>`;
+                if (enrolledCount < cohortTargetLessons) {
+                    statusBadge = `<span class="px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-800">Shortfall (${enrolledCount}/${cohortTargetLessons})</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">${u.fullName}</td>
+                    <td class="py-3 px-4 text-slate-600">${u.contact}</td>
+                    <td class="py-3 px-4 text-center font-bold text-slate-700">${availDates} Days</td>
+                    <td class="py-3 px-4 text-center font-black text-tennis-700 text-base">${enrolledCount} Lessons</td>
+                    <td class="py-3 px-4 text-center">${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            openModal('modalPreviewRoster');
+        }
+
+        function renderAdminEnrollmentsView() {
+            const container = document.getElementById('adminRosterContainer');
+            container.innerHTML = '';
+
+            const cohortLessons = lessons.filter(l => l.cohortId === activeCohortId);
+
+            cohortLessons.sort((a,b) => a.date.localeCompare(b.date)).forEach(l => {
+                const approvedUsers = users.filter(u => u.isApproved && !u.isAdmin);
+                const registeredUserIds = approvedUsers.filter(u => {
+                    const regKey = `${u.id}_${activeCohortId}`;
+                    return (registrations[regKey] || []).includes(l.date);
+                }).map(u => u.id);
+
+                const enrolledIds = enrollments[l.id] || [];
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3";
+
+                let applicantCheckboxes = registeredUserIds.map(uid => {
+                    const u = users.find(x => x.id === uid);
+                    const isChecked = enrolledIds.includes(uid);
+                    const regKey = `${uid}_${activeCohortId}`;
+                    const totalAvail = (registrations[regKey] || []).length;
+
+                    return `
+                        <label class="flex items-center justify-between p-2 rounded-lg border border-slate-200 hover:bg-slate-50 text-xs cursor-pointer">
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleManualEnrollment('${l.id}', '${uid}')" class="rounded text-tennis-600 focus:ring-tennis-500">
+                                <span class="font-bold text-slate-800">${u.fullName}</span>
+                            </div>
+                            <span class="text-[10px] text-slate-500 font-mono">Avail: ${totalAvail} days</span>
+                        </label>
+                    `;
+                }).join('');
+
+                if (registeredUserIds.length === 0) {
+                    applicantCheckboxes = `<span class="text-xs text-slate-400 italic">No users registered availability for this day.</span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                        <div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-extrabold ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${l.level}</span>
+                            <h5 class="font-black text-slate-900 text-base inline ml-2">${l.date}</h5>
+                            <span class="text-xs text-slate-500 ml-2">(${l.startTime} - ${l.endTime})</span>
+                        </div>
+                        <div class="text-xs font-bold ${enrolledIds.length > l.capacity ? 'text-red-600' : 'text-slate-600'}">
+                            Seats Enrolled: ${enrolledIds.length} / ${l.capacity} Max
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="text-[11px] font-bold text-slate-400 uppercase mb-2">Registered Applicants (Check to confirm seat):</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                            ${applicantCheckboxes}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function toggleManualEnrollment(lessonId, userId) {
+            if (!enrollments[lessonId]) enrollments[lessonId] = [];
+            const idx = enrollments[lessonId].indexOf(userId);
+
+            if (idx === -1) {
+                enrollments[lessonId].push(userId);
+            } else {
+                enrollments[lessonId].splice(idx, 1);
+            }
+
+            saveState();
+            renderAdminEnrollmentsView();
+        }
+
+        function confirmAndPublishEnrollment() {
+            isSchedulePublished = true;
+            saveState();
+            showToast("Enrollment roster confirmed & published to Lesson Schedule!", "success");
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+            if (modalId === 'modalForgotPassword') resetOTPFormState();
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            let bgColor = 'bg-slate-900 text-white';
+            if (type === 'success') bgColor = 'bg-tennis-600 text-white';
+            if (type === 'error') bgColor = 'bg-red-600 text-white';
+            if (type === 'warning') bgColor = 'bg-amber-500 text-slate-950 font-bold';
+
+            toast.className = `fixed bottom-5 right-5 z-50 px-5 py-3 rounded-xl shadow-2xl text-sm transition-all duration-300 transform translate-y-2 flex items-center gap-2 ${bgColor}`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
+
+            document.body.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-4');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
