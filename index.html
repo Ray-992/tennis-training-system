@@ -865,10 +865,70 @@
         let myLessonsFilterActive = false;
         let generatedOTPCode = null;
 
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (supabaseClient) {
+                await loadDataFromSupabase();
+            }
             saveState();
             checkAutoLoginSession();
         });
+
+        async function loadDataFromSupabase() {
+            if (!supabaseClient) return;
+            try {
+                // 1. Fetch Users
+                const { data: dbUsers, error: uErr } = await supabaseClient.from('users').select('*');
+                if (!uErr && dbUsers && dbUsers.length > 0) {
+                    window.users = dbUsers.map(u => ({
+                        id: u.id,
+                        username: u.username,
+                        password: u.password,
+                        fullName: u.full_name,
+                        contact: u.contact,
+                        isApproved: u.is_approved,
+                        isAdmin: u.is_admin
+                    }));
+                }
+
+                // 2. Fetch Lessons
+                const { data: dbLessons, error: lErr } = await supabaseClient.from('lessons').select('*');
+                if (!lErr && dbLessons && dbLessons.length > 0) {
+                    window.lessons = dbLessons.map(l => ({
+                        id: l.id,
+                        cohortId: l.cohort_id,
+                        date: l.date,
+                        level: l.level,
+                        startTime: l.start_time,
+                        endTime: l.end_time,
+                        location: l.location,
+                        capacity: l.capacity
+                    }));
+                }
+
+                // 3. Fetch Registrations
+                const { data: dbRegs, error: rErr } = await supabaseClient.from('registrations').select('*');
+                if (!rErr && dbRegs && dbRegs.length > 0) {
+                    const regsObj = {};
+                    dbRegs.forEach(r => {
+                        regsObj[`${r.user_id}_${r.cohort_id}`] = r.available_dates || [];
+                    });
+                    window.registrations = regsObj;
+                }
+
+                // 4. Fetch Enrollments
+                const { data: dbEnrollments, error: eErr } = await supabaseClient.from('enrollments').select('*');
+                if (!eErr && dbEnrollments && dbEnrollments.length > 0) {
+                    const enrollObj = {};
+                    dbEnrollments.forEach(e => {
+                        if (!enrollObj[e.lesson_id]) enrollObj[e.lesson_id] = [];
+                        enrollObj[e.lesson_id].push(e.user_id);
+                    });
+                    window.enrollments = enrollObj;
+                }
+            } catch (err) {
+                console.log("Supabase initial fetch:", err);
+            }
+        }
 
         function saveState() {
             localStorage.setItem('ace_tennis_users', JSON.stringify(window.users));
@@ -884,7 +944,9 @@
         }
 
         async function syncToSupabaseBackend() {
+            if (!supabaseClient) return;
             try {
+                // 1. Sync Users
                 for (const u of window.users) {
                     await supabaseClient.from('users').upsert({
                         id: u.id,
@@ -896,8 +958,45 @@
                         is_admin: u.isAdmin
                     });
                 }
+
+                // 2. Sync Lessons
+                for (const l of window.lessons) {
+                    await supabaseClient.from('lessons').upsert({
+                        id: l.id,
+                        cohort_id: l.cohortId,
+                        date: l.date,
+                        level: l.level,
+                        start_time: l.startTime,
+                        end_time: l.endTime,
+                        location: l.location,
+                        capacity: l.capacity
+                    });
+                }
+
+                // 3. Sync Registrations
+                for (const key of Object.keys(window.registrations)) {
+                    const parts = key.split('_');
+                    if (parts.length === 2) {
+                        await supabaseClient.from('registrations').upsert({
+                            user_id: parts[0],
+                            cohort_id: parts[1],
+                            available_dates: window.registrations[key]
+                        });
+                    }
+                }
+
+                // 4. Sync Enrollments
+                for (const lessonId of Object.keys(window.enrollments)) {
+                    const userIds = window.enrollments[lessonId] || [];
+                    for (const userId of userIds) {
+                        await supabaseClient.from('enrollments').upsert({
+                            lesson_id: lessonId,
+                            user_id: userId
+                        });
+                    }
+                }
             } catch (err) {
-                console.log("Supabase live sync:", err);
+                console.log("Supabase live sync error:", err);
             }
         }
 
