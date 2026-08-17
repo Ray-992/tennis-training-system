@@ -1358,16 +1358,18 @@
             const contentSched = document.getElementById('contentSchedule');
             const contentAdmin = document.getElementById('contentAdmin');
 
-            // 1) Delete the admin portal button from non-admin users' interface
-            if (window.currentUser && window.currentUser.isAdmin) {
+            const isAdmin = window.currentUser && window.currentUser.isAdmin;
+
+            // Delete admin portal button for non-admin users
+            if (isAdmin) {
                 btnAdmin.classList.remove('hidden');
             } else {
                 btnAdmin.classList.add('hidden');
             }
 
-            [btnReg, btnSched, btnAdmin].forEach(btn => {
-                btn.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2";
-            });
+            btnReg.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2";
+            btnSched.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2";
+            btnAdmin.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 transition flex items-center gap-2 shadow-md " + (isAdmin ? "" : "hidden");
 
             [contentReg, contentSched, contentAdmin].forEach(c => c.classList.add('hidden'));
 
@@ -1379,7 +1381,7 @@
                 btnSched.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2";
                 contentSched.classList.remove('hidden');
                 renderFinalSchedule();
-            } else if (tab === 'admin' && window.currentUser?.isAdmin) {
+            } else if (tab === 'admin' && isAdmin) {
                 btnAdmin.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-md transition flex items-center gap-2";
                 contentAdmin.classList.remove('hidden');
                 switchAdminSubTab('users');
@@ -1716,7 +1718,6 @@
             });
         }
 
-        // 3) Admin can authorize other users to be admin too
         function toggleAdminRole(userId) {
             const u = window.users.find(x => x.id === userId);
             if (!u) return;
@@ -1803,13 +1804,20 @@
             window.lessons.push(cloned);
             saveState();
             renderAdminLessonsTable();
+            renderRegistrationCalendar();
+            renderFinalSchedule();
+            renderAdminEnrollmentsView();
             showToast(`Duplicated lesson slot for ${cloned.date}`, "success");
         }
 
         function openAddLessonModal() {
+            const c = cohorts.find(x => x.id === activeCohortId) || cohorts[0];
+            const startM = String(c.startMonth + 1).padStart(2, '0');
+            const defaultDate = `${c.startYear}-${startM}-01`;
+
             document.getElementById('lessonModalTitle').textContent = "Add New Lesson Slot";
             document.getElementById('lessonId').value = '';
-            document.getElementById('lessonDate').value = '2026-12-05';
+            document.getElementById('lessonDate').value = defaultDate;
             document.getElementById('lessonLevel').value = 'Beginner';
             document.getElementById('lessonStartTime').value = '09:00';
             document.getElementById('lessonEndTime').value = '11:00';
@@ -1854,6 +1862,9 @@
             saveState();
             closeModal('modalLessonForm');
             renderAdminLessonsTable();
+            renderRegistrationCalendar();
+            renderFinalSchedule();
+            renderAdminEnrollmentsView();
             showToast("Lesson details updated!", "success");
         }
 
@@ -1862,6 +1873,9 @@
             delete window.enrollments[id];
             saveState();
             renderAdminLessonsTable();
+            renderRegistrationCalendar();
+            renderFinalSchedule();
+            renderAdminEnrollmentsView();
             showToast("Lesson slot deleted.", "info");
         }
 
