@@ -95,7 +95,7 @@
             <div id="loginAnnouncementBanner" class="p-4 rounded-xl bg-amber-50 border-l-4 border-amber-500 text-amber-900 shadow-sm flex items-start gap-3">
                 <i class="fa-solid fa-bullhorn text-amber-600 text-lg mt-0.5 shrink-0"></i>
                 <div class="text-xs font-semibold leading-relaxed">
-                    The training schedule for Dec 2026 - Feb 2027 has been released. Please login to view your confirmed sessions!
+                    The training schedule for the active cohort has been released. Please login to view your confirmed sessions or submit availability!
                 </div>
             </div>
 
@@ -151,7 +151,7 @@
                 <!-- REGISTER FORM -->
                 <div id="registerFormContainer" class="p-6 sm:p-8 hidden">
                     <div class="text-center mb-6">
-                        <h2 class="text-2xl font-bold text-slate-800">Student Signup</h2>
+                        <h2 class="text-2xl font-bold text-slate-800">User Signup</h2>
                         <p class="text-xs text-slate-500 mt-1">Requires admin verification before account activation</p>
                     </div>
 
@@ -191,7 +191,7 @@
 
                         <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2">
                             <i class="fa-solid fa-triangle-exclamation text-amber-600 shrink-0 mt-0.5"></i>
-                            <span>Admin verification required. Accounts must be approved by Raymond before logging in.</span>
+                            <span>Admin verification required. Accounts must be approved by an administrator before logging in.</span>
                         </div>
 
                         <button type="submit" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm">
@@ -211,14 +211,12 @@
                     <div class="inline-flex items-center gap-2">
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-tennis-500 text-slate-900">Active Cohort</span>
                         <select id="userCohortSelect" onchange="changeActiveCohort(this.value)" class="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 outline-none font-bold">
-                            <option value="c1">1st Training Cohort: Dec 2026 - Feb 2027</option>
-                            <option value="c2">2nd Training Cohort: Mar 2027 - May 2027</option>
-                            <option value="c3">3rd Training Cohort: Jun 2027 - Aug 2027</option>
+                            <!-- Injected via JS -->
                         </select>
                     </div>
                     <h2 id="cohortTitleDisplay" class="text-2xl font-black text-white tracking-wide">1st Training Cohort: Dec 2026 - Feb 2027</h2>
                     <p class="text-slate-400 text-xs flex items-center gap-2">
-                        <i class="fa-solid fa-bullseye text-tennis-400"></i> Target Assigned Lessons per Student: <span id="dashboardTargetLessons" class="font-bold text-tennis-400">8 Lessons</span>
+                        <i class="fa-solid fa-bullseye text-tennis-400"></i> Target Assigned Lessons per User: <span id="dashboardTargetLessons" class="font-bold text-tennis-400">8 Lessons</span>
                     </p>
                 </div>
 
@@ -356,7 +354,7 @@
                 </div>
             </div>
 
-            <!-- TAB 3: Admin Management Portal (Raymond Only) -->
+            <!-- TAB 3: Admin Management Portal (Admins Only) -->
             <div id="contentAdmin" class="hidden space-y-6">
 
                 <!-- Admin Banner -->
@@ -365,8 +363,8 @@
                         <div class="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase text-amber-800 bg-amber-200 px-2.5 py-0.5 rounded-full mb-1">
                             <i class="fa-solid fa-crown"></i> Admin Management Hub
                         </div>
-                        <h3 class="text-2xl font-bold text-slate-900">Welcome Admin Raymond</h3>
-                        <p class="text-xs text-slate-600 mt-1">Manage account approvals, lesson slots, and run priority auto-enrollment assignments.</p>
+                        <h3 class="text-2xl font-bold text-slate-900">Admin Control Center</h3>
+                        <p class="text-xs text-slate-600 mt-1">Manage account approvals, delegate admin rights, create cohorts/lessons, and run priority auto-enrollment assignments.</p>
                     </div>
 
                     <!-- Target Lessons Config -->
@@ -383,24 +381,24 @@
                 <!-- Admin Sub Nav Tabs -->
                 <div class="flex border-b border-slate-200 gap-2">
                     <button id="adminSubTabUsers" onclick="switchAdminSubTab('users')" class="py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2">
-                        <i class="fa-solid fa-user-check"></i> Account Approvals <span id="pendingBadgeCount" class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+                        <i class="fa-solid fa-user-check"></i> Account Approvals & Admins <span id="pendingBadgeCount" class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
                     </button>
                     <button id="adminSubTabLessons" onclick="switchAdminSubTab('lessons')" class="py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-plus"></i> Manage Lessons
+                        <i class="fa-solid fa-calendar-plus"></i> Manage Lessons & Cohorts
                     </button>
                     <button id="adminSubTabEnrollments" onclick="switchAdminSubTab('enrollments')" class="py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2">
                         <i class="fa-solid fa-wand-magic-sparkles"></i> Priority Auto-Assignment
                     </button>
                 </div>
 
-                <!-- SUB-TAB 1: Account Verification Requests -->
+                <!-- SUB-TAB 1: Account Verification & Admin Delegation Requests -->
                 <div id="adminViewUsers" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h4 class="font-bold text-slate-800 text-base flex items-center gap-2">
-                                <i class="fa-solid fa-id-card text-amber-500"></i> Account Verification Requests
+                                <i class="fa-solid fa-id-card text-amber-500"></i> User Accounts & Admin Delegation
                             </h4>
-                            <p class="text-xs text-slate-500">Approve or reject student registrations before granting schedule access.</p>
+                            <p class="text-xs text-slate-500">Approve or reject new registration requests, and authorize users as Admins.</p>
                         </div>
                         <button onclick="exportUserDatabaseExcel()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow">
                             <i class="fa-solid fa-file-excel"></i> Export Accounts (Excel)
@@ -423,6 +421,7 @@
                                     <th class="py-3 px-4">Contact Phone</th>
                                     <th class="py-3 px-4">Username</th>
                                     <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4">Role</th>
                                     <th class="py-3 px-4 text-right">Actions</th>
                                 </tr>
                             </thead>
@@ -433,16 +432,21 @@
                     </div>
                 </div>
 
-                <!-- SUB-TAB 2: Manage Lessons -->
+                <!-- SUB-TAB 2: Manage Lessons & Add Cohort -->
                 <div id="adminViewLessons" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
-                            <h4 class="font-bold text-slate-800 text-base">Schedule Lessons</h4>
-                            <p class="text-xs text-slate-500">Create, edit, or duplicate available lesson slots for active cohort.</p>
+                            <h4 class="font-bold text-slate-800 text-base">Schedule Lessons & Cohorts</h4>
+                            <p class="text-xs text-slate-500">Create new cohorts, schedule training dates, or duplicate available lesson slots.</p>
                         </div>
-                        <button onclick="openAddLessonModal()" class="px-4 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-plus"></i> Add New Lesson Slot
-                        </button>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="openAddCohortModal()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-folder-plus"></i> Add New Cohort
+                            </button>
+                            <button onclick="openAddLessonModal()" class="px-4 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i> Add New Lesson Slot
+                            </button>
+                        </div>
                     </div>
 
                     <div class="overflow-x-auto">
@@ -473,7 +477,7 @@
                                     <i class="fa-solid fa-scale-balanced text-tennis-600"></i> Priority Auto-Enrollment & Confirmation
                                 </h4>
                                 <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                                    <strong>Priority Rule:</strong> When class registrations exceed capacity (Beginner: 8, Intermediate: 4), priority is automatically assigned to students with <strong>fewer total available dates</strong> so everyone reaches their target of <span id="adminRuleTargetLessonsText" class="font-bold text-slate-900">8 lessons</span>.
+                                    <strong>Priority Rule:</strong> When class registrations exceed capacity (Beginner: 8, Intermediate: 4), priority is automatically assigned to users with <strong>fewer total available dates</strong> so everyone reaches their target of <span id="adminRuleTargetLessonsText" class="font-bold text-slate-900">8 lessons</span>.
                                 </p>
                             </div>
                             <div class="flex flex-wrap items-center gap-2">
@@ -717,7 +721,7 @@
                 <table class="w-full text-left text-xs border-collapse">
                     <thead class="bg-slate-50 text-slate-600 uppercase sticky top-0 font-bold">
                         <tr>
-                            <th class="py-3 px-4">Student Name</th>
+                            <th class="py-3 px-4">User Name</th>
                             <th class="py-3 px-4">Contact</th>
                             <th class="py-3 px-4 text-center">Avail. Provided</th>
                             <th class="py-3 px-4 text-center">Enrolled Lessons</th>
@@ -730,7 +734,7 @@
                 </table>
             </div>
             <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-                <div class="text-xs text-slate-500">Target per student: <span id="previewTargetCount" class="font-bold text-slate-800">8</span> lessons</div>
+                <div class="text-xs text-slate-500">Target per user: <span id="previewTargetCount" class="font-bold text-slate-800">8</span> lessons</div>
                 <button onclick="closeModal('modalPreviewRoster')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold">Close Preview</button>
             </div>
         </div>
@@ -747,7 +751,7 @@
                 <input type="hidden" id="lessonId">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Date</label>
-                    <input type="date" id="lessonDate" required min="2026-12-01" max="2027-12-31" 
+                    <input type="date" id="lessonDate" required 
                            class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
                 </div>
                 <div>
@@ -780,6 +784,37 @@
         </div>
     </div>
 
+    <!-- MODAL 9: Add New Cohort -->
+    <div id="modalCohortForm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-folder-plus text-amber-500 mr-2"></i> Add New Cohort</h3>
+                <button onclick="closeModal('modalCohortForm')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleSaveCohort(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Cohort Display Name</label>
+                    <input type="text" id="cohortNameInput" required placeholder="2nd Training Cohort: Mar 2027 - May 2027" 
+                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Start Month</label>
+                        <input type="month" id="cohortStartMonth" required value="2027-03" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">End Month</label>
+                        <input type="month" id="cohortEndMonth" required value="2027-05" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modalCohortForm')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow">Create Cohort</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Supabase Initialization Script -->
     <script>
         // YOUR SUPABASE CREDENTIALS
@@ -800,55 +835,27 @@
 
     <!-- Main Client Script -->
     <script>
-        const COHORTS = [
-            { id: 'c1', name: '1st Training Cohort: Dec 2026 - Feb 2027', startYear: 2026, startMonth: 11, endYear: 2027, endMonth: 1 },
-            { id: 'c2', name: '2nd Training Cohort: Mar 2027 - May 2027', startYear: 2027, startMonth: 2, endYear: 2027, endMonth: 4 },
-            { id: 'c3', name: '3rd Training Cohort: Jun 2027 - Aug 2027', startYear: 2027, startMonth: 5, endYear: 2027, endMonth: 7 }
+        const DEFAULT_COHORTS = [
+            { id: 'c1', name: '1st Training Cohort: Dec 2026 - Feb 2027', startYear: 2026, startMonth: 11, endYear: 2027, endMonth: 1 }
         ];
 
+        let cohorts = JSON.parse(localStorage.getItem('ace_tennis_cohorts')) || DEFAULT_COHORTS;
         let activeCohortId = 'c1';
 
         const DEFAULT_ADMIN = {
             id: 'admin_1',
-            username: 'Raymond',
-            password: '123456',
-            fullName: 'Raymond (Admin)',
-            contact: '+852 91234567',
+            username: 'admin',
+            password: '123',
+            fullName: 'System Administrator',
+            contact: '+852 90000000',
             isApproved: true,
             isAdmin: true
         };
 
-        const DEFAULT_USERS = [
-            DEFAULT_ADMIN,
-            { id: 'u1', username: 'john', password: '123', fullName: 'CHAN Tai-man', contact: '+852 91234567', isApproved: true, isAdmin: false },
-            { id: 'u2', username: 'alice', password: '123', fullName: 'Alice Wong', contact: '+852 91112222', isApproved: true, isAdmin: false },
-            { id: 'u3', username: 'bob', password: '123', fullName: 'Bob Chan', contact: '+852 93334444', isApproved: true, isAdmin: false },
-            { id: 'u4', username: 'sarah', password: '123', fullName: 'Sarah Lee', contact: '+852 95556666', isApproved: false, isAdmin: false }
-        ];
-
-        const DEFAULT_LESSONS = [
-            { id: 'l1', cohortId: 'c1', date: '2026-12-05', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
-            { id: 'l2', cohortId: 'c1', date: '2026-12-12', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
-            { id: 'l3', cohortId: 'c1', date: '2026-12-19', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 2', capacity: 8 },
-            { id: 'l4', cohortId: 'c1', date: '2026-12-26', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 2', capacity: 8 },
-            { id: 'l5', cohortId: 'c1', date: '2027-01-09', level: 'Beginner', startTime: '10:00', endTime: '12:00', location: 'Kowloon Park Court 3', capacity: 8 },
-            { id: 'l6', cohortId: 'c1', date: '2027-01-16', level: 'Beginner', startTime: '10:00', endTime: '12:00', location: 'Kowloon Park Court 3', capacity: 8 },
-            { id: 'l7', cohortId: 'c1', date: '2027-01-23', level: 'Beginner', startTime: '10:00', endTime: '12:00', location: 'Kowloon Park Court 3', capacity: 8 },
-            { id: 'l8', cohortId: 'c1', date: '2027-01-30', level: 'Beginner', startTime: '10:00', endTime: '12:00', location: 'Kowloon Park Court 3', capacity: 8 },
-            { id: 'l9', cohortId: 'c1', date: '2026-12-06', level: 'Intermediate', startTime: '14:00', endTime: '16:00', location: 'Victoria Park Court 3', capacity: 4 },
-            { id: 'l10', cohortId: 'c1', date: '2026-12-13', level: 'Intermediate', startTime: '14:00', endTime: '16:00', location: 'Victoria Park Court 3', capacity: 4 }
-        ];
-
-        const DEFAULT_REGISTRATIONS = {
-            'u1_c1': ['2026-12-05', '2026-12-12', '2026-12-19', '2026-12-26', '2027-01-09', '2027-01-16', '2027-01-23', '2027-01-30'],
-            'u2_c1': ['2026-12-05', '2026-12-12', '2026-12-19', '2027-01-09', '2027-01-16'],
-            'u3_c1': ['2026-12-06', '2026-12-13']
-        };
-
-        const DEFAULT_ENROLLMENTS = {
-            'l1': ['u1', 'u2'],
-            'l2': ['u1', 'u2']
-        };
+        const DEFAULT_USERS = [DEFAULT_ADMIN];
+        const DEFAULT_LESSONS = [];
+        const DEFAULT_REGISTRATIONS = {};
+        const DEFAULT_ENROLLMENTS = {};
 
         // Persistent State
         window.users = JSON.parse(localStorage.getItem('ace_tennis_users')) || DEFAULT_USERS;
@@ -869,6 +876,7 @@
             if (supabaseClient) {
                 await loadDataFromSupabase();
             }
+            populateCohortDropdowns();
             saveState();
             checkAutoLoginSession();
         });
@@ -892,7 +900,7 @@
 
                 // 2. Fetch Lessons
                 const { data: dbLessons, error: lErr } = await supabaseClient.from('lessons').select('*');
-                if (!lErr && dbLessons && dbLessons.length > 0) {
+                if (!lErr && dbLessons) {
                     window.lessons = dbLessons.map(l => ({
                         id: l.id,
                         cohortId: l.cohort_id,
@@ -907,7 +915,7 @@
 
                 // 3. Fetch Registrations
                 const { data: dbRegs, error: rErr } = await supabaseClient.from('registrations').select('*');
-                if (!rErr && dbRegs && dbRegs.length > 0) {
+                if (!rErr && dbRegs) {
                     const regsObj = {};
                     dbRegs.forEach(r => {
                         regsObj[`${r.user_id}_${r.cohort_id}`] = r.available_dates || [];
@@ -917,7 +925,7 @@
 
                 // 4. Fetch Enrollments
                 const { data: dbEnrollments, error: eErr } = await supabaseClient.from('enrollments').select('*');
-                if (!eErr && dbEnrollments && dbEnrollments.length > 0) {
+                if (!eErr && dbEnrollments) {
                     const enrollObj = {};
                     dbEnrollments.forEach(e => {
                         if (!enrollObj[e.lesson_id]) enrollObj[e.lesson_id] = [];
@@ -930,7 +938,20 @@
             }
         }
 
+        function populateCohortDropdowns() {
+            const select = document.getElementById('userCohortSelect');
+            select.innerHTML = '';
+            cohorts.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = c.name;
+                select.appendChild(opt);
+            });
+            select.value = activeCohortId;
+        }
+
         function saveState() {
+            localStorage.setItem('ace_tennis_cohorts', JSON.stringify(cohorts));
             localStorage.setItem('ace_tennis_users', JSON.stringify(window.users));
             localStorage.setItem('ace_tennis_lessons', JSON.stringify(window.lessons));
             localStorage.setItem('ace_tennis_regs', JSON.stringify(window.registrations));
@@ -1014,7 +1035,7 @@
 
         function changeActiveCohort(cohortId) {
             activeCohortId = cohortId;
-            const c = COHORTS.find(x => x.id === cohortId);
+            const c = cohorts.find(x => x.id === cohortId);
             if (c) {
                 activeRegYear = c.startYear;
                 activeRegMonth = c.startMonth;
@@ -1034,6 +1055,40 @@
                 renderAdminLessonsTable();
                 renderAdminEnrollmentsView();
             }
+        }
+
+        function openAddCohortModal() {
+            openModal('modalCohortForm');
+        }
+
+        function handleSaveCohort(e) {
+            e.preventDefault();
+            const name = document.getElementById('cohortNameInput').value.trim();
+            const startVal = document.getElementById('cohortStartMonth').value; // YYYY-MM
+            const endVal = document.getElementById('cohortEndMonth').value;     // YYYY-MM
+
+            if (!name || !startVal || !endVal) return;
+
+            const [sYear, sMonth] = startVal.split('-').map(Number);
+            const [eYear, eMonth] = endVal.split('-').map(Number);
+
+            const newCohort = {
+                id: 'c_' + Date.now(),
+                name: name,
+                startYear: sYear,
+                startMonth: sMonth - 1, // 0-indexed month
+                endYear: eYear,
+                endMonth: eMonth - 1
+            };
+
+            cohorts.push(newCohort);
+            activeCohortId = newCohort.id;
+            saveState();
+
+            populateCohortDropdowns();
+            changeActiveCohort(newCohort.id);
+            closeModal('modalCohortForm');
+            showToast(`New cohort "${name}" created and set as active!`, "success");
         }
 
         function switchAuthTab(tab) {
@@ -1073,7 +1128,7 @@
             }
 
             if (!foundUser.isApproved) {
-                showToast("Account pending admin approval. Please wait for Raymond's verification.", "warning");
+                showToast("Account pending admin approval. Please wait for verification.", "warning");
                 return;
             }
 
@@ -1112,7 +1167,7 @@
             document.getElementById('loginUsername').value = username;
             document.getElementById('loginPassword').value = '';
 
-            showToast("Registration request submitted! Awaiting Admin Raymond's approval.", "info");
+            showToast("Registration request submitted! Awaiting Admin approval.", "info");
         }
 
         function openForgotPasswordModal() {
@@ -1198,7 +1253,7 @@
                 const roster = window.enrollments[l.id] || [];
                 if (roster.includes(window.currentUser?.id)) {
                     count++;
-                    const c = COHORTS.find(x => x.id === l.cohortId);
+                    const c = cohorts.find(x => x.id === l.cohortId);
                     const tr = document.createElement('tr');
                     tr.className = "border-b border-slate-100 hover:bg-slate-50";
                     tr.innerHTML = `
@@ -1268,7 +1323,7 @@
                 container.innerHTML = `
                     <div class="flex items-center space-x-2">
                         <div class="text-right hidden sm:block mr-2">
-                            <div class="text-[10px] font-black text-tennis-400 uppercase">${window.currentUser.isAdmin ? 'ADMIN' : 'STUDENT'}</div>
+                            <div class="text-[10px] font-black text-tennis-400 uppercase">${window.currentUser.isAdmin ? 'ADMIN' : 'USER'}</div>
                             <div class="text-xs font-bold text-white">${window.currentUser.fullName}</div>
                         </div>
                         <button onclick="openEnrolledRecordsModal()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition border border-slate-700 flex items-center gap-1" title="Enrolled Records">
@@ -1303,6 +1358,7 @@
             const contentSched = document.getElementById('contentSchedule');
             const contentAdmin = document.getElementById('contentAdmin');
 
+            // 1) Delete the admin portal button from non-admin users' interface
             if (window.currentUser && window.currentUser.isAdmin) {
                 btnAdmin.classList.remove('hidden');
             } else {
@@ -1331,15 +1387,30 @@
         }
 
         function changeRegMonth(delta) {
-            activeRegMonth += delta;
-            if (activeRegMonth > 11) {
-                activeRegMonth = 0;
-                activeRegYear++;
-            } else if (activeRegMonth < 0) {
-                activeRegMonth = 11;
-                activeRegYear--;
+            const currentCohort = cohorts.find(c => c.id === activeCohortId) || cohorts[0];
+            let newMonth = activeRegMonth + delta;
+            let newYear = activeRegYear;
+
+            if (newMonth > 11) {
+                newMonth = 0;
+                newYear++;
+            } else if (newMonth < 0) {
+                newMonth = 11;
+                newYear--;
             }
-            renderRegistrationCalendar();
+
+            // Lock navigation strictly within active cohort month bounds
+            const startVal = currentCohort.startYear * 12 + currentCohort.startMonth;
+            const endVal = currentCohort.endYear * 12 + currentCohort.endMonth;
+            const targetVal = newYear * 12 + newMonth;
+
+            if (targetVal >= startVal && targetVal <= endVal) {
+                activeRegMonth = newMonth;
+                activeRegYear = newYear;
+                renderRegistrationCalendar();
+            } else {
+                showToast("Month is outside the active cohort date range.", "warning");
+            }
         }
 
         function renderRegistrationCalendar() {
@@ -1546,7 +1617,7 @@
                         <div class="text-[10px] font-bold text-slate-400 uppercase mb-1.5">Confirmed Participants:</div>
                         ${enrolledUserNames.length > 0 
                             ? `<div class="flex flex-wrap gap-1">${enrolledUserNames.map(name => `<span class="bg-slate-100 text-slate-800 text-[11px] px-2 py-0.5 rounded-lg font-bold border border-slate-200">${name}</span>`).join('')}</div>`
-                            : `<span class="text-xs text-slate-400 italic">No students enrolled yet.</span>`
+                            : `<span class="text-xs text-slate-400 italic">No users enrolled yet.</span>`
                         }
                     </div>
                 `;
@@ -1589,26 +1660,25 @@
             const tbody = document.getElementById('userApprovalTableBody');
             tbody.innerHTML = '';
 
-            const nonAdminUsers = window.users.filter(u => !u.isAdmin);
-            const pendingUsers = nonAdminUsers.filter(u => !u.isApproved);
+            const pendingUsers = window.users.filter(u => !u.isApproved);
             document.getElementById('pendingBadgeCount').textContent = pendingUsers.length;
 
             const banner = document.getElementById('adminPendingAlertBanner');
             if (pendingUsers.length > 0) {
                 banner.classList.remove('hidden');
                 banner.classList.add('flex');
-                document.getElementById('adminPendingAlertText').textContent = `Attention Admin Raymond: ${pendingUsers.length} user account(s) are pending approval!`;
+                document.getElementById('adminPendingAlertText').textContent = `Attention Admin: ${pendingUsers.length} user account(s) are pending approval!`;
             } else {
                 banner.classList.add('hidden');
                 banner.classList.remove('flex');
             }
 
-            if (nonAdminUsers.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No registered student accounts found.</td></tr>`;
+            if (window.users.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">No user accounts found.</td></tr>`;
                 return;
             }
 
-            nonAdminUsers.forEach(u => {
+            window.users.forEach(u => {
                 const tr = document.createElement('tr');
                 tr.className = "border-b border-slate-100 hover:bg-slate-50 transition";
 
@@ -1622,17 +1692,39 @@
                             : `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 animate-pulse"><i class="fa-solid fa-clock mr-1"></i> Pending Review</span>`
                         }
                     </td>
+                    <td class="py-3 px-4">
+                        ${u.isAdmin 
+                            ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300"><i class="fa-solid fa-crown mr-1"></i> Admin</span>`
+                            : `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700">User</span>`
+                        }
+                    </td>
                     <td class="py-3 px-4 text-right space-x-1.5">
                         ${!u.isApproved ? `
                             <button onclick="approveUser('${u.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow">Approve</button>
                             <button onclick="rejectUser('${u.id}')" class="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-bold border border-red-200">Reject</button>
                         ` : `
-                            <button onclick="revokeUser('${u.id}')" class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold">Revoke</button>
+                            ${u.id !== window.currentUser.id ? `
+                                <button onclick="toggleAdminRole('${u.id}')" class="px-2.5 py-1 ${u.isAdmin ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-indigo-600 text-white'} hover:opacity-80 rounded-lg text-xs font-bold shadow">
+                                    ${u.isAdmin ? 'Revoke Admin' : 'Make Admin'}
+                                </button>
+                                <button onclick="revokeUser('${u.id}')" class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold">Unapprove</button>
+                            ` : `<span class="text-[10px] text-slate-400 font-bold italic">(You)</span>`}
                         `}
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        // 3) Admin can authorize other users to be admin too
+        function toggleAdminRole(userId) {
+            const u = window.users.find(x => x.id === userId);
+            if (!u) return;
+
+            u.isAdmin = !u.isAdmin;
+            saveState();
+            renderAdminUsersTable();
+            showToast(`${u.fullName} is now ${u.isAdmin ? 'an Admin' : 'a standard User'}.`, "success");
         }
 
         function approveUser(userId) {
@@ -1674,6 +1766,11 @@
             tbody.innerHTML = '';
 
             const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
+
+            if (cohortLessons.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">No scheduled lessons for this cohort yet. Click "Add New Lesson Slot" to create one.</td></tr>`;
+                return;
+            }
 
             cohortLessons.sort((a,b) => a.date.localeCompare(b.date)).forEach(l => {
                 const tr = document.createElement('tr');
@@ -1868,16 +1965,16 @@
             tbody.innerHTML = '';
             document.getElementById('previewTargetCount').textContent = cohortTargetLessons;
 
-            const approvedStudents = window.users.filter(u => u.isApproved && !u.isAdmin);
+            const approvedUsers = window.users.filter(u => u.isApproved && !u.isAdmin);
             const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
 
-            if (approvedStudents.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No approved students found.</td></tr>`;
+            if (approvedUsers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No approved users found.</td></tr>`;
                 openModal('modalPreviewRoster');
                 return;
             }
 
-            approvedStudents.forEach(u => {
+            approvedUsers.forEach(u => {
                 const regKey = `${u.id}_${activeCohortId}`;
                 const availDates = (window.registrations[regKey] || []).length;
 
@@ -1915,9 +2012,14 @@
 
             const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
 
+            if (cohortLessons.length === 0) {
+                container.innerHTML = `<div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-400 font-bold">No lesson slots created for this cohort yet.</div>`;
+                return;
+            }
+
             cohortLessons.sort((a,b) => a.date.localeCompare(b.date)).forEach(l => {
-                const approvedStudents = window.users.filter(u => u.isApproved && !u.isAdmin);
-                const registeredUserIds = approvedStudents.map(u => u.id).filter(uid => {
+                const approvedUsers = window.users.filter(u => u.isApproved && !u.isAdmin);
+                const registeredUserIds = approvedUsers.map(u => u.id).filter(uid => {
                     const regKey = `${uid}_${activeCohortId}`;
                     return (window.registrations[regKey] || []).includes(l.date);
                 });
@@ -1998,7 +2100,7 @@
 
             window.users.forEach(u => {
                 const status = u.isApproved ? "Approved" : "Pending Verification";
-                const role = u.isAdmin ? "Admin" : "Student";
+                const role = u.isAdmin ? "Admin" : "User";
                 csvContent += `"${u.id}","${u.fullName}","${u.contact}","${u.username}","${status}","${role}"\n`;
             });
 
@@ -2015,7 +2117,7 @@
 
         function exportEnrollmentDatabaseExcel() {
             let csvContent = "\uFEFF";
-            csvContent += "Cohort,Lesson ID,Date,Weekday,Level,Location,StartTime,EndTime,Enrolled Student ID,Enrolled Student Name,Contact\n";
+            csvContent += "Cohort,Lesson ID,Date,Weekday,Level,Location,StartTime,EndTime,Enrolled User ID,Enrolled User Name,Contact\n";
 
             const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
             const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -2026,7 +2128,7 @@
                 const enrolledUserIds = window.enrollments[l.id] || [];
 
                 if (enrolledUserIds.length === 0) {
-                    csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","N/A","No Students Enrolled","N/A"\n`;
+                    csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","N/A","No Users Enrolled","N/A"\n`;
                 } else {
                     enrolledUserIds.forEach(uid => {
                         const u = window.users.find(x => x.id === uid);
