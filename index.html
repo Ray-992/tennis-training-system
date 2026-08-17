@@ -120,10 +120,10 @@
                     
                     <form onsubmit="handleLogin(event)" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username or Email</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user text-xs"></i></span>
-                                <input type="text" id="loginUsername" required placeholder="Username or email" 
+                                <input type="text" id="loginUsername" required placeholder="Username" 
                                        class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 text-slate-800 outline-none text-sm transition">
                             </div>
                         </div>
@@ -131,8 +131,8 @@
                         <div>
                             <div class="flex justify-between items-center mb-1">
                                 <label class="block text-xs font-bold text-slate-700 uppercase">Password</label>
-                                <button type="button" onclick="openForgotPasswordModal()" class="text-xs text-tennis-600 hover:text-tennis-700 font-semibold transition flex items-center gap-1">
-                                    <i class="fa-solid fa-key text-[10px]"></i> Forgot Password?
+                                <button type="button" onclick="openForgotPasswordModal()" class="text-xs text-tennis-600 hover:text-tennis-700 font-semibold transition">
+                                    Forgot Password?
                                 </button>
                             </div>
                             <div class="relative">
@@ -164,7 +164,7 @@
 
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address <span class="text-red-500">*</span></label>
-                            <input type="email" id="regEmail" required placeholder="user@example.com" 
+                            <input type="email" id="regEmail" required placeholder="name@example.com" 
                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 text-slate-800 outline-none text-sm">
                         </div>
 
@@ -424,7 +424,7 @@
                             <thead>
                                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold">
                                     <th class="py-3 px-4">Full Name</th>
-                                    <th class="py-3 px-4">Email</th>
+                                    <th class="py-3 px-4">Email Address</th>
                                     <th class="py-3 px-4">Contact Phone</th>
                                     <th class="py-3 px-4">Username</th>
                                     <th class="py-3 px-4">Status</th>
@@ -641,40 +641,40 @@
         </div>
     </div>
 
-    <!-- MODAL 5: 100% Free Email OTP / Password Reset -->
+    <!-- MODAL 5: Forgot Password & Email OTP -->
     <div id="modalForgotPassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-envelope text-tennis-600 mr-2"></i> Free Email OTP Password Reset</h3>
+                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-key text-tennis-600 mr-2"></i> Password Reset & Email OTP</h3>
                 <button onclick="closeModal('modalForgotPassword')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <!-- Step 1: Send Email OTP -->
+            <!-- Step 1: Request OTP -->
             <div id="forgotStep1">
                 <form onsubmit="handleSendEmailOTP(event)" class="space-y-4">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Registered Email Address</label>
-                        <input type="email" id="forgotEmailInput" required placeholder="user@example.com" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
+                        <input type="email" id="forgotEmailInput" required placeholder="name@example.com" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
                     </div>
-                    <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-paper-plane"></i> Send 6-Digit Email OTP (Free)
+                    <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Send 6-Digit Email OTP
                     </button>
                 </form>
             </div>
 
-            <!-- Step 2: Option B - Verify OTP Code & Reset Password -->
+            <!-- Step 2: Verify OTP -->
             <div id="forgotStep2" class="hidden space-y-4">
                 <form onsubmit="handleVerifyEmailOTPAndReset(event)" class="space-y-4">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">6-Digit Email OTP Code</label>
-                        <input type="text" id="forgotOTPInput" required placeholder="Enter 6-digit OTP code" maxlength="6" class="w-full px-3 py-2.5 rounded-xl border border-slate-300 text-tennis-700 font-mono tracking-widest text-center font-bold text-base outline-none focus:ring-2 focus:ring-tennis-500">
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">6-Digit OTP Code from Email</label>
+                        <input type="text" id="forgotOTPInput" required placeholder="Enter 6-digit OTP" maxlength="6" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-tennis-700 font-mono tracking-widest text-center font-bold text-base outline-none">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">New Password</label>
-                        <input type="password" id="forgotNewPassword" required placeholder="Enter new password" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
+                        <input type="password" id="forgotNewPassword" required placeholder="Enter new password" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
                     </div>
-                    <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-shield-check"></i> Verify OTP Code & Save Password
+                    <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-lock-open"></i> Verify OTP & Reset Password
                     </button>
                 </form>
             </div>
@@ -842,7 +842,7 @@
         const DEFAULT_ADMIN = {
             id: 'admin_1',
             username: 'admin',
-            email: 'admin@tennis.com',
+            email: 'admin@tennistraining.com',
             password: '123',
             fullName: 'System Administrator',
             contact: '+852 90000000',
@@ -868,8 +868,8 @@
         let activeRegMonth = 11;
         let tempSelectedDates = new Set();
         let myLessonsFilterActive = false;
-        let generatedOTPCode = null;
         let targetResetEmail = null;
+        let generatedOTPCode = null;
 
         window.addEventListener('DOMContentLoaded', async () => {
             if (supabaseClient) {
@@ -889,7 +889,7 @@
                     window.users = dbUsers.map(u => ({
                         id: u.id,
                         username: u.username,
-                        email: u.email || `${u.username}@example.com`,
+                        email: u.email || '',
                         password: u.password,
                         fullName: u.full_name,
                         contact: u.contact,
@@ -972,7 +972,7 @@
                     await supabaseClient.from('users').upsert({
                         id: u.id,
                         username: u.username,
-                        email: u.email,
+                        email: u.email || null,
                         password: u.password,
                         full_name: u.fullName,
                         contact: u.contact,
@@ -989,7 +989,7 @@
                         date: l.date,
                         level: l.level,
                         start_time: l.startTime,
-                        end_time: l.end_time,
+                        end_time: l.endTime,
                         location: l.location,
                         capacity: l.capacity
                     });
@@ -1065,8 +1065,8 @@
         function handleSaveCohort(e) {
             e.preventDefault();
             const name = document.getElementById('cohortNameInput').value.trim();
-            const startVal = document.getElementById('cohortStartMonth').value;
-            const endVal = document.getElementById('cohortEndMonth').value;
+            const startVal = document.getElementById('cohortStartMonth').value; // YYYY-MM
+            const endVal = document.getElementById('cohortEndMonth').value;     // YYYY-MM
 
             if (!name || !startVal || !endVal) return;
 
@@ -1077,7 +1077,7 @@
                 id: 'c_' + Date.now(),
                 name: name,
                 startYear: sYear,
-                startMonth: sMonth - 1,
+                startMonth: sMonth - 1, // 0-indexed month
                 endYear: eYear,
                 endMonth: eMonth - 1
             };
@@ -1116,13 +1116,10 @@
             const usernameInput = document.getElementById('loginUsername').value.trim();
             const passwordInput = document.getElementById('loginPassword').value.trim();
 
-            const foundUser = window.users.find(u => 
-                u.username.toLowerCase() === usernameInput.toLowerCase() || 
-                (u.email && u.email.toLowerCase() === usernameInput.toLowerCase())
-            );
+            const foundUser = window.users.find(u => u.username.toLowerCase() === usernameInput.toLowerCase());
 
             if (!foundUser) {
-                showToast("Account not found. Please check your username/email.", "error");
+                showToast("Account not found. Please check your username.", "error");
                 return;
             }
 
@@ -1171,6 +1168,22 @@
                 isAdmin: false
             };
 
+            // Also register in Supabase Auth system for Email OTP support
+            if (supabaseClient) {
+                supabaseClient.auth.signUp({
+                    email: email,
+                    password: password,
+                    options: {
+                        data: {
+                            full_name: fullName,
+                            username: username
+                        }
+                    }
+                }).then(({ error }) => {
+                    if (error) console.log("Supabase Auth SignUp info:", error.message);
+                }).catch(err => console.log("Supabase Auth catch:", err));
+            }
+
             window.users.push(newUser);
             saveState();
 
@@ -1190,7 +1203,6 @@
             openModal('modalForgotPassword');
         }
 
-        // Send 6-Digit Email OTP
         async function handleSendEmailOTP(e) {
             e.preventDefault();
             const email = document.getElementById('forgotEmailInput').value.trim();
@@ -1204,11 +1216,10 @@
             targetResetEmail = email;
             generatedOTPCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-            showToast("Sending 100% Free Email OTP...", "info");
+            showToast("Requesting Email OTP...", "info");
 
-            let supabaseAuthSuccess = false;
+            let emailSent = false;
 
-            // Trigger Supabase Auth Email OTP API
             if (supabaseClient) {
                 try {
                     const { data, error } = await supabaseClient.auth.signInWithOtp({ 
@@ -1219,77 +1230,80 @@
                     });
 
                     if (error) {
-                        console.log("Supabase Auth Email OTP Notice:", error.message);
+                        console.error("Supabase Auth Email OTP Error:", error.message);
+                        showToast(`Email OTP notice: ${error.message}`, "warning");
                     } else {
-                        supabaseAuthSuccess = true;
-                        showToast(`6-Digit OTP Code sent to ${email}! Check your inbox.`, "success");
+                        emailSent = true;
+                        showToast(`6-Digit OTP Code sent to ${email}! Check your inbox/spam folder.`, "success");
                     }
                 } catch (err) {
-                    console.log("Supabase Auth OTP Fallback:", err);
+                    console.error("Supabase Auth OTP Fallback:", err);
                 }
             }
 
-            if (!supabaseAuthSuccess) {
-                showToast(`OTP Code sent to ${email}! [Demo Code: ${generatedOTPCode}]`, "warning");
+            // Dev console output for testing (does not reveal code in UI popups)
+            if (!emailSent) {
+                console.log(`[DEV TESTING ONLY] OTP Code for ${email} is: ${generatedOTPCode}`);
+                if (!supabaseClient) {
+                    showToast(`OTP generated. Check inbox or developer console (F12).`, "info");
+                }
             }
 
             document.getElementById('forgotStep1').classList.add('hidden');
             document.getElementById('forgotStep2').classList.remove('hidden');
         }
 
-        // OPTION B: Verify OTP Code & Reset Password
         async function handleVerifyEmailOTPAndReset(e) {
             e.preventDefault();
-            const inputOTP = document.getElementById('forgotOTPInput').value.trim();
+            const userInputToken = document.getElementById('forgotOTPInput').value.trim();
             const newPassword = document.getElementById('forgotNewPassword').value.trim();
 
             if (!targetResetEmail) {
-                showToast("Session expired. Please request a new OTP.", "error");
+                showToast("Session expired. Please request OTP again.", "error");
                 return;
             }
 
-            let isVerified = false;
+            showToast("Verifying 6-Digit OTP Token...", "info");
 
-            // Option B implementation: Verify OTP token using Supabase Auth client
+            let tokenVerified = false;
+
             if (supabaseClient) {
                 try {
                     const { data, error } = await supabaseClient.auth.verifyOtp({
                         email: targetResetEmail,
-                        token: inputOTP,
+                        token: userInputToken,
                         type: 'email'
                     });
 
-                    if (!error && data?.session) {
-                        isVerified = true;
-                    } else if (error) {
-                        console.log("Supabase OTP verify info:", error.message);
+                    if (error) {
+                        console.log("Supabase Auth Verify Error:", error.message);
+                    } else {
+                        tokenVerified = true;
                     }
                 } catch (err) {
-                    console.log("Supabase verify catch:", err);
+                    console.error("OTP verification error:", err);
                 }
             }
 
-            // Fallback for local demo testing
-            if (!isVerified) {
-                if (inputOTP === generatedOTPCode || inputOTP === "123456") {
-                    isVerified = true;
-                }
+            // Offline / local fallback matching
+            if (!tokenVerified && userInputToken === generatedOTPCode) {
+                tokenVerified = true;
             }
 
-            if (!isVerified) {
-                showToast("Invalid or expired 6-digit OTP code.", "error");
+            if (!tokenVerified) {
+                showToast("Invalid or expired OTP token. Please check and try again.", "error");
                 return;
             }
 
-            // OTP Verified! Update user password in public.users table and local state
-            const user = window.users.find(u => u.email && u.email.toLowerCase() === targetResetEmail.toLowerCase());
-            if (user) {
-                user.password = newPassword;
+            // Update user password in users list
+            const u = window.users.find(x => x.email && x.email.toLowerCase() === targetResetEmail.toLowerCase());
+            if (u) {
+                u.password = newPassword;
                 saveState();
                 closeModal('modalForgotPassword');
-                showToast("Password updated successfully! You can now sign in.", "success");
+                showToast("Password reset successfully! You can now log in.", "success");
             } else {
-                showToast("User account not found.", "error");
+                showToast("User record update failed.", "error");
             }
         }
 
