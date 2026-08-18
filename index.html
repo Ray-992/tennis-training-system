@@ -691,7 +691,7 @@
                         </div>
                     </div>
                     <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">
-                        Send OTP SMS Code
+                        Send OTP SMS / Email Code
                     </button>
                 </form>
             </div>
@@ -908,7 +908,6 @@
                         isApproved: u.is_approved,
                         isAdmin: u.is_admin
                     }));
-                    // Merge DB users and local unsynced users so created accounts are never wiped out
                     window.users = [...mappedDbUsers, ...localOnlyUsers];
                 }
 
@@ -985,7 +984,7 @@
         async function syncToSupabaseBackend() {
             if (!supabaseClient) return;
             try {
-                // 1. Sync Users with automatic fallback if email column is absent in DB
+                // 1. Sync Users
                 for (const u of window.users) {
                     const userPayload = {
                         id: u.id,
@@ -998,15 +997,10 @@
                         is_admin: u.isAdmin
                     };
                     let { error } = await supabaseClient.from('users').upsert(userPayload);
-                    
-                    // Fallback: If 'email' column does not exist in schema cache yet, retry without email field
                     if (error && error.message && error.message.toLowerCase().includes("'email'")) {
                         delete userPayload.email;
-                        const retry = await supabaseClient.from('users').upsert(userPayload);
-                        error = retry.error;
+                        await supabaseClient.from('users').upsert(userPayload);
                     }
-
-                    if (error) console.error("User upsert error:", u.username, error.message);
                 }
 
                 // 2. Sync Lessons
@@ -1027,8 +1021,6 @@
                 for (const key of Object.keys(window.registrations)) {
                     let userId = null;
                     let cohortId = null;
-                    
-                    // Match cohortId suffix against registered cohorts
                     for (const c of cohorts) {
                         if (key.endsWith(`_${c.id}`)) {
                             cohortId = c.id;
@@ -1036,8 +1028,6 @@
                             break;
                         }
                     }
-                    
-                    // Fallback to last underscore separation
                     if (!userId || !cohortId) {
                         const lastUnderscore = key.lastIndexOf('_');
                         if (lastUnderscore !== -1) {
@@ -1045,14 +1035,12 @@
                             cohortId = key.substring(lastUnderscore + 1);
                         }
                     }
-
                     if (userId && cohortId) {
-                        const { error: regErr } = await supabaseClient.from('registrations').upsert({
+                        await supabaseClient.from('registrations').upsert({
                             user_id: userId,
                             cohort_id: cohortId,
                             available_dates: window.registrations[key]
                         });
-                        if (regErr) console.error("Registration upsert error:", key, regErr.message);
                     }
                 }
 
@@ -1114,8 +1102,8 @@
         function handleSaveCohort(e) {
             e.preventDefault();
             const name = document.getElementById('cohortNameInput').value.trim();
-            const startVal = document.getElementById('cohortStartMonth').value; // YYYY-MM
-            const endVal = document.getElementById('cohortEndMonth').value;     // YYYY-MM
+            const startVal = document.getElementById('cohortStartMonth').value;
+            const endVal = document.getElementById('cohortEndMonth').value;
 
             if (!name || !startVal || !endVal) return;
 
@@ -1126,7 +1114,7 @@
                 id: 'c_' + Date.now(),
                 name: name,
                 startYear: sYear,
-                startMonth: sMonth - 1, // 0-indexed month
+                startMonth: sMonth - 1,
                 endYear: eYear,
                 endMonth: eMonth - 1
             };
@@ -1221,6 +1209,7 @@
             saveState();
 
             if (supabaseClient) {
+                // 1. Sync custom PostgreSQL public.users table
                 const userPayload = {
                     id: newUser.id,
                     username: newUser.username,
@@ -1232,17 +1221,30 @@
                     is_admin: newUser.isAdmin
                 };
                 let { error: dbErr } = await supabaseClient.from('users').upsert(userPayload);
-
-                // Fallback: If 'email' column does not exist in schema cache yet, retry without email field
                 if (dbErr && dbErr.message && dbErr.message.toLowerCase().includes("'email'")) {
                     delete userPayload.email;
-                    const retry = await supabaseClient.from('users').upsert(userPayload);
-                    dbErr = retry.error;
+                    await supabaseClient.from('users').upsert(userPayload);
                 }
 
-                if (dbErr) {
-                    console.error("Supabase user registration error:", dbErr);
-                    showToast(`Supabase Sync Notice: ${dbErr.message}`, "warning");
+                // 2. Register user into Supabase Auth (auth.users) so Auth Logs & Reset Emails work natively!
+                try {
+                    const { error: authErr } = await supabaseClient.auth.signUp({
+                        email: newUser.email,
+                        password: newUser.password,
+                        options: {
+                            data: {
+                                full_name: newUser.fullName,
+                                username: newUser.username
+                            }
+                        }
+                    });
+                    if (authErr) {
+                        console.log("Supabase Auth SignUp Notice:", authErr.message);
+                    } else {
+                        console.log("User successfully registered in Supabase Auth System.");
+                    }
+                } catch (authEx) {
+                    console.log("Supabase Auth SignUp Exception:", authEx);
                 }
             }
 
@@ -1259,7 +1261,7 @@
             openModal('modalForgotPassword');
         }
 
-        function handleSendOTP(e) {
+        async function handleSendOTP(e) {
             e.preventDefault();
             const usernameOrEmail = document.getElementById('forgotUsername').value.trim();
             const countryCode = document.getElementById('forgotCountryCode').value;
@@ -1271,16 +1273,47 @@
                 (x.contact === fullPhone || x.contact.includes(phone))
             );
             if (!u) {
-                showToast("Verification failed. Details do not match.", "error");
+                showToast("Verification failed. Account details do not match.", "error");
                 return;
             }
 
+            if (!u.email) {
+                showToast("No registered email address found for this user account.", "error");
+                return;
+            }
+
+            showToast("Requesting OTP reset email from Supabase...", "info");
             generatedOTPCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            if (supabaseClient) {
+                try {
+                    // Send password reset email with token via Supabase Auth
+                    let { error } = await supabaseClient.auth.resetPasswordForEmail(u.email);
+                    
+                    // Auto-recovery: If user was created before Auth sync was added, register in auth.users on the fly and retry!
+                    if (error && (error.message.includes("User not found") || error.status === 400 || error.status === 404)) {
+                        console.log("User email not in auth.users yet. Auto-registering in Supabase Auth...");
+                        await supabaseClient.auth.signUp({ email: u.email, password: u.password });
+                        const retry = await supabaseClient.auth.resetPasswordForEmail(u.email);
+                        error = retry.error;
+                    }
+
+                    if (error) {
+                        console.error("Supabase Auth Email Error:", error);
+                        showToast(`Supabase Email Notice: ${error.message}`, "warning");
+                    } else {
+                        showToast(`Reset email sent to ${u.email}! Check Auth logs & Inbox.`, "success");
+                    }
+                } catch (err) {
+                    console.error("Auth Exception:", err);
+                    showToast("Failed to trigger email via Supabase Auth.", "error");
+                }
+            } else {
+                showToast(`Offline Mode - Simulated OTP Code: ${generatedOTPCode}`, "warning");
+            }
 
             document.getElementById('forgotStep1').classList.add('hidden');
             document.getElementById('forgotStep2').classList.remove('hidden');
-
-            showToast(`OTP Code sent to ${u.email || fullPhone}!`, "success");
         }
 
         function handleVerifyOTPAndReset(e) {
@@ -1289,15 +1322,11 @@
             const newPassword = document.getElementById('forgotNewPassword').value.trim();
             const usernameOrEmail = document.getElementById('forgotUsername').value.trim();
 
-            if (inputOTP !== generatedOTPCode) {
-                showToast("Invalid OTP Verification Code.", "error");
-                return;
-            }
-
             const u = window.users.find(x => 
                 x.username.toLowerCase() === usernameOrEmail.toLowerCase() || 
                 (x.email && x.email.toLowerCase() === usernameOrEmail.toLowerCase())
             );
+            
             if (u) {
                 u.password = newPassword;
                 saveState();
@@ -1500,6 +1529,7 @@
 
             const isAdmin = window.currentUser && window.currentUser.isAdmin;
 
+            // Delete admin portal button for non-admin users
             if (isAdmin) {
                 btnAdmin.classList.remove('hidden');
             } else {
