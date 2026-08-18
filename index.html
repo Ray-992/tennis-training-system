@@ -609,6 +609,60 @@
         </div>
     </div>
 
+    <!-- MODAL: Change Profile (Registered Email, Contact Phone, Full Name & Password) -->
+    <div id="modalChangeProfile" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-user-gear text-tennis-600"></i> User Profile & Account Settings
+                </h3>
+                <button onclick="closeModal('modalChangeProfile')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleSaveProfile(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Username (Read-Only)</label>
+                    <input type="text" id="profileUsername" disabled class="w-full px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold outline-none cursor-not-allowed">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Full Name</label>
+                    <input type="text" id="profileFullName" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Registered Email Address</label>
+                    <input type="email" id="profileEmail" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Contact Phone No.</label>
+                    <div class="flex items-center space-x-2">
+                        <select id="profileCountryCode" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl px-2.5 py-2 outline-none">
+                            <option value="+852">+852</option>
+                            <option value="+86">+86</option>
+                            <option value="+853">+853</option>
+                            <option value="+1">+1</option>
+                            <option value="+44">+44</option>
+                        </select>
+                        <input type="tel" id="profileContactPhone" required class="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-slate-800 outline-none text-xs focus:ring-2 focus:ring-tennis-500">
+                    </div>
+                </div>
+                <div class="border-t border-slate-100 pt-3 space-y-3">
+                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Change Password (Optional)</div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 mb-1">Current Password</label>
+                        <input type="password" id="profileOldPassword" placeholder="Required only if changing password" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 mb-1">New Password</label>
+                        <input type="password" id="profileNewPassword" placeholder="Leave blank to keep current password" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('modalChangeProfile')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 transition">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition">Save Settings</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL 4: User Enrolled History -->
     <div id="modalEnrolledRecords" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
@@ -1125,28 +1179,7 @@
             const passwordInput = document.getElementById('loginPassword').value.trim();
 
             const foundUser = window.users.find(u => u.username.toLowerCase() === usernameInput.toLowerCase());
-
-            if (!foundUser) {
-                showToast("Account not found. Please check your username.", "error");
-                return;
-            }
-
-            if (foundUser.password !== passwordInput) {
-                showToast("Invalid password.", "error");
-                return;
-            }
-
-            if (!foundUser.isApproved) {
-                showToast("Account pending admin approval. Please wait for verification.", "warning");
-                return;
-            }
-
-            sessionStorage.setItem('ace_tennis_current_user', foundUser.id);
-            loginUserSuccess(foundUser);
-            showToast(`Welcome back, ${foundUser.fullName}!`, "success");
-        }
-
-        function handleRegister(e) {
+        async function handleRegister(e) {
             e.preventDefault();
             const fullName = document.getElementById('regFullName').value.trim();
             const email = document.getElementById('regEmail').value.trim();
@@ -1178,6 +1211,27 @@
 
             window.users.push(newUser);
             saveState();
+
+            // Immediate database synchronization to prevent record loss on page refresh
+            if (supabaseClient) {
+                try {
+                    const { error } = await supabaseClient.from('users').upsert({
+                        id: newUser.id,
+                        username: newUser.username,
+                        email: newUser.email,
+                        password: newUser.password,
+                        full_name: newUser.fullName,
+                        contact: newUser.contact,
+                        is_approved: newUser.isApproved,
+                        is_admin: newUser.isAdmin
+                    });
+                    if (error) {
+                        console.error("Immediate Supabase signup sync error:", error);
+                    }
+                } catch (err) {
+                    console.error("Immediate Supabase signup sync exception:", err);
+                }
+            }
 
             switchAuthTab('login');
             document.getElementById('loginUsername').value = username;
@@ -1240,102 +1294,89 @@
         }
 
         function openUpdatePhoneModal() {
+        function openChangeProfileModal() {
             if (!window.currentUser) return;
-            const parts = window.currentUser.contact.split(' ');
-            if (parts.length > 1) {
-                document.getElementById('updateCountryCode').value = parts[0];
-                document.getElementById('updateContactPhone').value = parts[1];
-            } else {
-                document.getElementById('updateContactPhone').value = window.currentUser.contact;
-            }
-            openModal('modalUpdatePhone');
-        }
-
-        function handleUpdatePhone(e) {
-            e.preventDefault();
-            const code = document.getElementById('updateCountryCode').value;
-            const num = document.getElementById('updateContactPhone').value.trim();
+            document.getElementById('profileUsername').value = window.currentUser.username || '';
+            document.getElementById('profileFullName').value = window.currentUser.fullName || '';
+            document.getElementById('profileEmail').value = window.currentUser.email || '';
             
-            window.currentUser.contact = `${code} ${num}`;
-            const idx = window.users.findIndex(x => x.id === window.currentUser.id);
-            if (idx !== -1) window.users[idx].contact = window.currentUser.contact;
-
-            saveState();
-            closeModal('modalUpdatePhone');
-            renderHeaderNav();
-            showToast("Contact phone number updated!", "success");
-        }
-
-        function openEnrolledRecordsModal() {
-            const tbody = document.getElementById('enrolledHistoryTableBody');
-            tbody.innerHTML = '';
-
-            let count = 0;
-            window.lessons.forEach(l => {
-                const roster = window.enrollments[l.id] || [];
-                if (roster.includes(window.currentUser?.id)) {
-                    count++;
-                    const c = cohorts.find(x => x.id === l.cohortId);
-                    const tr = document.createElement('tr');
-                    tr.className = "border-b border-slate-100 hover:bg-slate-50";
-                    tr.innerHTML = `
-                        <td class="py-2.5 px-4 font-bold text-tennis-700">${c ? c.name.split(':')[0] : l.cohortId}</td>
-                        <td class="py-2.5 px-4 font-bold text-slate-800">${l.date}</td>
-                        <td class="py-2.5 px-4 text-slate-600">${l.startTime} - ${l.endTime}</td>
-                        <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${l.level==='Beginner'?'bg-blue-100 text-blue-800':'bg-purple-100 text-purple-800'}">${l.level}</span></td>
-                        <td class="py-2.5 px-4 text-slate-600">${l.location}</td>
-                    `;
-                    tbody.appendChild(tr);
-                }
-            });
-
-            if (count === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No confirmed enrollment history records found.</td></tr>`;
+            const parts = (window.currentUser.contact || '').split(' ');
+            if (parts.length > 1) {
+                document.getElementById('profileCountryCode').value = parts[0];
+                document.getElementById('profileContactPhone').value = parts.slice(1).join(' ');
+            } else {
+                document.getElementById('profileContactPhone').value = window.currentUser.contact || '';
             }
 
-            openModal('modalEnrolledRecords');
+            document.getElementById('profileOldPassword').value = '';
+            document.getElementById('profileNewPassword').value = '';
+
+            openModal('modalChangeProfile');
         }
 
-        function handleChangePassword(e) {
+        async function handleSaveProfile(e) {
             e.preventDefault();
-            const oldPass = document.getElementById('changeOldPassword').value.trim();
-            const newPass = document.getElementById('changeNewPassword').value.trim();
+            if (!window.currentUser) return;
 
-            if (window.currentUser.password !== oldPass) {
-                showToast("Current password incorrect.", "error");
-                return;
+            const newFullName = document.getElementById('profileFullName').value.trim();
+            const newEmail = document.getElementById('profileEmail').value.trim();
+            const code = document.getElementById('profileCountryCode').value;
+            const phoneNum = document.getElementById('profileContactPhone').value.trim();
+            const oldPass = document.getElementById('profileOldPassword').value.trim();
+            const newPass = document.getElementById('profileNewPassword').value.trim();
+
+            if (newEmail.toLowerCase() !== (window.currentUser.email || '').toLowerCase()) {
+                if (window.users.some(u => u.id !== window.currentUser.id && u.email && u.email.toLowerCase() === newEmail.toLowerCase())) {
+                    showToast("Email address is already in use by another account.", "error");
+                    return;
+                }
             }
 
-            window.currentUser.password = newPass;
+            if (newPass) {
+                if (!oldPass) {
+                    showToast("Please enter your current password to set a new password.", "warning");
+                    return;
+                }
+                if (window.currentUser.password !== oldPass) {
+                    showToast("Current password is incorrect.", "error");
+                    return;
+                }
+                window.currentUser.password = newPass;
+            }
+
+            window.currentUser.fullName = newFullName;
+            window.currentUser.email = newEmail;
+            window.currentUser.contact = `${code} ${phoneNum}`;
+
             const idx = window.users.findIndex(x => x.id === window.currentUser.id);
-            if (idx !== -1) window.users[idx].password = newPass;
+            if (idx !== -1) {
+                window.users[idx] = { ...window.currentUser };
+            }
 
             saveState();
-            closeModal('modalChangePassword');
-            showToast("Password updated successfully!", "success");
-        }
-
-        function loginUserSuccess(user) {
-            window.currentUser = user;
-            document.getElementById('authView').classList.add('hidden');
-            document.getElementById('mainDashboardView').classList.remove('hidden');
-
-            const key = `${window.currentUser.id}_${activeCohortId}`;
-            tempSelectedDates = new Set(window.registrations[key] || []);
-
+            closeModal('modalChangeProfile');
             renderHeaderNav();
-            updateTargetLessonsLabel();
-            switchMainTab('registration');
+            showToast("Profile settings updated successfully!", "success");
         }
 
-        function handleLogout() {
-            sessionStorage.removeItem('ace_tennis_current_user');
-            window.currentUser = null;
-            document.getElementById('authView').classList.remove('hidden');
-            document.getElementById('mainDashboardView').classList.add('hidden');
-            renderHeaderNav();
-            showToast("Logged out successfully.", "info");
+        function toggleUserDropdown(e) {
+            if (e) e.stopPropagation();
+            const menu = document.getElementById('userDropdownMenu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
         }
+
+        function closeUserDropdown() {
+            const menu = document.getElementById('userDropdownMenu');
+            if (menu && !menu.classList.contains('hidden')) {
+                menu.classList.add('hidden');
+            }
+        }
+
+        window.addEventListener('click', () => {
+            closeUserDropdown();
+        });
 
         function renderHeaderNav() {
             const container = document.getElementById('navRight');
@@ -1343,24 +1384,37 @@
                 container.innerHTML = `<div class="text-xs text-slate-400 font-semibold">Sign in required</div>`;
             } else {
                 container.innerHTML = `
-                    <div class="flex items-center space-x-2">
-                        <div class="text-right hidden sm:block mr-2">
-                            <div class="text-[10px] font-black text-tennis-400 uppercase">${window.currentUser.isAdmin ? 'ADMIN' : 'USER'}</div>
-                            <div class="text-xs font-bold text-white">${window.currentUser.fullName}</div>
+                    <div class="relative inline-block text-left">
+                        <button onclick="toggleUserDropdown(event)" class="flex items-center space-x-2.5 bg-slate-800 hover:bg-slate-700/80 px-3 py-2 rounded-xl border border-slate-700 transition shadow-sm">
+                            <div class="w-7 h-7 rounded-full bg-tennis-500 text-slate-900 flex items-center justify-center font-black text-xs shadow">
+                                ${window.currentUser.fullName ? window.currentUser.fullName.charAt(0).toUpperCase() : 'U'}
+                            </div>
+                            <div class="text-left hidden sm:block">
+                                <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                                    <span>${window.currentUser.fullName}</span>
+                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
+                                </div>
+                                <div class="text-[9px] font-bold text-tennis-400 uppercase tracking-wide">${window.currentUser.isAdmin ? 'ADMIN' : 'USER'}</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-xs text-slate-400 sm:hidden"></i>
+                        </button>
+
+                        <div id="userDropdownMenu" class="hidden absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl py-2 z-50 text-xs">
+                            <div class="px-4 py-2 border-b border-slate-800">
+                                <p class="font-bold text-white truncate">${window.currentUser.fullName}</p>
+                                <p class="text-[10px] text-slate-400 truncate">${window.currentUser.email || window.currentUser.username}</p>
+                            </div>
+                            <button onclick="openEnrolledRecordsModal(); closeUserDropdown();" class="w-full text-left px-4 py-2.5 text-slate-200 hover:bg-slate-800 hover:text-tennis-400 font-bold transition flex items-center gap-2">
+                                <i class="fa-solid fa-clock-rotate-left text-tennis-400 w-4"></i> Enrolled Records
+                            </button>
+                            <button onclick="openChangeProfileModal(); closeUserDropdown();" class="w-full text-left px-4 py-2.5 text-slate-200 hover:bg-slate-800 hover:text-tennis-400 font-bold transition flex items-center gap-2">
+                                <i class="fa-solid fa-user-gear text-tennis-400 w-4"></i> Change Profile
+                            </button>
+                            <div class="border-t border-slate-800 my-1"></div>
+                            <button onclick="handleLogout(); closeUserDropdown();" class="w-full text-left px-4 py-2.5 text-red-400 hover:bg-red-950/40 font-bold transition flex items-center gap-2">
+                                <i class="fa-solid fa-right-from-bracket w-4"></i> Sign Out
+                            </button>
                         </div>
-                        <button onclick="openEnrolledRecordsModal()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition border border-slate-700 flex items-center gap-1" title="Enrolled Records">
-                            <i class="fa-solid fa-clock-rotate-left text-tennis-400"></i>
-                            <span class="hidden md:inline">Enrolled Records</span>
-                        </button>
-                        <button onclick="openUpdatePhoneModal()" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition border border-slate-700" title="Update Phone">
-                            <i class="fa-solid fa-phone text-tennis-400"></i>
-                        </button>
-                        <button onclick="openModal('modalChangePassword')" class="px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-bold transition border border-slate-700" title="Change Password">
-                            <i class="fa-solid fa-key"></i>
-                        </button>
-                        <button onclick="handleLogout()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold transition flex items-center gap-1 border border-slate-700">
-                            <i class="fa-solid fa-right-from-bracket"></i>
-                        </button>
                     </div>
                 `;
             }
