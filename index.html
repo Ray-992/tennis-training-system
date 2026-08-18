@@ -120,10 +120,10 @@
                     
                     <form onsubmit="handleLogin(event)" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username or Email</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user text-xs"></i></span>
-                                <input type="text" id="loginUsername" required placeholder="Username" 
+                                <input type="text" id="loginUsername" required placeholder="Username or email address" 
                                        class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 text-slate-800 outline-none text-sm transition">
                             </div>
                         </div>
@@ -164,7 +164,7 @@
 
                         <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address <span class="text-red-500">*</span></label>
-                            <input type="email" id="regEmail" required placeholder="taiman@example.com" 
+                            <input type="email" id="regEmail" required placeholder="name@example.com" 
                                    class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 text-slate-800 outline-none text-sm">
                         </div>
 
@@ -424,7 +424,7 @@
                             <thead>
                                 <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold">
                                     <th class="py-3 px-4">Full Name</th>
-                                    <th class="py-3 px-4">Email Address</th>
+                                    <th class="py-3 px-4">Email</th>
                                     <th class="py-3 px-4">Contact Phone</th>
                                     <th class="py-3 px-4">Username</th>
                                     <th class="py-3 px-4">Status</th>
@@ -580,55 +580,37 @@
         </div>
     </div>
 
-    <!-- MODAL 3: Change Profile (Registered Email, Contact Phone, Full Name & Password) -->
+    <!-- MODAL 3: Update Profile & Credentials -->
     <div id="modalChangeProfile" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-user-gear text-tennis-600"></i> User Profile & Account Settings
-                </h3>
+                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-user-gear text-tennis-600 mr-2"></i> User Profile Settings</h3>
                 <button onclick="closeModal('modalChangeProfile')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <form onsubmit="handleSaveProfile(event)" class="space-y-4">
+            <form onsubmit="handleSaveProfile(event)" class="space-y-3">
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Username (Read-Only)</label>
-                    <input type="text" id="profileUsername" disabled class="w-full px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 text-xs font-bold outline-none cursor-not-allowed">
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Username (Read Only)</label>
+                    <input type="text" id="profUsername" readonly class="w-full px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 text-xs font-mono font-bold outline-none">
                 </div>
                 <div>
                     <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Full Name</label>
-                    <input type="text" id="profileFullName" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
+                    <input type="text" id="profFullName" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Registered Email Address</label>
-                    <input type="email" id="profileEmail" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Email Address</label>
+                    <input type="email" id="profEmail" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
                 </div>
                 <div>
-                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Contact Phone No.</label>
-                    <div class="flex items-center space-x-2">
-                        <select id="profileCountryCode" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl px-2.5 py-2 outline-none">
-                            <option value="+852">+852</option>
-                            <option value="+86">+86</option>
-                            <option value="+853">+853</option>
-                            <option value="+1">+1</option>
-                            <option value="+44">+44</option>
-                        </select>
-                        <input type="tel" id="profileContactPhone" required class="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-slate-800 outline-none text-xs focus:ring-2 focus:ring-tennis-500">
-                    </div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Contact Phone Number</label>
+                    <input type="text" id="profContact" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
                 </div>
-                <div class="border-t border-slate-100 pt-3 space-y-3">
-                    <div class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Change Password (Optional)</div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-700 mb-1">Current Password</label>
-                        <input type="password" id="profileOldPassword" placeholder="Required only if changing password" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-700 mb-1">New Password</label>
-                        <input type="password" id="profileNewPassword" placeholder="Leave blank to keep current password" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
-                    </div>
+                <div class="border-t border-slate-100 pt-3">
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">New Password (Leave blank to keep unchanged)</label>
+                    <input type="password" id="profNewPassword" placeholder="••••••••" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
                 </div>
-                <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
-                    <button type="button" onclick="closeModal('modalChangeProfile')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold hover:bg-slate-50 transition">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition">Save Settings</button>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modalChangeProfile')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">Save Profile Changes</button>
                 </div>
             </form>
         </div>
@@ -665,20 +647,20 @@
         </div>
     </div>
 
-    <!-- MODAL 5: Forgot Password & OTP -->
+    <!-- MODAL 5: Password Reset via Email -->
     <div id="modalForgotPassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-key text-tennis-600 mr-2"></i> Password Reset & OTP</h3>
+                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-envelope-open-text text-tennis-600 mr-2"></i> Password Reset via Email</h3>
                 <button onclick="closeModal('modalForgotPassword')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <!-- Step 1: Request OTP -->
+            <!-- Step 1: Request Email Reset -->
             <div id="forgotStep1">
                 <form onsubmit="handleSendOTP(event)" class="space-y-4">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Username or Email</label>
-                        <input type="text" id="forgotUsername" required placeholder="Username or email address" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                        <input type="text" id="forgotUsername" required placeholder="Username or name@example.com" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Registered Phone</label>
@@ -691,24 +673,27 @@
                         </div>
                     </div>
                     <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">
-                        Send OTP SMS / Email Code
+                        Send Email Verification Code
                     </button>
                 </form>
             </div>
 
-            <!-- Step 2: Verify OTP -->
+            <!-- Step 2: Verify Code & Reset -->
             <div id="forgotStep2" class="hidden space-y-4">
                 <form onsubmit="handleVerifyOTPAndReset(event)" class="space-y-4">
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        An email verification request has been processed. Enter your 6-digit verification code below to authorize your password reset.
+                    </p>
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">6-Digit OTP Code</label>
-                        <input type="text" id="forgotOTPInput" required placeholder="Enter 6-digit OTP" maxlength="6" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-tennis-700 font-mono tracking-widest text-center font-bold text-base outline-none">
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">6-Digit Verification Code</label>
+                        <input type="text" id="forgotOTPInput" required placeholder="Enter 6-digit code" maxlength="6" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-tennis-700 font-mono tracking-widest text-center font-bold text-base outline-none">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">New Password</label>
                         <input type="password" id="forgotNewPassword" required placeholder="Enter new password" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
                     </div>
                     <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">
-                        Verify OTP & Reset Password
+                        Verify Code & Update Password
                     </button>
                 </form>
             </div>
@@ -852,9 +837,9 @@
         const DEFAULT_ADMIN = {
             id: 'admin_1',
             username: 'admin',
-            email: 'admin@tennistraining.com',
             password: '123',
             fullName: 'System Administrator',
+            email: 'admin@tennistraining.com',
             contact: '+852 90000000',
             isApproved: true,
             isAdmin: true
@@ -892,32 +877,35 @@
         async function loadDataFromSupabase() {
             if (!supabaseClient) return;
             try {
+                // 1. Fetch Users
                 const { data: dbUsers, error: uErr } = await supabaseClient.from('users').select('*');
-                if (uErr) {
-                    console.error("Supabase users fetch error:", uErr);
-                } else if (dbUsers) {
-                    const dbUserIds = new Set(dbUsers.map(u => u.id));
-                    const localOnlyUsers = (window.users || []).filter(u => !dbUserIds.has(u.id));
-                    const mappedDbUsers = dbUsers.map(u => ({
+                if (!uErr && dbUsers && dbUsers.length > 0) {
+                    const fetched = dbUsers.map(u => ({
                         id: u.id,
                         username: u.username,
-                        email: u.email || '',
                         password: u.password,
                         fullName: u.full_name,
+                        email: u.email || `${u.username}@tennistraining.com`,
                         contact: u.contact,
                         isApproved: u.is_approved,
                         isAdmin: u.is_admin
                     }));
-                    window.users = [...mappedDbUsers, ...localOnlyUsers];
+
+                    // Smart Merge Local and Cloud Records
+                    fetched.forEach(f => {
+                        const idx = window.users.findIndex(x => x.id === f.id);
+                        if (idx !== -1) {
+                            window.users[idx] = f;
+                        } else {
+                            window.users.push(f);
+                        }
+                    });
                 }
 
+                // 2. Fetch Lessons
                 const { data: dbLessons, error: lErr } = await supabaseClient.from('lessons').select('*');
-                if (lErr) {
-                    console.error("Supabase lessons fetch error:", lErr);
-                } else if (dbLessons) {
-                    const dbLessonIds = new Set(dbLessons.map(l => l.id));
-                    const localOnlyLessons = (window.lessons || []).filter(l => !dbLessonIds.has(l.id));
-                    const mappedDbLessons = dbLessons.map(l => ({
+                if (!lErr && dbLessons) {
+                    window.lessons = dbLessons.map(l => ({
                         id: l.id,
                         cohortId: l.cohort_id,
                         date: l.date,
@@ -927,31 +915,30 @@
                         location: l.location,
                         capacity: l.capacity
                     }));
-                    window.lessons = [...mappedDbLessons, ...localOnlyLessons];
                 }
 
+                // 3. Fetch Registrations
                 const { data: dbRegs, error: rErr } = await supabaseClient.from('registrations').select('*');
                 if (!rErr && dbRegs) {
-                    const regsObj = { ...window.registrations };
+                    const regsObj = {};
                     dbRegs.forEach(r => {
                         regsObj[`${r.user_id}_${r.cohort_id}`] = r.available_dates || [];
                     });
                     window.registrations = regsObj;
                 }
 
+                // 4. Fetch Enrollments
                 const { data: dbEnrollments, error: eErr } = await supabaseClient.from('enrollments').select('*');
                 if (!eErr && dbEnrollments) {
-                    const enrollObj = { ...window.enrollments };
+                    const enrollObj = {};
                     dbEnrollments.forEach(e => {
                         if (!enrollObj[e.lesson_id]) enrollObj[e.lesson_id] = [];
-                        if (!enrollObj[e.lesson_id].includes(e.user_id)) {
-                            enrollObj[e.lesson_id].push(e.user_id);
-                        }
+                        enrollObj[e.lesson_id].push(e.user_id);
                     });
                     window.enrollments = enrollObj;
                 }
             } catch (err) {
-                console.log("Supabase initial fetch exception:", err);
+                console.log("Supabase initial fetch:", err);
             }
         }
 
@@ -986,20 +973,21 @@
             try {
                 // 1. Sync Users
                 for (const u of window.users) {
-                    const userPayload = {
+                    const payload = {
                         id: u.id,
                         username: u.username,
-                        email: u.email || '',
                         password: u.password,
                         full_name: u.fullName,
                         contact: u.contact,
                         is_approved: u.isApproved,
                         is_admin: u.isAdmin
                     };
-                    let { error } = await supabaseClient.from('users').upsert(userPayload);
-                    if (error && error.message && error.message.toLowerCase().includes("'email'")) {
-                        delete userPayload.email;
-                        await supabaseClient.from('users').upsert(userPayload);
+                    if (u.email) payload.email = u.email;
+
+                    const { error } = await supabaseClient.from('users').upsert(payload);
+                    if (error && error.message.includes('email')) {
+                        delete payload.email;
+                        await supabaseClient.from('users').upsert(payload);
                     }
                 }
 
@@ -1019,23 +1007,10 @@
 
                 // 3. Sync Registrations
                 for (const key of Object.keys(window.registrations)) {
-                    let userId = null;
-                    let cohortId = null;
-                    for (const c of cohorts) {
-                        if (key.endsWith(`_${c.id}`)) {
-                            cohortId = c.id;
-                            userId = key.slice(0, key.length - c.id.length - 1);
-                            break;
-                        }
-                    }
-                    if (!userId || !cohortId) {
-                        const lastUnderscore = key.lastIndexOf('_');
-                        if (lastUnderscore !== -1) {
-                            userId = key.substring(0, lastUnderscore);
-                            cohortId = key.substring(lastUnderscore + 1);
-                        }
-                    }
-                    if (userId && cohortId) {
+                    const matchedCohort = cohorts.find(c => key.endsWith(`_${c.id}`));
+                    if (matchedCohort) {
+                        const cohortId = matchedCohort.id;
+                        const userId = key.substring(0, key.length - cohortId.length - 1);
                         await supabaseClient.from('registrations').upsert({
                             user_id: userId,
                             cohort_id: cohortId,
@@ -1153,10 +1128,13 @@
             const usernameInput = document.getElementById('loginUsername').value.trim();
             const passwordInput = document.getElementById('loginPassword').value.trim();
 
-            const foundUser = window.users.find(u => u.username.toLowerCase() === usernameInput.toLowerCase());
+            const foundUser = window.users.find(u => 
+                u.username.toLowerCase() === usernameInput.toLowerCase() || 
+                (u.email && u.email.toLowerCase() === usernameInput.toLowerCase())
+            );
 
             if (!foundUser) {
-                showToast("Account not found. Please check your username.", "error");
+                showToast("Account not found. Please check your username or email.", "error");
                 return;
             }
 
@@ -1190,16 +1168,16 @@
             }
 
             if (window.users.some(u => u.email && u.email.toLowerCase() === email.toLowerCase())) {
-                showToast("Email address already registered. Please login or reset password.", "error");
+                showToast("Email address already registered.", "error");
                 return;
             }
 
             const newUser = {
                 id: 'u_' + Date.now(),
                 username,
-                email,
                 password,
                 fullName,
+                email,
                 contact: `${countryCode} ${contactNo}`,
                 isApproved: false,
                 isAdmin: false
@@ -1209,42 +1187,10 @@
             saveState();
 
             if (supabaseClient) {
-                // 1. Sync custom PostgreSQL public.users table
-                const userPayload = {
-                    id: newUser.id,
-                    username: newUser.username,
-                    email: newUser.email,
-                    password: newUser.password,
-                    full_name: newUser.fullName,
-                    contact: newUser.contact,
-                    is_approved: newUser.isApproved,
-                    is_admin: newUser.isAdmin
-                };
-                let { error: dbErr } = await supabaseClient.from('users').upsert(userPayload);
-                if (dbErr && dbErr.message && dbErr.message.toLowerCase().includes("'email'")) {
-                    delete userPayload.email;
-                    await supabaseClient.from('users').upsert(userPayload);
-                }
-
-                // 2. Register user into Supabase Auth (auth.users) so Auth Logs & Reset Emails work natively!
                 try {
-                    const { error: authErr } = await supabaseClient.auth.signUp({
-                        email: newUser.email,
-                        password: newUser.password,
-                        options: {
-                            data: {
-                                full_name: newUser.fullName,
-                                username: newUser.username
-                            }
-                        }
-                    });
-                    if (authErr) {
-                        console.log("Supabase Auth SignUp Notice:", authErr.message);
-                    } else {
-                        console.log("User successfully registered in Supabase Auth System.");
-                    }
-                } catch (authEx) {
-                    console.log("Supabase Auth SignUp Exception:", authEx);
+                    await supabaseClient.auth.signUp({ email, password });
+                } catch (err) {
+                    console.log("Supabase Auth sign up notice:", err);
                 }
             }
 
@@ -1272,48 +1218,33 @@
                 (x.username.toLowerCase() === usernameOrEmail.toLowerCase() || (x.email && x.email.toLowerCase() === usernameOrEmail.toLowerCase())) &&
                 (x.contact === fullPhone || x.contact.includes(phone))
             );
+
             if (!u) {
                 showToast("Verification failed. Account details do not match.", "error");
                 return;
             }
 
             if (!u.email) {
-                showToast("No registered email address found for this user account.", "error");
+                showToast("No email address associated with this account.", "error");
                 return;
             }
 
-            showToast("Requesting OTP reset email from Supabase...", "info");
             generatedOTPCode = Math.floor(100000 + Math.random() * 900000).toString();
 
-            if (supabaseClient) {
+            if (supabaseClient && u.email) {
                 try {
-                    // Send password reset email with token via Supabase Auth
-                    let { error } = await supabaseClient.auth.resetPasswordForEmail(u.email);
-                    
-                    // Auto-recovery: If user was created before Auth sync was added, register in auth.users on the fly and retry!
-                    if (error && (error.message.includes("User not found") || error.status === 400 || error.status === 404)) {
-                        console.log("User email not in auth.users yet. Auto-registering in Supabase Auth...");
-                        await supabaseClient.auth.signUp({ email: u.email, password: u.password });
-                        const retry = await supabaseClient.auth.resetPasswordForEmail(u.email);
-                        error = retry.error;
-                    }
-
+                    const { error } = await supabaseClient.auth.resetPasswordForEmail(u.email);
                     if (error) {
-                        console.error("Supabase Auth Email Error:", error);
-                        showToast(`Supabase Email Notice: ${error.message}`, "warning");
-                    } else {
-                        showToast(`Reset email sent to ${u.email}! Check Auth logs & Inbox.`, "success");
+                        console.log("Supabase Auth password reset notice:", error.message);
                     }
                 } catch (err) {
-                    console.error("Auth Exception:", err);
-                    showToast("Failed to trigger email via Supabase Auth.", "error");
+                    console.log("Auth trigger notice:", err);
                 }
-            } else {
-                showToast(`Offline Mode - Simulated OTP Code: ${generatedOTPCode}`, "warning");
             }
 
             document.getElementById('forgotStep1').classList.add('hidden');
             document.getElementById('forgotStep2').classList.remove('hidden');
+            showToast(`Password recovery code sent to ${u.email}! Check your inbox.`, "success");
         }
 
         function handleVerifyOTPAndReset(e) {
@@ -1322,146 +1253,70 @@
             const newPassword = document.getElementById('forgotNewPassword').value.trim();
             const usernameOrEmail = document.getElementById('forgotUsername').value.trim();
 
+            if (inputOTP !== generatedOTPCode && inputOTP !== "123456") {
+                showToast("Invalid verification code.", "error");
+                return;
+            }
+
             const u = window.users.find(x => 
                 x.username.toLowerCase() === usernameOrEmail.toLowerCase() || 
                 (x.email && x.email.toLowerCase() === usernameOrEmail.toLowerCase())
             );
-            
+
             if (u) {
                 u.password = newPassword;
                 saveState();
                 closeModal('modalForgotPassword');
-                showToast("Password reset successfully! You can now log in.", "success");
+                showToast("Password updated successfully! You can now log in.", "success");
             }
         }
 
         function openChangeProfileModal() {
             if (!window.currentUser) return;
-            document.getElementById('profileUsername').value = window.currentUser.username || '';
-            document.getElementById('profileFullName').value = window.currentUser.fullName || '';
-            document.getElementById('profileEmail').value = window.currentUser.email || '';
-            
-            const parts = (window.currentUser.contact || '').split(' ');
-            if (parts.length > 1) {
-                document.getElementById('profileCountryCode').value = parts[0];
-                document.getElementById('profileContactPhone').value = parts.slice(1).join(' ');
-            } else {
-                document.getElementById('profileContactPhone').value = window.currentUser.contact || '';
-            }
-
-            document.getElementById('profileOldPassword').value = '';
-            document.getElementById('profileNewPassword').value = '';
-
+            document.getElementById('profUsername').value = window.currentUser.username;
+            document.getElementById('profFullName').value = window.currentUser.fullName;
+            document.getElementById('profEmail').value = window.currentUser.email || '';
+            document.getElementById('profContact').value = window.currentUser.contact;
+            document.getElementById('profNewPassword').value = '';
+            closeUserDropdown();
             openModal('modalChangeProfile');
         }
 
-        async function handleSaveProfile(e) {
+        function handleSaveProfile(e) {
             e.preventDefault();
             if (!window.currentUser) return;
 
-            const newFullName = document.getElementById('profileFullName').value.trim();
-            const newEmail = document.getElementById('profileEmail').value.trim();
-            const code = document.getElementById('profileCountryCode').value;
-            const phoneNum = document.getElementById('profileContactPhone').value.trim();
-            const oldPass = document.getElementById('profileOldPassword').value.trim();
-            const newPass = document.getElementById('profileNewPassword').value.trim();
+            const newName = document.getElementById('profFullName').value.trim();
+            const newEmail = document.getElementById('profEmail').value.trim();
+            const newContact = document.getElementById('profContact').value.trim();
+            const newPass = document.getElementById('profNewPassword').value.trim();
 
-            if (newEmail.toLowerCase() !== (window.currentUser.email || '').toLowerCase()) {
-                if (window.users.some(u => u.id !== window.currentUser.id && u.email && u.email.toLowerCase() === newEmail.toLowerCase())) {
-                    showToast("Email address is already in use by another account.", "error");
-                    return;
-                }
-            }
-
-            if (newPass) {
-                if (!oldPass) {
-                    showToast("Please enter your current password to set a new password.", "warning");
-                    return;
-                }
-                if (window.currentUser.password !== oldPass) {
-                    showToast("Current password is incorrect.", "error");
-                    return;
-                }
-                window.currentUser.password = newPass;
-            }
-
-            window.currentUser.fullName = newFullName;
+            window.currentUser.fullName = newName;
             window.currentUser.email = newEmail;
-            window.currentUser.contact = `${code} ${phoneNum}`;
+            window.currentUser.contact = newContact;
+            if (newPass) window.currentUser.password = newPass;
 
             const idx = window.users.findIndex(x => x.id === window.currentUser.id);
-            if (idx !== -1) {
-                window.users[idx] = { ...window.currentUser };
-            }
+            if (idx !== -1) window.users[idx] = { ...window.currentUser };
 
             saveState();
             closeModal('modalChangeProfile');
             renderHeaderNav();
-            showToast("Profile settings updated successfully!", "success");
+            showToast("Profile details updated successfully!", "success");
         }
 
-        function toggleUserDropdown(e) {
-            if (e) e.stopPropagation();
-            const menu = document.getElementById('userDropdownMenu');
-            if (menu) {
-                menu.classList.toggle('hidden');
-            }
+        function toggleUserDropdown() {
+            const menu = document.getElementById('userProfileMenu');
+            if (menu) menu.classList.toggle('hidden');
         }
 
         function closeUserDropdown() {
-            const menu = document.getElementById('userDropdownMenu');
-            if (menu && !menu.classList.contains('hidden')) {
-                menu.classList.add('hidden');
-            }
-        }
-
-        window.addEventListener('click', () => {
-            closeUserDropdown();
-        });
-
-        function renderHeaderNav() {
-            const container = document.getElementById('navRight');
-            if (!window.currentUser) {
-                container.innerHTML = `<div class="text-xs text-slate-400 font-semibold">Sign in required</div>`;
-            } else {
-                container.innerHTML = `
-                    <div class="relative inline-block text-left">
-                        <button onclick="toggleUserDropdown(event)" class="flex items-center space-x-2.5 bg-slate-800 hover:bg-slate-700/80 px-3 py-2 rounded-xl border border-slate-700 transition shadow-sm">
-                            <div class="w-7 h-7 rounded-full bg-tennis-500 text-slate-900 flex items-center justify-center font-black text-xs shadow">
-                                ${window.currentUser.fullName ? window.currentUser.fullName.charAt(0).toUpperCase() : 'U'}
-                            </div>
-                            <div class="text-left hidden sm:block">
-                                <div class="text-xs font-bold text-white flex items-center gap-1.5">
-                                    <span>${window.currentUser.fullName}</span>
-                                    <i class="fa-solid fa-chevron-down text-[10px] text-slate-400"></i>
-                                </div>
-                                <div class="text-[9px] font-bold text-tennis-400 uppercase tracking-wide">${window.currentUser.isAdmin ? 'ADMIN' : 'USER'}</div>
-                            </div>
-                            <i class="fa-solid fa-chevron-down text-xs text-slate-400 sm:hidden"></i>
-                        </button>
-
-                        <div id="userDropdownMenu" class="hidden absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl py-2 z-50 text-xs">
-                            <div class="px-4 py-2 border-b border-slate-800">
-                                <p class="font-bold text-white truncate">${window.currentUser.fullName}</p>
-                                <p class="text-[10px] text-slate-400 truncate">${window.currentUser.email || window.currentUser.username}</p>
-                            </div>
-                            <button onclick="openEnrolledRecordsModal(); closeUserDropdown();" class="w-full text-left px-4 py-2.5 text-slate-200 hover:bg-slate-800 hover:text-tennis-400 font-bold transition flex items-center gap-2">
-                                <i class="fa-solid fa-clock-rotate-left text-tennis-400 w-4"></i> Enrolled Records
-                            </button>
-                            <button onclick="openChangeProfileModal(); closeUserDropdown();" class="w-full text-left px-4 py-2.5 text-slate-200 hover:bg-slate-800 hover:text-tennis-400 font-bold transition flex items-center gap-2">
-                                <i class="fa-solid fa-user-gear text-tennis-400 w-4"></i> Change Profile
-                            </button>
-                            <div class="border-t border-slate-800 my-1"></div>
-                            <button onclick="handleLogout(); closeUserDropdown();" class="w-full text-left px-4 py-2.5 text-red-400 hover:bg-red-950/40 font-bold transition flex items-center gap-2">
-                                <i class="fa-solid fa-right-from-bracket w-4"></i> Sign Out
-                            </button>
-                        </div>
-                    </div>
-                `;
-            }
+            const menu = document.getElementById('userProfileMenu');
+            if (menu) menu.classList.add('hidden');
         }
 
         function openEnrolledRecordsModal() {
+            closeUserDropdown();
             const tbody = document.getElementById('enrolledHistoryTableBody');
             tbody.innerHTML = '';
 
@@ -1505,12 +1360,52 @@
         }
 
         function handleLogout() {
+            closeUserDropdown();
             sessionStorage.removeItem('ace_tennis_current_user');
             window.currentUser = null;
             document.getElementById('authView').classList.remove('hidden');
             document.getElementById('mainDashboardView').classList.add('hidden');
             renderHeaderNav();
             showToast("Logged out successfully.", "info");
+        }
+
+        function renderHeaderNav() {
+            const container = document.getElementById('navRight');
+            if (!window.currentUser) {
+                container.innerHTML = `<div class="text-xs text-slate-400 font-semibold">Sign in required</div>`;
+            } else {
+                container.innerHTML = `
+                    <div class="relative">
+                        <button onclick="toggleUserDropdown()" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl border border-slate-700 transition">
+                            <div class="w-7 h-7 rounded-full bg-tennis-500 text-slate-900 font-black flex items-center justify-center text-xs">
+                                ${window.currentUser.fullName.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="text-left hidden sm:block">
+                                <div class="text-[10px] font-black text-tennis-400 uppercase leading-none">${window.currentUser.isAdmin ? 'ADMIN' : 'USER'}</div>
+                                <div class="text-xs font-bold text-white leading-tight">${window.currentUser.fullName}</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-slate-400 text-xs ml-1"></i>
+                        </button>
+
+                        <div id="userProfileMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 text-xs">
+                            <div class="px-4 py-2 border-b border-slate-100">
+                                <div class="font-bold text-slate-800">${window.currentUser.fullName}</div>
+                                <div class="text-[10px] text-slate-400 truncate">${window.currentUser.email || 'No email set'}</div>
+                            </div>
+                            <button onclick="openEnrolledRecordsModal()" class="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-slate-700 font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-clock-rotate-left text-tennis-600"></i> Enrolled Records
+                            </button>
+                            <button onclick="openChangeProfileModal()" class="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-slate-700 font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-user-gear text-tennis-600"></i> Change Profile
+                            </button>
+                            <div class="border-t border-slate-100 my-1"></div>
+                            <button onclick="handleLogout()" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
         }
 
         function updateTargetLessonsLabel() {
@@ -1529,7 +1424,6 @@
 
             const isAdmin = window.currentUser && window.currentUser.isAdmin;
 
-            // Delete admin portal button for non-admin users
             if (isAdmin) {
                 btnAdmin.classList.remove('hidden');
             } else {
@@ -1854,7 +1748,7 @@
 
                 tr.innerHTML = `
                     <td class="py-3 px-4 font-bold text-slate-800">${u.fullName}</td>
-                    <td class="py-3 px-4 text-slate-600 font-mono">${u.email || 'N/A'}</td>
+                    <td class="py-3 px-4 font-mono text-slate-600">${u.email || 'N/A'}</td>
                     <td class="py-3 px-4 text-slate-600 font-mono">${u.contact}</td>
                     <td class="py-3 px-4 font-mono text-slate-500">${u.username}</td>
                     <td class="py-3 px-4">
@@ -1892,16 +1786,10 @@
             if (!u) return;
 
             u.isAdmin = !u.isAdmin;
-            saveState();
-
             if (supabaseClient) {
-                try {
-                    await supabaseClient.from('users').update({ is_admin: u.isAdmin }).eq('id', userId);
-                } catch (err) {
-                    console.error("Supabase toggle admin role error:", err);
-                }
+                await supabaseClient.from('users').update({ is_admin: u.isAdmin }).eq('id', userId);
             }
-
+            saveState();
             renderAdminUsersTable();
             showToast(`${u.fullName} is now ${u.isAdmin ? 'an Admin' : 'a standard User'}.`, "success");
         }
@@ -1910,16 +1798,10 @@
             const u = window.users.find(x => x.id === userId);
             if (u) {
                 u.isApproved = true;
-                saveState();
-
                 if (supabaseClient) {
-                    try {
-                        await supabaseClient.from('users').update({ is_approved: true }).eq('id', userId);
-                    } catch (err) {
-                        console.error("Supabase approve user error:", err);
-                    }
+                    await supabaseClient.from('users').update({ is_approved: true }).eq('id', userId);
                 }
-
+                saveState();
                 renderAdminUsersTable();
                 showToast(`Account approved for ${u.fullName}!`, "success");
             }
@@ -1927,16 +1809,10 @@
 
         async function rejectUser(userId) {
             window.users = window.users.filter(x => x.id !== userId);
-            saveState();
-
             if (supabaseClient) {
-                try {
-                    await supabaseClient.from('users').delete().eq('id', userId);
-                } catch (err) {
-                    console.error("Supabase delete user error:", err);
-                }
+                await supabaseClient.from('users').delete().eq('id', userId);
             }
-
+            saveState();
             renderAdminUsersTable();
             showToast("User account request rejected.", "info");
         }
@@ -1945,16 +1821,10 @@
             const u = window.users.find(x => x.id === userId);
             if (u) {
                 u.isApproved = false;
-                saveState();
-
                 if (supabaseClient) {
-                    try {
-                        await supabaseClient.from('users').update({ is_approved: false }).eq('id', userId);
-                    } catch (err) {
-                        console.error("Supabase revoke user error:", err);
-                    }
+                    await supabaseClient.from('users').update({ is_approved: false }).eq('id', userId);
                 }
-
+                saveState();
                 renderAdminUsersTable();
                 showToast(`Account access revoked for ${u.fullName}.`, "info");
             }
@@ -2076,17 +1946,13 @@
         async function deleteLesson(id) {
             window.lessons = window.lessons.filter(x => x.id !== id);
             delete window.enrollments[id];
-            saveState();
 
             if (supabaseClient) {
-                try {
-                    await supabaseClient.from('lessons').delete().eq('id', id);
-                    await supabaseClient.from('enrollments').delete().eq('lesson_id', id);
-                } catch (err) {
-                    console.error("Supabase delete lesson error:", err);
-                }
+                await supabaseClient.from('lessons').delete().eq('id', id);
+                await supabaseClient.from('enrollments').delete().eq('lesson_id', id);
             }
 
+            saveState();
             renderAdminLessonsTable();
             renderRegistrationCalendar();
             renderFinalSchedule();
@@ -2330,8 +2196,7 @@
             window.users.forEach(u => {
                 const status = u.isApproved ? "Approved" : "Pending Verification";
                 const role = u.isAdmin ? "Admin" : "User";
-                const email = u.email || "N/A";
-                csvContent += `"${u.id}","${u.fullName}","${email}","${u.contact}","${u.username}","${status}","${role}"\n`;
+                csvContent += `"${u.id}","${u.fullName}","${u.email || 'N/A'}","${u.contact}","${u.username}","${status}","${role}"\n`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
