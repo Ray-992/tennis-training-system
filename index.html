@@ -1011,7 +1011,7 @@
 
                 // 2. Sync Lessons
                 for (const l of window.lessons) {
-                    const { error } = await supabaseClient.from('lessons').upsert({
+                    await supabaseClient.from('lessons').upsert({
                         id: l.id,
                         cohort_id: l.cohortId,
                         date: l.date,
@@ -1021,18 +1021,38 @@
                         location: l.location,
                         capacity: l.capacity
                     });
-                    if (error) console.error("Lesson upsert error:", l.id, error.message);
                 }
 
                 // 3. Sync Registrations
                 for (const key of Object.keys(window.registrations)) {
-                    const parts = key.split('_');
-                    if (parts.length === 2) {
-                        await supabaseClient.from('registrations').upsert({
-                            user_id: parts[0],
-                            cohort_id: parts[1],
+                    let userId = null;
+                    let cohortId = null;
+                    
+                    // Match cohortId suffix against registered cohorts
+                    for (const c of cohorts) {
+                        if (key.endsWith(`_${c.id}`)) {
+                            cohortId = c.id;
+                            userId = key.slice(0, key.length - c.id.length - 1);
+                            break;
+                        }
+                    }
+                    
+                    // Fallback to last underscore separation
+                    if (!userId || !cohortId) {
+                        const lastUnderscore = key.lastIndexOf('_');
+                        if (lastUnderscore !== -1) {
+                            userId = key.substring(0, lastUnderscore);
+                            cohortId = key.substring(lastUnderscore + 1);
+                        }
+                    }
+
+                    if (userId && cohortId) {
+                        const { error: regErr } = await supabaseClient.from('registrations').upsert({
+                            user_id: userId,
+                            cohort_id: cohortId,
                             available_dates: window.registrations[key]
                         });
+                        if (regErr) console.error("Registration upsert error:", key, regErr.message);
                     }
                 }
 
