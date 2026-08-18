@@ -892,10 +892,13 @@
         async function loadDataFromSupabase() {
             if (!supabaseClient) return;
             try {
-                // 1. Fetch Users
                 const { data: dbUsers, error: uErr } = await supabaseClient.from('users').select('*');
-                if (!uErr && dbUsers && dbUsers.length > 0) {
-                    window.users = dbUsers.map(u => ({
+                if (uErr) {
+                    console.error("Supabase users fetch error:", uErr);
+                } else if (dbUsers) {
+                    const dbUserIds = new Set(dbUsers.map(u => u.id));
+                    const localOnlyUsers = (window.users || []).filter(u => !dbUserIds.has(u.id));
+                    const mappedDbUsers = dbUsers.map(u => ({
                         id: u.id,
                         username: u.username,
                         email: u.email || '',
@@ -905,12 +908,17 @@
                         isApproved: u.is_approved,
                         isAdmin: u.is_admin
                     }));
+                    // Merge DB users and local unsynced users so created accounts are never wiped out
+                    window.users = [...mappedDbUsers, ...localOnlyUsers];
                 }
 
-                // 2. Fetch Lessons
                 const { data: dbLessons, error: lErr } = await supabaseClient.from('lessons').select('*');
-                if (!lErr && dbLessons) {
-                    window.lessons = dbLessons.map(l => ({
+                if (lErr) {
+                    console.error("Supabase lessons fetch error:", lErr);
+                } else if (dbLessons) {
+                    const dbLessonIds = new Set(dbLessons.map(l => l.id));
+                    const localOnlyLessons = (window.lessons || []).filter(l => !dbLessonIds.has(l.id));
+                    const mappedDbLessons = dbLessons.map(l => ({
                         id: l.id,
                         cohortId: l.cohort_id,
                         date: l.date,
@@ -920,30 +928,31 @@
                         location: l.location,
                         capacity: l.capacity
                     }));
+                    window.lessons = [...mappedDbLessons, ...localOnlyLessons];
                 }
 
-                // 3. Fetch Registrations
                 const { data: dbRegs, error: rErr } = await supabaseClient.from('registrations').select('*');
                 if (!rErr && dbRegs) {
-                    const regsObj = {};
+                    const regsObj = { ...window.registrations };
                     dbRegs.forEach(r => {
                         regsObj[`${r.user_id}_${r.cohort_id}`] = r.available_dates || [];
                     });
                     window.registrations = regsObj;
                 }
 
-                // 4. Fetch Enrollments
                 const { data: dbEnrollments, error: eErr } = await supabaseClient.from('enrollments').select('*');
                 if (!eErr && dbEnrollments) {
-                    const enrollObj = {};
+                    const enrollObj = { ...window.enrollments };
                     dbEnrollments.forEach(e => {
                         if (!enrollObj[e.lesson_id]) enrollObj[e.lesson_id] = [];
-                        enrollObj[e.lesson_id].push(e.user_id);
+                        if (!enrollObj[e.lesson_id].includes(e.user_id)) {
+                            enrollObj[e.lesson_id].push(e.user_id);
+                        }
                     });
                     window.enrollments = enrollObj;
                 }
             } catch (err) {
-                console.log("Supabase initial fetch:", err);
+                console.log("Supabase initial fetch exception:", err);
             }
         }
 
@@ -978,7 +987,7 @@
             try {
                 // 1. Sync Users
                 for (const u of window.users) {
-                    await supabaseClient.from('users').upsert({
+                    const { error } = await supabaseClient.from('users').upsert({
                         id: u.id,
                         username: u.username,
                         email: u.email || '',
@@ -988,11 +997,12 @@
                         is_approved: u.isApproved,
                         is_admin: u.isAdmin
                     });
+                    if (error) console.error("User upsert error:", u.username, error.message);
                 }
 
                 // 2. Sync Lessons
                 for (const l of window.lessons) {
-                    await supabaseClient.from('lessons').upsert({
+                    const { error } = await supabaseClient.from('lessons').upsert({
                         id: l.id,
                         cohort_id: l.cohortId,
                         date: l.date,
@@ -1002,6 +1012,7 @@
                         location: l.location,
                         capacity: l.capacity
                     });
+                    if (error) console.error("Lesson upsert error:", l.id, error.message);
                 }
 
                 // 3. Sync Registrations
@@ -1181,19 +1192,20 @@
             saveState();
 
             if (supabaseClient) {
-                try {
-                    await supabaseClient.from('users').upsert({
-                        id: newUser.id,
-                        username: newUser.username,
-                        email: newUser.email,
-                        password: newUser.password,
-                        full_name: newUser.fullName,
-                        contact: newUser.contact,
-                        is_approved: newUser.isApproved,
-                        is_admin: newUser.isAdmin
-                    });
-                } catch (err) {
-                    console.error("Supabase registration sync error:", err);
+                const { error: dbErr } = await supabaseClient.from('users').upsert({
+                    id: newUser.id,
+                    username: newUser.username,
+                    email: newUser.email,
+                    password: newUser.password,
+                    full_name: newUser.fullName,
+                    contact: newUser.contact,
+                    is_approved: newUser.isApproved,
+                    is_admin: newUser.isAdmin
+                });
+
+                if (dbErr) {
+                    console.error("Supabase user registration error:", dbErr);
+                    showToast(`Supabase Sync Notice: ${dbErr.message}`, "warning");
                 }
             }
 
