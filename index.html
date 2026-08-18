@@ -163,6 +163,12 @@
                         </div>
 
                         <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address <span class="text-red-500">*</span></label>
+                            <input type="email" id="regEmail" required placeholder="taiman@example.com" 
+                                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 text-slate-800 outline-none text-sm">
+                        </div>
+
+                        <div>
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contact Phone No. <span class="text-red-500">*</span></label>
                             <div class="flex items-center space-x-2">
                                 <select id="regCountryCode" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-tennis-500">
@@ -646,8 +652,8 @@
             <div id="forgotStep1">
                 <form onsubmit="handleSendOTP(event)" class="space-y-4">
                     <div>
-                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Username</label>
-                        <input type="text" id="forgotUsername" required placeholder="Username" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Username or Email</label>
+                        <input type="text" id="forgotUsername" required placeholder="Username or email address" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
                     </div>
                     <div>
                         <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Registered Phone</label>
@@ -845,6 +851,7 @@
         const DEFAULT_ADMIN = {
             id: 'admin_1',
             username: 'admin',
+            email: 'admin@tennistraining.com',
             password: '123',
             fullName: 'System Administrator',
             contact: '+852 90000000',
@@ -890,6 +897,7 @@
                     window.users = dbUsers.map(u => ({
                         id: u.id,
                         username: u.username,
+                        email: u.email || '',
                         password: u.password,
                         fullName: u.full_name,
                         contact: u.contact,
@@ -972,6 +980,7 @@
                     await supabaseClient.from('users').upsert({
                         id: u.id,
                         username: u.username,
+                        email: u.email,
                         password: u.password,
                         full_name: u.fullName,
                         contact: u.contact,
@@ -1140,6 +1149,7 @@
         function handleRegister(e) {
             e.preventDefault();
             const fullName = document.getElementById('regFullName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
             const countryCode = document.getElementById('regCountryCode').value;
             const contactNo = document.getElementById('regContact').value.trim();
             const username = document.getElementById('regUsername').value.trim();
@@ -1150,9 +1160,15 @@
                 return;
             }
 
+            if (window.users.some(u => u.email && u.email.toLowerCase() === email.toLowerCase())) {
+                showToast("Email address already registered. Please login or reset password.", "error");
+                return;
+            }
+
             const newUser = {
                 id: 'u_' + Date.now(),
                 username,
+                email,
                 password,
                 fullName,
                 contact: `${countryCode} ${contactNo}`,
@@ -1178,14 +1194,17 @@
 
         function handleSendOTP(e) {
             e.preventDefault();
-            const username = document.getElementById('forgotUsername').value.trim();
+            const usernameOrEmail = document.getElementById('forgotUsername').value.trim();
             const countryCode = document.getElementById('forgotCountryCode').value;
             const phone = document.getElementById('forgotContact').value.trim();
             const fullPhone = `${countryCode} ${phone}`;
 
-            const u = window.users.find(x => x.username.toLowerCase() === username.toLowerCase() && (x.contact === fullPhone || x.contact.includes(phone)));
+            const u = window.users.find(x => 
+                (x.username.toLowerCase() === usernameOrEmail.toLowerCase() || (x.email && x.email.toLowerCase() === usernameOrEmail.toLowerCase())) &&
+                (x.contact === fullPhone || x.contact.includes(phone))
+            );
             if (!u) {
-                showToast("Verification failed. Details do not match.", "error");
+                showToast("Verification failed. Account details do not match.", "error");
                 return;
             }
 
@@ -1194,21 +1213,24 @@
             document.getElementById('forgotStep1').classList.add('hidden');
             document.getElementById('forgotStep2').classList.remove('hidden');
 
-            showToast(`Simulated SMS Sent to ${fullPhone}! OTP Code: ${generatedOTPCode}`, "warning");
+            showToast(`OTP Code sent to ${u.email || fullPhone}!`, "success");
         }
 
         function handleVerifyOTPAndReset(e) {
             e.preventDefault();
             const inputOTP = document.getElementById('forgotOTPInput').value.trim();
             const newPassword = document.getElementById('forgotNewPassword').value.trim();
-            const username = document.getElementById('forgotUsername').value.trim();
+            const usernameOrEmail = document.getElementById('forgotUsername').value.trim();
 
             if (inputOTP !== generatedOTPCode) {
                 showToast("Invalid OTP Verification Code.", "error");
                 return;
             }
 
-            const u = window.users.find(x => x.username.toLowerCase() === username.toLowerCase());
+            const u = window.users.find(x => 
+                x.username.toLowerCase() === usernameOrEmail.toLowerCase() || 
+                (x.email && x.email.toLowerCase() === usernameOrEmail.toLowerCase())
+            );
             if (u) {
                 u.password = newPassword;
                 saveState();
@@ -2158,12 +2180,13 @@
 
         function exportUserDatabaseExcel() {
             let csvContent = "\uFEFF";
-            csvContent += "User ID,Full Name,Contact Phone,Username,Status,Is Admin\n";
+            csvContent += "User ID,Full Name,Email,Contact Phone,Username,Status,Is Admin\n";
 
             window.users.forEach(u => {
                 const status = u.isApproved ? "Approved" : "Pending Verification";
                 const role = u.isAdmin ? "Admin" : "User";
-                csvContent += `"${u.id}","${u.fullName}","${u.contact}","${u.username}","${status}","${role}"\n`;
+                const email = u.email || "N/A";
+                csvContent += `"${u.id}","${u.fullName}","${email}","${u.contact}","${u.username}","${status}","${role}"\n`;
             });
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
