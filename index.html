@@ -985,9 +985,9 @@
         async function syncToSupabaseBackend() {
             if (!supabaseClient) return;
             try {
-                // 1. Sync Users
+                // 1. Sync Users with automatic fallback if email column is absent in DB
                 for (const u of window.users) {
-                    const { error } = await supabaseClient.from('users').upsert({
+                    const userPayload = {
                         id: u.id,
                         username: u.username,
                         email: u.email || '',
@@ -996,7 +996,16 @@
                         contact: u.contact,
                         is_approved: u.isApproved,
                         is_admin: u.isAdmin
-                    });
+                    };
+                    let { error } = await supabaseClient.from('users').upsert(userPayload);
+                    
+                    // Fallback: If 'email' column does not exist in schema cache yet, retry without email field
+                    if (error && error.message && error.message.toLowerCase().includes("'email'")) {
+                        delete userPayload.email;
+                        const retry = await supabaseClient.from('users').upsert(userPayload);
+                        error = retry.error;
+                    }
+
                     if (error) console.error("User upsert error:", u.username, error.message);
                 }
 
@@ -1192,7 +1201,7 @@
             saveState();
 
             if (supabaseClient) {
-                const { error: dbErr } = await supabaseClient.from('users').upsert({
+                const userPayload = {
                     id: newUser.id,
                     username: newUser.username,
                     email: newUser.email,
@@ -1201,7 +1210,15 @@
                     contact: newUser.contact,
                     is_approved: newUser.isApproved,
                     is_admin: newUser.isAdmin
-                });
+                };
+                let { error: dbErr } = await supabaseClient.from('users').upsert(userPayload);
+
+                // Fallback: If 'email' column does not exist in schema cache yet, retry without email field
+                if (dbErr && dbErr.message && dbErr.message.toLowerCase().includes("'email'")) {
+                    delete userPayload.email;
+                    const retry = await supabaseClient.from('users').upsert(userPayload);
+                    dbErr = retry.error;
+                }
 
                 if (dbErr) {
                     console.error("Supabase user registration error:", dbErr);
