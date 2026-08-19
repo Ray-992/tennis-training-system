@@ -100,27 +100,6 @@
 
     <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8">
 
-        <!-- BIOMETRIC LOCK SCREEN VIEW (FACE ID / TOUCH ID) -->
-        <div id="biometricLockView" class="hidden max-w-md mx-auto my-12 p-8 bg-white rounded-3xl shadow-2xl border border-slate-200 text-center space-y-6">
-            <div class="w-20 h-20 bg-tennis-100 rounded-full flex items-center justify-center mx-auto text-tennis-600 text-4xl shadow-inner border border-tennis-200 animate-pulse">
-                <i class="fa-solid fa-fingerprint"></i>
-            </div>
-            <div>
-                <h2 class="text-2xl font-black text-slate-900">App Locked</h2>
-                <p id="biometricUserGreeting" class="text-xs text-slate-500 mt-1 font-semibold">Welcome back!</p>
-            </div>
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs text-slate-600 leading-relaxed">
-                Unlock using <span class="font-bold text-slate-800">Face ID</span>, <span class="font-bold text-slate-800">Touch ID</span>, or Device Passcode to access your schedule.
-            </div>
-            <button onclick="triggerBiometricUnlock()" class="w-full py-3.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-2xl shadow-lg transition flex items-center justify-center gap-2 text-sm">
-                <i class="fa-solid fa-face-smile text-lg"></i>
-                <span>Unlock with Face ID / Touch ID</span>
-            </button>
-            <button onclick="fallbackToStandardLogin()" class="text-xs text-slate-400 hover:text-slate-600 font-bold transition">
-                Log in with Password instead
-            </button>
-        </div>
-
         <!-- AUTHENTICATION VIEW -->
         <div id="authView" class="max-w-md mx-auto my-8 space-y-4">
 
@@ -162,12 +141,7 @@
                         </div>
 
                         <div>
-                            <div class="flex justify-between items-center mb-1">
-                                <label class="block text-xs font-bold text-slate-700 uppercase">Password</label>
-                                <button type="button" onclick="openForgotPasswordModal()" class="text-xs text-tennis-600 hover:text-tennis-700 font-semibold transition">
-                                    Forgot Password?
-                                </button>
-                            </div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock text-xs"></i></span>
                                 <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="Password" 
@@ -175,7 +149,18 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 text-sm">
+                        <!-- Remember Me & Forgot Password Row -->
+                        <div class="flex items-center justify-between text-xs pt-1">
+                            <label class="flex items-center space-x-2 cursor-pointer text-slate-600 font-semibold select-none">
+                                <input type="checkbox" id="loginRememberMe" checked class="w-4 h-4 rounded border-slate-300 text-tennis-600 focus:ring-tennis-500 cursor-pointer">
+                                <span>Remember my login info</span>
+                            </label>
+                            <button type="button" onclick="openForgotPasswordModal()" class="text-xs text-tennis-600 hover:text-tennis-700 font-semibold transition">
+                                Forgot Password?
+                            </button>
+                        </div>
+
+                        <button type="submit" class="w-full py-3.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 text-sm mt-2">
                             <span>Sign In</span> <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </form>
@@ -655,20 +640,6 @@
                     <input type="text" id="profContact" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
                 </div>
 
-                <!-- Biometric Enable Toggle -->
-                <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
-                    <div>
-                        <div class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                            <i class="fa-solid fa-face-smile text-tennis-600"></i> Face ID / Touch ID Unlock
-                        </div>
-                        <div class="text-[10px] text-slate-500">Prompt biometrics when opening the app</div>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="profBiometricToggle" onchange="toggleBiometricSetting(this.checked)" class="sr-only peer">
-                        <div class="w-9 h-5 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-tennis-600"></div>
-                    </label>
-                </div>
-
                 <div class="border-t border-slate-100 pt-3">
                     <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">New Password (Leave blank to keep unchanged)</label>
                     <input type="password" id="profNewPassword" placeholder="••••••••" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
@@ -922,7 +893,6 @@
         window.enrollments = JSON.parse(localStorage.getItem('ace_tennis_enrollments')) || DEFAULT_ENROLLMENTS;
         let cohortTargetLessons = parseInt(localStorage.getItem('ace_tennis_target_lessons')) || 8;
         let isSchedulePublished = JSON.parse(localStorage.getItem('ace_tennis_published')) || false;
-        let useBiometricLock = JSON.parse(localStorage.getItem('ace_tennis_biometric_enabled')) || false;
 
         window.currentUser = null;
         let activeRegYear = 2026;
@@ -1029,7 +999,6 @@
             localStorage.setItem('ace_tennis_enrollments', JSON.stringify(window.enrollments));
             localStorage.setItem('ace_tennis_target_lessons', cohortTargetLessons);
             localStorage.setItem('ace_tennis_published', JSON.stringify(isSchedulePublished));
-            localStorage.setItem('ace_tennis_biometric_enabled', JSON.stringify(useBiometricLock));
 
             if (supabaseClient) {
                 syncToSupabaseBackend();
@@ -1103,82 +1072,20 @@
         }
 
         function checkAutoLoginSession() {
-            const savedUserId = localStorage.getItem('ace_tennis_current_user');
-            if (savedUserId) {
-                const found = window.users.find(u => u.id === savedUserId);
-                if (found && found.isApproved) {
-                    if (useBiometricLock && window.PublicKeyCredential) {
-                        // Show Biometric Lock Screen instead of silent auto-login
-                        document.getElementById('authView').classList.add('hidden');
-                        document.getElementById('mainDashboardView').classList.add('hidden');
-                        document.getElementById('biometricLockView').classList.remove('hidden');
-                        document.getElementById('biometricUserGreeting').textContent = `Welcome back, ${found.fullName}!`;
-                        // Auto-trigger biometric prompt
-                        triggerBiometricUnlock();
-                    } else {
-                        loginUserSuccess(found);
-                    }
-                    return;
-                }
+            // Check if user has saved credentials for one-click login
+            const savedUsername = localStorage.getItem('ace_tennis_remember_username');
+            const savedPassword = localStorage.getItem('ace_tennis_remember_password');
+
+            if (savedUsername && savedPassword) {
+                document.getElementById('loginUsername').value = savedUsername;
+                document.getElementById('loginPassword').value = savedPassword;
+                document.getElementById('loginRememberMe').checked = true;
             }
-            renderHeaderNav();
-        }
 
-        // WebAuthn Native Biometric Lock Trigger (Face ID / Touch ID)
-        async function triggerBiometricUnlock() {
-            const savedUserId = localStorage.getItem('ace_tennis_current_user');
-            const found = window.users.find(u => u.id === savedUserId);
-            if (!found) return;
-
-            if (window.PublicKeyCredential && PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable) {
-                try {
-                    // Trigger WebAuthn Biometric Verification Call
-                    const challenge = new Uint8Array(32);
-                    window.crypto.getRandomValues(challenge);
-
-                    const options = {
-                        publicKey: {
-                            challenge: challenge,
-                            timeout: 60000,
-                            userVerification: "required",
-                            allowCredentials: []
-                        }
-                    };
-
-                    // Prompt device Face ID / Touch ID / Fingerprint
-                    await navigator.credentials.get(options).catch(err => {
-                        // Fallback simulated success if fake credentials used
-                        console.log("Biometric hardware event:", err);
-                    });
-
-                    document.getElementById('biometricLockView').classList.add('hidden');
-                    loginUserSuccess(found);
-                    showToast(`Authenticated via Biometrics! Welcome back ${found.fullName}.`, "success");
-
-                } catch (err) {
-                    showToast("Biometric verification failed. Please try again.", "error");
-                }
-            } else {
-                // If device lacks biometric hardware, fall back directly
-                document.getElementById('biometricLockView').classList.add('hidden');
-                loginUserSuccess(found);
-            }
-        }
-
-        function fallbackToStandardLogin() {
-            document.getElementById('biometricLockView').classList.add('hidden');
+            // Always present login screen first
             document.getElementById('authView').classList.remove('hidden');
-            showToast("Enter your username and password to log in.", "info");
-        }
-
-        function toggleBiometricSetting(enabled) {
-            useBiometricLock = enabled;
-            saveState();
-            if (enabled) {
-                showToast("Face ID / Touch ID unlock enabled for app launch!", "success");
-            } else {
-                showToast("Biometric lock disabled.", "info");
-            }
+            document.getElementById('mainDashboardView').classList.add('hidden');
+            renderHeaderNav();
         }
 
         function changeActiveCohort(cohortId) {
@@ -1262,6 +1169,7 @@
             e.preventDefault();
             const usernameInput = document.getElementById('loginUsername').value.trim();
             const passwordInput = document.getElementById('loginPassword').value.trim();
+            const rememberMe = document.getElementById('loginRememberMe').checked;
 
             const foundUser = window.users.find(u => 
                 u.username.toLowerCase() === usernameInput.toLowerCase() || 
@@ -1283,7 +1191,15 @@
                 return;
             }
 
-            localStorage.setItem('ace_tennis_current_user', foundUser.id);
+            // Save or clear credentials for one-click login pre-fill
+            if (rememberMe) {
+                localStorage.setItem('ace_tennis_remember_username', usernameInput);
+                localStorage.setItem('ace_tennis_remember_password', passwordInput);
+            } else {
+                localStorage.removeItem('ace_tennis_remember_username');
+                localStorage.removeItem('ace_tennis_remember_password');
+            }
+
             loginUserSuccess(foundUser);
             showToast(`Welcome back, ${foundUser.fullName}!`, "success");
         }
@@ -1413,7 +1329,6 @@
             document.getElementById('profEmail').value = window.currentUser.email || '';
             document.getElementById('profContact').value = window.currentUser.contact;
             document.getElementById('profNewPassword').value = '';
-            document.getElementById('profBiometricToggle').checked = useBiometricLock;
             closeUserDropdown();
             openModal('modalChangeProfile');
         }
@@ -1485,7 +1400,6 @@
         function loginUserSuccess(user) {
             window.currentUser = user;
             document.getElementById('authView').classList.add('hidden');
-            document.getElementById('biometricLockView').classList.add('hidden');
             document.getElementById('mainDashboardView').classList.remove('hidden');
 
             const key = `${window.currentUser.id}_${activeCohortId}`;
@@ -1498,12 +1412,14 @@
 
         function handleLogout() {
             closeUserDropdown();
-            localStorage.removeItem('ace_tennis_current_user');
             window.currentUser = null;
             document.getElementById('authView').classList.remove('hidden');
             document.getElementById('mainDashboardView').classList.add('hidden');
             renderHeaderNav();
-            showToast("Logged out successfully.", "info");
+
+            // Re-fill login form if "Remember Me" is stored
+            checkAutoLoginSession();
+            showToast("Signed out successfully.", "info");
         }
 
         function renderHeaderNav() {
