@@ -5,6 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TENNIS TRAINING SYSTEM - Registration & Management</title>
 
+    <!-- PWA Web App Manifest Link -->
+    <link rel="manifest" href="manifest.json">
+
+    <!-- iOS Safari Specific PWA Meta Tags -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Tennis System">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- Theme Color for Mobile Browsers -->
+    <meta name="theme-color" content="#0f172a">
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -2271,6 +2283,17 @@
                 toast.classList.add('opacity-0', 'translate-y-4');
                 setTimeout(() => toast.remove(), 300);
             }, 3500);
+        }
+    </script>
+
+    <!-- Register PWA Service Worker -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => console.log('[PWA] Service Worker registered successfully:', reg.scope))
+                    .catch((err) => console.error('[PWA] Service Worker registration failed:', err));
+            });
         }
     </script>
 </body>
