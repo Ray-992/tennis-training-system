@@ -98,7 +98,7 @@
         </div>
     </header>
 
-    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+    <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8">
 
         <!-- AUTHENTICATION VIEW -->
         <div id="authView" class="max-w-md mx-auto my-8 space-y-4">
@@ -224,15 +224,15 @@
         <div id="mainDashboardView" class="hidden space-y-6">
 
             <!-- Active Cohort Header Banner -->
-            <div class="bg-slate-900 text-white p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-800">
+            <div class="bg-slate-900 text-white p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-800">
                 <div class="space-y-1">
                     <div class="inline-flex items-center gap-2">
                         <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-tennis-500 text-slate-900">Active Cohort</span>
-                        <select id="userCohortSelect" onchange="changeActiveCohort(this.value)" class="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 outline-none font-bold">
+                        <select id="userCohortSelect" onchange="changeActiveCohort(this.value)" class="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 outline-none font-bold max-w-[200px] sm:max-w-none truncate">
                             <!-- Injected via JS -->
                         </select>
                     </div>
-                    <h2 id="cohortTitleDisplay" class="text-2xl font-black text-white tracking-wide">1st Training Cohort: Dec 2026 - Feb 2027</h2>
+                    <h2 id="cohortTitleDisplay" class="text-xl sm:text-2xl font-black text-white tracking-wide">1st Training Cohort: Dec 2026 - Feb 2027</h2>
                     <p class="text-slate-400 text-xs flex items-center gap-2">
                         <i class="fa-solid fa-bullseye text-tennis-400"></i> Target Assigned Lessons per User: <span id="dashboardTargetLessons" class="font-bold text-tennis-400">8 Lessons</span>
                     </p>
@@ -240,76 +240,93 @@
 
                 <!-- Primary Nav Choices -->
                 <div class="flex flex-wrap gap-2">
-                    <button id="tabLessonRegBtn" onclick="switchMainTab('registration')" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-plus text-base"></i> Enrol Lessons
+                    <button id="tabLessonRegBtn" onclick="switchMainTab('registration')" class="px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-plus text-sm sm:text-base"></i> Enrol Lessons
                     </button>
-                    <button id="tabLessonSchedBtn" onclick="switchMainTab('schedule')" class="px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2">
-                        <i class="fa-solid fa-calendar-days text-base"></i> Check Confirmed Schedule
+                    <button id="tabLessonSchedBtn" onclick="switchMainTab('schedule')" class="px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-days text-sm sm:text-base"></i> Confirmed Schedule
                     </button>
-                    <button id="tabAdminBtn" onclick="switchMainTab('admin')" class="hidden px-5 py-2.5 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 transition flex items-center gap-2 shadow-md">
-                        <i class="fa-solid fa-user-shield text-base"></i> Admin Portal
+                    <button id="tabAdminBtn" onclick="switchMainTab('admin')" class="hidden px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 transition flex items-center gap-2 shadow-md">
+                        <i class="fa-solid fa-user-shield text-sm sm:text-base"></i> Admin Portal
                     </button>
                 </div>
             </div>
 
             <!-- TAB 1: Enrol Lessons -->
-            <div id="contentRegistration" class="space-y-6">
+            <div id="contentRegistration" class="space-y-4 sm:space-y-6">
 
                 <!-- Level & Month Selector Header -->
-                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
-                            <i class="fa-solid fa-calendar-check text-tennis-600"></i> Select Your Training Level and Month
+                        <h3 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-check text-tennis-600"></i> Select Skill Level & Month
                         </h3>
                     </div>
 
-                    <div class="flex flex-wrap items-center gap-3">
-                        <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Training Level</label>
-                            <select id="regLevelSelect" onchange="renderRegistrationCalendar()" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold py-2 px-3 rounded-xl text-xs outline-none focus:ring-2 focus:ring-tennis-500">
-                                <option value="Beginner">Beginner Level (Max 8/class)</option>
-                                <option value="Intermediate">Intermediate Level (Max 4/class)</option>
+                    <div class="flex flex-wrap items-center justify-between sm:justify-start gap-2 sm:gap-3">
+                        <div class="flex-1 sm:flex-none min-w-[140px]">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Level</label>
+                            <select id="regLevelSelect" onchange="renderRegistrationCalendar()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 font-bold py-2 px-2.5 rounded-xl text-xs outline-none focus:ring-2 focus:ring-tennis-500">
+                                <option value="Beginner">Beginner (Max 8)</option>
+                                <option value="Intermediate">Intermediate (Max 4)</option>
                             </select>
                         </div>
                         <div>
-                            <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Cohort Month</label>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Month</label>
                             <div class="flex items-center space-x-1 bg-slate-50 border border-slate-300 rounded-xl p-1">
                                 <button onclick="changeRegMonth(-1)" class="px-2 py-1 text-slate-600 hover:text-slate-900 rounded"><i class="fa-solid fa-chevron-left text-xs"></i></button>
                                 <span id="currentRegMonthLabel" class="font-bold text-slate-800 text-xs px-2">Dec 2026</span>
                                 <button onclick="changeRegMonth(1)" class="px-2 py-1 text-slate-600 hover:text-slate-900 rounded"><i class="fa-solid fa-chevron-right text-xs"></i></button>
                             </div>
                         </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Layout</label>
+                            <!-- Mobile Friendly View Mode Toggle (Grid vs List) -->
+                            <div class="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+                                <button id="btnViewGrid" onclick="setRegViewMode('grid')" title="Calendar Grid View" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-tennis-700 shadow-sm">
+                                    <i class="fa-solid fa-calendar-days"></i> <span class="hidden sm:inline ml-1">Grid</span>
+                                </button>
+                                <button id="btnViewList" onclick="setRegViewMode('list')" title="Mobile Agenda List View" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900">
+                                    <i class="fa-solid fa-list-ul"></i> <span class="hidden sm:inline ml-1">List</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 <!-- Selection Summary & Review Action Bar -->
-                <div class="bg-tennis-50 border border-tennis-200 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="bg-tennis-50 border border-tennis-200 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div class="flex items-center space-x-3">
-                        <div class="w-10 h-10 rounded-full bg-tennis-200 text-tennis-800 flex items-center justify-center font-bold text-lg">
+                        <div class="w-10 h-10 rounded-full bg-tennis-200 text-tennis-800 flex items-center justify-center font-bold text-lg shrink-0">
                             <span id="selectedCountBadge">0</span>
                         </div>
                         <div>
                             <p class="text-sm font-bold text-tennis-900">Dates Selected for Enrollment</p>
-                            <p class="text-xs text-tennis-700">Select all dates you can attend for optimal scheduling assignments.</p>
+                            <p class="text-xs text-tennis-700 leading-tight">Select all available dates you can attend for optimal matching.</p>
                         </div>
                     </div>
-                    <button onclick="promptRegistrationConfirmation()" id="submitRegBtn" class="px-6 py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm disabled:opacity-50">
+                    <button onclick="promptRegistrationConfirmation()" id="submitRegBtn" class="w-full sm:w-auto px-5 py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm disabled:opacity-50">
                         <i class="fa-solid fa-check-double"></i> Review & Submit Availability
                     </button>
                 </div>
 
-                <!-- Calendar Grid Container -->
-                <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 overflow-hidden">
-                    <div class="grid grid-cols-7 gap-2 mb-3 text-center text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <!-- 1. Calendar Grid View Container (Responsive for Mobile) -->
+                <div id="calendarGridWrapper" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 sm:p-6 overflow-hidden">
+                    <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">
                         <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                     </div>
-                    <div id="calendarGrid" class="grid grid-cols-7 gap-2">
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-2">
                         <!-- Dynamic Calendar Cells -->
                     </div>
                 </div>
 
+                <!-- 2. Mobile List / Agenda View Container (Optimized Vertical Scrolling) -->
+                <div id="calendarListWrapper" class="hidden space-y-2">
+                    <!-- Dynamic List Cards -->
+                </div>
+
                 <!-- Calendar Legend -->
-                <div class="flex flex-wrap items-center justify-center gap-6 text-xs text-slate-500">
+                <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-slate-500 pt-1">
                     <div class="flex items-center space-x-2">
                         <span class="w-3 h-3 rounded-full bg-emerald-500"></span> <span>Lesson Available</span>
                     </div>
@@ -317,7 +334,7 @@
                         <span class="w-3 h-3 rounded-full bg-tennis-600"></span> <span>Selected Date</span>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <span class="w-3 h-3 rounded-full bg-slate-200"></span> <span>No Lesson Scheduled</span>
+                        <span class="w-3 h-3 rounded-full bg-slate-200"></span> <span>No Class</span>
                     </div>
                 </div>
             </div>
@@ -876,6 +893,7 @@
         let tempSelectedDates = new Set();
         let myLessonsFilterActive = false;
         let generatedOTPCode = null;
+        let regViewMode = 'grid'; // 'grid' or 'list'
 
         window.addEventListener('DOMContentLoaded', async () => {
             if (supabaseClient) {
@@ -1442,22 +1460,22 @@
                 btnAdmin.classList.add('hidden');
             }
 
-            btnReg.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2";
-            btnSched.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2";
-            btnAdmin.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 transition flex items-center gap-2 shadow-md " + (isAdmin ? "" : "hidden");
+            btnReg.className = "px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2";
+            btnSched.className = "px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2";
+            btnAdmin.className = "px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 transition flex items-center gap-2 shadow-md " + (isAdmin ? "" : "hidden");
 
             [contentReg, contentSched, contentAdmin].forEach(c => c.classList.add('hidden'));
 
             if (tab === 'registration') {
-                btnReg.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2";
+                btnReg.className = "px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2";
                 contentReg.classList.remove('hidden');
                 renderRegistrationCalendar();
             } else if (tab === 'schedule') {
-                btnSched.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2";
+                btnSched.className = "px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2";
                 contentSched.classList.remove('hidden');
                 renderFinalSchedule();
             } else if (tab === 'admin' && isAdmin) {
-                btnAdmin.className = "px-5 py-2.5 rounded-xl font-bold text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-md transition flex items-center gap-2";
+                btnAdmin.className = "px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-md transition flex items-center gap-2";
                 contentAdmin.classList.remove('hidden');
                 switchAdminSubTab('users');
             }
@@ -1489,20 +1507,46 @@
             }
         }
 
+        function setRegViewMode(mode) {
+            regViewMode = mode;
+            const btnGrid = document.getElementById('btnViewGrid');
+            const btnList = document.getElementById('btnViewList');
+            const gridWrapper = document.getElementById('calendarGridWrapper');
+            const listWrapper = document.getElementById('calendarListWrapper');
+
+            if (mode === 'grid') {
+                btnGrid.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-tennis-700 shadow-sm";
+                btnList.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900";
+                gridWrapper.classList.remove('hidden');
+                listWrapper.classList.add('hidden');
+            } else {
+                btnList.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-tennis-700 shadow-sm";
+                btnGrid.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900";
+                gridWrapper.classList.add('hidden');
+                listWrapper.classList.remove('hidden');
+            }
+            renderRegistrationCalendar();
+        }
+
         function renderRegistrationCalendar() {
             const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
             document.getElementById('currentRegMonthLabel').textContent = `${monthNames[activeRegMonth]} ${activeRegYear}`;
 
             const selectedLevel = document.getElementById('regLevelSelect').value;
             const grid = document.getElementById('calendarGrid');
+            const listWrapper = document.getElementById('calendarListWrapper');
             grid.innerHTML = '';
+            listWrapper.innerHTML = '';
 
             const firstDay = new Date(activeRegYear, activeRegMonth, 1).getDay();
             const daysInMonth = new Date(activeRegYear, activeRegMonth + 1, 0).getDate();
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
             for (let i = 0; i < firstDay; i++) {
                 grid.appendChild(document.createElement('div'));
             }
+
+            let availableLessonsInMonth = [];
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const monthStr = String(activeRegMonth + 1).padStart(2, '0');
@@ -1512,47 +1556,101 @@
                 const matchedLessons = window.lessons.filter(l => l.cohortId === activeCohortId && l.date === dateKey && l.level === selectedLevel);
                 const isSelected = tempSelectedDates.has(dateKey);
 
+                if (matchedLessons.length > 0) {
+                    availableLessonsInMonth.push({ day, dateKey, lessons: matchedLessons });
+                }
+
+                // Grid Card Rendering (Touch Optimised for Mobile Vertical View)
                 const card = document.createElement('div');
-                card.className = "min-h-[85px] border rounded-2xl p-2.5 flex flex-col justify-between calendar-day-card relative ";
+                card.className = "min-h-[58px] sm:min-h-[85px] border rounded-xl sm:rounded-2xl p-1.5 sm:p-2.5 flex flex-col justify-between calendar-day-card relative cursor-pointer ";
 
                 if (matchedLessons.length > 0) {
                     if (isSelected) {
-                        card.className += "bg-tennis-600 text-white border-tennis-700 shadow-md cursor-pointer font-bold";
+                        card.className += "bg-tennis-600 text-white border-tennis-700 shadow-md font-bold";
                     } else {
-                        card.className += "bg-emerald-50/70 border-emerald-300 hover:bg-emerald-100/80 cursor-pointer";
+                        card.className += "bg-emerald-50/90 border-emerald-300 hover:bg-emerald-100";
                     }
-
-                    let lessonBadges = matchedLessons.map(l => `
-                        <div class="text-[9px] ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-200 text-emerald-900'} px-1.5 py-0.5 rounded-lg font-bold truncate">
-                            <i class="fa-solid fa-clock"></i> ${l.startTime}
-                        </div>
-                    `).join('');
 
                     card.innerHTML = `
                         <div class="flex items-center justify-between">
-                            <span class="font-bold text-xs ${isSelected ? 'text-white' : 'text-slate-800'}">${day}</span>
-                            <span class="${isSelected ? 'text-white' : 'text-emerald-600'} text-xs">
-                                <i class="fa-solid ${isSelected ? 'fa-square-check' : 'fa-square'}"></i>
+                            <span class="font-bold text-xs sm:text-sm ${isSelected ? 'text-white' : 'text-slate-800'}">${day}</span>
+                            <span class="${isSelected ? 'text-white' : 'text-emerald-600'} text-[10px] sm:text-xs">
+                                <i class="fa-solid ${isSelected ? 'fa-circle-check' : 'fa-circle-dot'}"></i>
                             </span>
                         </div>
-                        <div class="space-y-1 my-1">
-                            ${lessonBadges}
+                        
+                        <!-- Desktop Time Badges -->
+                        <div class="hidden sm:block space-y-1 my-1">
+                            ${matchedLessons.map(l => `
+                                <div class="text-[9px] ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-200 text-emerald-900'} px-1.5 py-0.5 rounded-lg font-bold truncate">
+                                    <i class="fa-solid fa-clock"></i> ${l.startTime}
+                                </div>
+                            `).join('')}
                         </div>
-                        <div class="text-[9px] ${isSelected ? 'text-tennis-100 font-bold' : 'text-slate-500'} truncate">
+                        <div class="hidden sm:block text-[9px] ${isSelected ? 'text-tennis-100 font-bold' : 'text-slate-500'} truncate">
                             ${matchedLessons[0].location}
+                        </div>
+
+                        <!-- Mobile Compact Time Pill (Fits cleanly in vertical iPhone portrait view) -->
+                        <div class="sm:hidden mt-1">
+                            <div class="text-[9px] ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-200 text-emerald-900'} px-1 py-0.5 rounded font-black text-center truncate">
+                                ${matchedLessons[0].startTime.split(':')[0]}:${matchedLessons[0].startTime.split(':')[1]}
+                            </div>
                         </div>
                     `;
 
                     card.onclick = () => toggleDateSelection(dateKey);
                 } else {
-                    card.className += "bg-slate-50 border-slate-200 text-slate-400";
+                    card.className += "bg-slate-50/60 border-slate-200 text-slate-300";
                     card.innerHTML = `
                         <span class="font-medium text-xs text-slate-400">${day}</span>
-                        <span class="text-[9px] italic text-slate-300">No class</span>
+                        <span class="text-[9px] hidden sm:block italic text-slate-300">No class</span>
                     `;
                 }
 
                 grid.appendChild(card);
+            }
+
+            // Mobile List / Agenda View Rendering
+            if (availableLessonsInMonth.length === 0) {
+                listWrapper.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl text-center border border-slate-200">
+                        <i class="fa-solid fa-calendar-xmark text-3xl text-slate-300 mb-2"></i>
+                        <p class="font-bold text-xs text-slate-500">No scheduled ${selectedLevel} lessons found in ${monthNames[activeRegMonth]} ${activeRegYear}.</p>
+                    </div>
+                `;
+            } else {
+                availableLessonsInMonth.forEach(item => {
+                    const isSelected = tempSelectedDates.has(item.dateKey);
+                    const dateObj = new Date(item.dateKey);
+                    const dayName = weekdays[dateObj.getDay()];
+
+                    const row = document.createElement('div');
+                    row.className = `p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${isSelected ? 'bg-tennis-600 text-white border-tennis-700 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-tennis-300'}`;
+
+                    row.innerHTML = `
+                        <div class="flex items-center space-x-3">
+                            <div class="w-11 h-11 rounded-xl ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-100 text-emerald-900'} flex flex-col items-center justify-center font-black shrink-0">
+                                <span class="text-xs uppercase leading-none">${dayName}</span>
+                                <span class="text-base leading-none">${item.day}</span>
+                            </div>
+                            <div>
+                                <div class="font-bold text-xs sm:text-sm ${isSelected ? 'text-white' : 'text-slate-900'}">${item.dateKey}</div>
+                                <div class="text-[11px] ${isSelected ? 'text-tennis-100' : 'text-slate-500'} flex items-center gap-2 mt-0.5">
+                                    <span><i class="fa-solid fa-clock"></i> ${item.lessons[0].startTime} - ${item.lessons[0].endTime}</span>
+                                    <span>•</span>
+                                    <span><i class="fa-solid fa-location-dot"></i> ${item.lessons[0].location}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="toggleDateSelection('${item.dateKey}')" class="px-3.5 py-1.5 rounded-xl font-bold text-xs shrink-0 transition ${isSelected ? 'bg-white text-tennis-800 shadow' : 'bg-tennis-600 text-white hover:bg-tennis-700'}">
+                            ${isSelected ? '<i class="fa-solid fa-check"></i> Selected' : '<i class="fa-solid fa-plus"></i> Select'}
+                        </button>
+                    `;
+
+                    listWrapper.appendChild(row);
+                });
             }
 
             document.getElementById('selectedCountBadge').textContent = tempSelectedDates.size;
