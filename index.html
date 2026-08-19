@@ -135,7 +135,7 @@
                             <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username or Email</label>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user text-xs"></i></span>
-                                <input type="text" id="loginUsername" required placeholder="Username or email address" 
+                                <input type="text" id="loginUsername" required autocomplete="username" placeholder="Username or email address" 
                                        class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 text-slate-800 outline-none text-sm transition">
                             </div>
                         </div>
@@ -149,7 +149,7 @@
                             </div>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock text-xs"></i></span>
-                                <input type="password" id="loginPassword" required placeholder="Password" 
+                                <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="Password" 
                                        class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 text-slate-800 outline-none text-sm transition">
                             </div>
                         </div>
@@ -1065,7 +1065,7 @@
         }
 
         function checkAutoLoginSession() {
-            const savedUserId = sessionStorage.getItem('ace_tennis_current_user');
+            const savedUserId = localStorage.getItem('ace_tennis_current_user');
             if (savedUserId) {
                 const found = window.users.find(u => u.id === savedUserId);
                 if (found && found.isApproved) {
@@ -1178,7 +1178,7 @@
                 return;
             }
 
-            sessionStorage.setItem('ace_tennis_current_user', foundUser.id);
+            localStorage.setItem('ace_tennis_current_user', foundUser.id);
             loginUserSuccess(foundUser);
             showToast(`Welcome back, ${foundUser.fullName}!`, "success");
         }
@@ -1391,7 +1391,7 @@
 
         function handleLogout() {
             closeUserDropdown();
-            sessionStorage.removeItem('ace_tennis_current_user');
+            localStorage.removeItem('ace_tennis_current_user');
             window.currentUser = null;
             document.getElementById('authView').classList.remove('hidden');
             document.getElementById('mainDashboardView').classList.add('hidden');
