@@ -141,7 +141,12 @@
                         </div>
 
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password</label>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-xs font-bold text-slate-700 uppercase">Password</label>
+                                <button type="button" onclick="openForgotPasswordModal()" class="text-xs text-tennis-600 hover:text-tennis-700 font-semibold transition">
+                                    Forgot Password?
+                                </button>
+                            </div>
                             <div class="relative">
                                 <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock text-xs"></i></span>
                                 <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="Password" 
@@ -149,18 +154,15 @@
                             </div>
                         </div>
 
-                        <!-- Remember Me & Forgot Password Row -->
+                        <!-- Remember Me Row -->
                         <div class="flex items-center justify-between text-xs pt-1">
                             <label class="flex items-center space-x-2 cursor-pointer text-slate-600 font-semibold select-none">
                                 <input type="checkbox" id="loginRememberMe" checked class="w-4 h-4 rounded border-slate-300 text-tennis-600 focus:ring-tennis-500 cursor-pointer">
                                 <span>Remember my login info</span>
                             </label>
-                            <button type="button" onclick="openForgotPasswordModal()" class="text-xs text-tennis-600 hover:text-tennis-700 font-semibold transition">
-                                Forgot Password?
-                            </button>
                         </div>
 
-                        <button type="submit" class="w-full py-3.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 text-sm mt-2">
+                        <button type="submit" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 text-sm mt-2">
                             <span>Sign In</span> <i class="fa-solid fa-arrow-right"></i>
                         </button>
                     </form>
@@ -909,7 +911,19 @@
             populateCohortDropdowns();
             saveState();
             checkAutoLoginSession();
+            requestNotificationPermission();
         });
+
+        // Request Browser/System Notification Permission
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        console.log("System Notification permission granted.");
+                    }
+                });
+            }
+        }
 
         async function loadDataFromSupabase() {
             if (!supabaseClient) return;
@@ -2319,7 +2333,43 @@
         function confirmAndPublishEnrollment() {
             isSchedulePublished = true;
             saveState();
+            
+            // Trigger System Notification
+            triggerPublishNotification();
+            
             showToast("Enrollment schedule confirmed & published!", "success");
+        }
+
+        function triggerPublishNotification() {
+            const matchedCohort = cohorts.find(c => c.id === activeCohortId);
+            const cohortName = matchedCohort ? matchedCohort.name : 'Active Cohort';
+            const title = "🎾 Training Schedule Published!";
+            const body = `The confirmed enrolment schedule for ${cohortName} is now live! Please log in to check your confirmed lessons.`;
+
+            if ('Notification' in window && Notification.permission === 'granted') {
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.showNotification(title, {
+                            body: body,
+                            icon: 'icon-192.png',
+                            badge: 'icon-192.png',
+                            vibrate: [200, 100, 200],
+                            tag: 'schedule-published'
+                        });
+                    });
+                } else {
+                    new Notification(title, {
+                        body: body,
+                        icon: 'icon-192.png'
+                    });
+                }
+            } else if ('Notification' in window && Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        new Notification(title, { body: body });
+                    }
+                });
+            }
         }
 
         function exportUserDatabaseExcel() {
