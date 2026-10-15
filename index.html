@@ -90,7 +90,6 @@
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Header Bar -->
     <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -113,7 +112,6 @@
 
     <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8">
 
-        <!-- AUTHENTICATION VIEW -->
         <div id="authView" class="max-w-md mx-auto my-8 space-y-4">
 
             <!-- Cohort Announcement Banner -->
@@ -241,7 +239,6 @@
             </div>
         </div>
 
-        <!-- MAIN DASHBOARD VIEW -->
         <div id="mainDashboardView" class="hidden space-y-6">
 
             <!-- Active Cohort Header Banner -->
@@ -331,7 +328,7 @@
                     </button>
                 </div>
 
-                <!-- 1. Calendar Grid View Container (Responsive for Mobile) -->
+                <!-- 1. Calendar Grid View Container (Clean layout without duty text) -->
                 <div id="calendarGridWrapper" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 sm:p-6 overflow-hidden">
                     <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">
                         <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
@@ -367,7 +364,6 @@
                 </div>
             </div>
 
-            <!-- TAB 2: Check Confirmed Schedule -->
             <div id="contentSchedule" class="hidden space-y-6">
 
                 <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -417,7 +413,6 @@
                 </div>
             </div>
 
-            <!-- TAB 3: Admin Management Portal (Admins Only) -->
             <div id="contentAdmin" class="hidden space-y-6">
 
                 <!-- Admin Banner -->
@@ -587,7 +582,6 @@
 
     </main>
 
-    <!-- MODALS -->
 
     <!-- MODAL 1: Confirm Selected Availability -->
     <div id="modalConfirmReg" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
@@ -865,7 +859,6 @@
         </div>
     </div>
 
-    <!-- Supabase Initialization Script -->
     <script>
         // YOUR SUPABASE CREDENTIALS
         const SUPABASE_URL = "https://crfotakmjlenpdxofynx.supabase.co";
@@ -883,7 +876,6 @@
         }
     </script>
 
-    <!-- Main Client Script -->
     <script>
         const DEFAULT_COHORTS = [
             { id: 'c1', name: '1st Training Cohort: Dec 2026 - Feb 2027', startYear: 2026, startMonth: 11, endYear: 2027, endMonth: 1 }
@@ -944,10 +936,9 @@
         }
 
         /**
-         * Calculates Ambulance Stream Duty Watches (Day: 0830-2030, Night: 2030-0830)
-         * Cycle Pattern: Day 1 (Day), Day 2 (Day), Day 3 (Night), Day 4 (Off), Day 5 (Off)
-         * Anchor Reference: 2026-12-07
-         * Dec 7, 2026 Duty Status: Day = A, E | Night = B | Off = C, D
+         * Calculates Ambulance Stream Duty Watches (Day: 08:30-20:30, Night: 20:30-08:30)
+         * Pattern: Day, Day, Night, Off, Off across Teams A, B, C, D, E.
+         * Dec 7, 2026 Reference: Day = A, E | Night = B
          */
         function getAmbulanceDutyWatches(year, monthIndex, day) {
             const anchor = new Date(2026, 11, 7); // Dec 7, 2026
@@ -979,20 +970,39 @@
             dayWatches.sort();
             nightWatches.sort();
 
+            // Build full alphabetical shift string: "A(Day), B(Night), E(Day)"
+            let combinedTeams = [];
+            ['A', 'B', 'C', 'D', 'E'].forEach(team => {
+                if (dayWatches.includes(team)) {
+                    combinedTeams.push(`${team}(Day)`);
+                } else if (nightWatches.includes(team)) {
+                    combinedTeams.push(`${team}(Night)`);
+                }
+            });
+
             const dayStr = dayWatches.join(',');
             const nightStr = nightWatches.join(',');
-
-            let formattedText = `Amb: `;
-            let parts = [];
-            dayWatches.forEach(t => parts.push(`${t}(Day)`));
-            nightWatches.forEach(t => parts.push(`${t}(Night)`));
-            formattedText += parts.join(', ');
+            const formattedText = `Amb: ${combinedTeams.join(', ')}`;
 
             return {
                 day: dayStr,
                 night: nightStr,
                 formattedText: formattedText
             };
+        }
+
+        /**
+         * Formats time strings into standard 24-hour hh:mm format
+         */
+        function format24HourTime(timeStr) {
+            if (!timeStr) return '';
+            const parts = timeStr.split(':');
+            if (parts.length >= 2) {
+                const hh = String(parts[0]).padStart(2, '0');
+                const mm = String(parts[1]).padStart(2, '0');
+                return `${hh}:${mm}`;
+            }
+            return timeStr;
         }
 
         window.addEventListener('DOMContentLoaded', async () => {
@@ -1005,7 +1015,6 @@
             requestNotificationPermission();
         });
 
-        // Request Browser/System Notification Permission
         function requestNotificationPermission() {
             if ('Notification' in window && Notification.permission === 'default') {
                 Notification.requestPermission().then(permission => {
@@ -1033,7 +1042,6 @@
                         isAdmin: u.is_admin
                     }));
 
-                    // Smart Merge Local and Cloud Records
                     fetched.forEach(f => {
                         const idx = window.users.findIndex(x => x.id === f.id);
                         if (idx !== -1) {
@@ -1052,8 +1060,8 @@
                         cohortId: l.cohort_id,
                         date: l.date,
                         level: l.level,
-                        startTime: l.start_time,
-                        endTime: l.end_time,
+                        startTime: format24HourTime(l.start_time),
+                        endTime: format24HourTime(l.end_time),
                         location: l.location,
                         capacity: l.capacity
                     }));
@@ -1113,7 +1121,6 @@
         async function syncToSupabaseBackend() {
             if (!supabaseClient) return;
             try {
-                // 1. Sync Users
                 for (const u of window.users) {
                     const payload = {
                         id: u.id,
@@ -1133,7 +1140,6 @@
                     }
                 }
 
-                // 2. Sync Lessons
                 for (const l of window.lessons) {
                     await supabaseClient.from('lessons').upsert({
                         id: l.id,
@@ -1147,7 +1153,6 @@
                     });
                 }
 
-                // 3. Sync Registrations
                 for (const key of Object.keys(window.registrations)) {
                     const matchedCohort = cohorts.find(c => key.endsWith(`_${c.id}`));
                     if (matchedCohort) {
@@ -1161,7 +1166,6 @@
                     }
                 }
 
-                // 4. Sync Enrollments
                 for (const lessonId of Object.keys(window.enrollments)) {
                     const userIds = window.enrollments[lessonId] || [];
                     for (const userId of userIds) {
@@ -1177,7 +1181,6 @@
         }
 
         function checkAutoLoginSession() {
-            // Check if user has saved credentials for one-click login
             const savedUsername = localStorage.getItem('ace_tennis_remember_username');
             const savedPassword = localStorage.getItem('ace_tennis_remember_password');
 
@@ -1187,7 +1190,6 @@
                 document.getElementById('loginRememberMe').checked = true;
             }
 
-            // Always present login screen first
             document.getElementById('authView').classList.remove('hidden');
             document.getElementById('mainDashboardView').classList.add('hidden');
             renderHeaderNav();
@@ -1296,7 +1298,6 @@
                 return;
             }
 
-            // Save or clear credentials for one-click login pre-fill
             if (rememberMe) {
                 localStorage.setItem('ace_tennis_remember_username', usernameInput);
                 localStorage.setItem('ace_tennis_remember_password', passwordInput);
@@ -1487,7 +1488,7 @@
                     tr.innerHTML = `
                         <td class="py-2.5 px-4 font-bold text-tennis-700">${c ? c.name.split(':')[0] : l.cohortId}</td>
                         <td class="py-2.5 px-4 font-bold text-slate-800">${l.date}</td>
-                        <td class="py-2.5 px-4 text-slate-600">${l.startTime} - ${l.endTime}</td>
+                        <td class="py-2.5 px-4 text-slate-600">${format24HourTime(l.startTime)} - ${format24HourTime(l.endTime)}</td>
                         <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${l.level==='Beginner'?'bg-blue-100 text-blue-800':'bg-purple-100 text-purple-800'}">${l.level}</span></td>
                         <td class="py-2.5 px-4 text-slate-600">${l.location}</td>
                     `;
@@ -1522,7 +1523,6 @@
             document.getElementById('mainDashboardView').classList.add('hidden');
             renderHeaderNav();
 
-            // Re-fill login form if "Remember Me" is stored
             checkAutoLoginSession();
             showToast("Signed out successfully.", "info");
         }
@@ -1684,7 +1684,7 @@
                 const matchedLessons = window.lessons.filter(l => l.cohortId === activeCohortId && l.date === dateKey && l.level === selectedLevel);
                 const isSelected = tempSelectedDates.has(dateKey);
 
-                // Calculate Duty Watches for Fire Stream and Ambulance Stream
+                // Duty Watch Calculations for Fire and Ambulance Streams
                 const fireWatch = getFireDutyWatch(activeRegYear, activeRegMonth, day);
                 const ambWatch = getAmbulanceDutyWatches(activeRegYear, activeRegMonth, day);
 
@@ -1692,11 +1692,13 @@
                     availableLessonsInMonth.push({ day, dateKey, lessons: matchedLessons, fireWatch, ambWatch });
                 }
 
-                // Grid Card Container with Hover Tooltip Group
+                // Grid Card Container (Clean view with no shift text displayed directly)
                 const card = document.createElement('div');
-                card.className = "group relative min-h-[90px] sm:min-h-[115px] border rounded-xl sm:rounded-2xl p-1.5 sm:p-2.5 flex flex-col justify-between calendar-day-card cursor-pointer ";
+                card.className = "group relative min-h-[85px] sm:min-h-[105px] border rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col justify-between calendar-day-card cursor-pointer ";
 
                 if (matchedLessons.length > 0) {
+                    const startTimeFormatted = format24HourTime(matchedLessons[0].startTime);
+                    
                     if (isSelected) {
                         card.className += "bg-tennis-600 text-white border-tennis-700 shadow-md font-bold";
                     } else {
@@ -1711,34 +1713,24 @@
                                     <i class="fa-solid ${isSelected ? 'fa-circle-check' : 'fa-circle-dot'}"></i>
                                 </span>
                             </div>
-
-                            <!-- Fire & Ambulance Compact Badges -->
-                            <div class="mt-1 space-y-0.5 text-[8px] sm:text-[9px] font-mono font-bold leading-tight">
-                                <div class="${isSelected ? 'bg-tennis-800/80 text-tennis-100' : 'bg-red-100 text-red-900 border border-red-200'} px-1 py-0.5 rounded truncate">
-                                    F: ${fireWatch}
-                                </div>
-                                <div class="${isSelected ? 'bg-tennis-800/80 text-tennis-100' : 'bg-indigo-100 text-indigo-900 border border-indigo-200'} px-1 py-0.5 rounded truncate">
-                                    A: ${ambWatch.day}(D)
-                                </div>
-                            </div>
                         </div>
 
-                        <!-- Class Time & Location Badges -->
-                        <div class="mt-1">
-                            <div class="text-[9px] ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-200 text-emerald-900'} px-1 py-0.5 rounded font-black text-center truncate">
-                                <i class="fa-solid fa-clock text-[8px]"></i> ${matchedLessons[0].startTime}
+                        <!-- 24-Hour Time Badge -->
+                        <div class="mt-2">
+                            <div class="text-[10px] sm:text-xs ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-200 text-emerald-900'} px-1.5 py-1 rounded-lg font-black text-center truncate">
+                                <i class="fa-solid fa-clock text-[9px] mr-0.5"></i> ${startTimeFormatted}
                             </div>
                         </div>
 
                         <!-- Hover / Press-and-Hold Duty Roster Tooltip Popup -->
-                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-slate-900 text-white text-[10px] p-2.5 rounded-xl shadow-2xl z-30 pointer-events-none border border-slate-700 font-sans">
-                            <div class="font-bold text-tennis-400 border-b border-slate-700 pb-1 mb-1 flex items-center justify-between">
+                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-2xl z-30 pointer-events-none border border-slate-700 font-sans">
+                            <div class="font-bold text-tennis-400 border-b border-slate-700 pb-1 mb-1.5 flex items-center justify-between">
                                 <span>Date: ${dateKey}</span>
                                 <span class="text-[9px] text-slate-400">Duty Watch</span>
                             </div>
-                            <div class="space-y-1 leading-normal font-mono">
+                            <div class="space-y-1 leading-relaxed font-mono">
                                 <div><strong class="text-red-400">Fire:</strong> ${fireWatch}</div>
-                                <div><strong class="text-indigo-300">Amb:</strong> ${ambWatch.day ? ambWatch.day + '(Day)' : ''}${ambWatch.night ? (ambWatch.day ? ', ' : '') + ambWatch.night + '(Night)' : ''}</div>
+                                <div><strong class="text-indigo-300">${ambWatch.formattedText}</strong></div>
                             </div>
                         </div>
                     `;
@@ -1751,27 +1743,17 @@
                             <span class="font-medium text-xs text-slate-400">${day}</span>
                         </div>
 
-                        <!-- Compact Badges -->
-                        <div class="mt-1 space-y-0.5 text-[8px] sm:text-[9px] font-mono leading-tight">
-                            <div class="bg-slate-100 text-slate-600 px-1 py-0.5 rounded truncate border border-slate-200">
-                                F: ${fireWatch}
-                            </div>
-                            <div class="bg-slate-100 text-slate-600 px-1 py-0.5 rounded truncate border border-slate-200">
-                                A: ${ambWatch.day}(D)
-                            </div>
-                        </div>
-
-                        <span class="text-[9px] hidden sm:block italic text-slate-300 mt-1">No class</span>
+                        <span class="text-[10px] hidden sm:block italic text-slate-300 mt-auto">No class</span>
 
                         <!-- Hover / Press-and-Hold Duty Roster Tooltip Popup -->
-                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-slate-900 text-white text-[10px] p-2.5 rounded-xl shadow-2xl z-30 pointer-events-none border border-slate-700 font-sans">
-                            <div class="font-bold text-tennis-400 border-b border-slate-700 pb-1 mb-1 flex items-center justify-between">
+                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-2xl z-30 pointer-events-none border border-slate-700 font-sans">
+                            <div class="font-bold text-tennis-400 border-b border-slate-700 pb-1 mb-1.5 flex items-center justify-between">
                                 <span>Date: ${dateKey}</span>
                                 <span class="text-[9px] text-slate-400">Duty Watch</span>
                             </div>
-                            <div class="space-y-1 leading-normal font-mono">
+                            <div class="space-y-1 leading-relaxed font-mono">
                                 <div><strong class="text-red-400">Fire:</strong> ${fireWatch}</div>
-                                <div><strong class="text-indigo-300">Amb:</strong> ${ambWatch.day ? ambWatch.day + '(Day)' : ''}${ambWatch.night ? (ambWatch.day ? ', ' : '') + ambWatch.night + '(Night)' : ''}</div>
+                                <div><strong class="text-indigo-300">${ambWatch.formattedText}</strong></div>
                             </div>
                         </div>
                     `;
@@ -1780,7 +1762,7 @@
                 grid.appendChild(card);
             }
 
-            // Mobile List / Agenda View Rendering
+            // Mobile Agenda / List View Rendering
             if (availableLessonsInMonth.length === 0) {
                 listWrapper.innerHTML = `
                     <div class="bg-white p-8 rounded-2xl text-center border border-slate-200">
@@ -1793,6 +1775,8 @@
                     const isSelected = tempSelectedDates.has(item.dateKey);
                     const dateObj = new Date(item.dateKey);
                     const dayName = weekdays[dateObj.getDay()];
+                    const startTimeFormatted = format24HourTime(item.lessons[0].startTime);
+                    const endTimeFormatted = format24HourTime(item.lessons[0].endTime);
 
                     const row = document.createElement('div');
                     row.className = `p-3.5 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isSelected ? 'bg-tennis-600 text-white border-tennis-700 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-tennis-300'}`;
@@ -1806,11 +1790,11 @@
                             <div class="space-y-1">
                                 <div class="font-bold text-xs sm:text-sm ${isSelected ? 'text-white' : 'text-slate-900'}">${item.dateKey}</div>
                                 <div class="text-[11px] ${isSelected ? 'text-tennis-100' : 'text-slate-500'} flex flex-wrap items-center gap-2">
-                                    <span><i class="fa-solid fa-clock"></i> ${item.lessons[0].startTime} - ${item.lessons[0].endTime}</span>
+                                    <span><i class="fa-solid fa-clock"></i> ${startTimeFormatted} - ${endTimeFormatted}</span>
                                     <span>•</span>
                                     <span><i class="fa-solid fa-location-dot"></i> ${item.lessons[0].location}</span>
                                 </div>
-                                <!-- Duty Watch Info Box -->
+                                <!-- Duty Watch Info -->
                                 <div class="space-y-0.5 text-[10px] font-mono font-bold pt-1">
                                     <div class="${isSelected ? 'text-white' : 'text-red-700'}">Fire: ${item.fireWatch}</div>
                                     <div class="${isSelected ? 'text-white' : 'text-indigo-700'}">${item.ambWatch.formattedText}</div>
@@ -1863,7 +1847,7 @@
                 const amb = getAmbulanceDutyWatches(parts[0], parts[1] - 1, parts[2]);
 
                 const lessonList = window.lessons.filter(l => l.cohortId === activeCohortId && l.date === d && l.level === level);
-                const lessonInfo = lessonList.map(l => `${l.startTime}-${l.endTime} @ ${l.location}`).join(', ');
+                const lessonInfo = lessonList.map(l => `${format24HourTime(l.startTime)}-${format24HourTime(l.endTime)} @ ${l.location}`).join(', ');
                 summary += `${idx + 1}. ${d} (${dayName}) [${lessonInfo || 'Scheduled Session'}]\n   -> Fire: ${fire}\n   -> ${amb.formattedText}\n`;
             });
 
@@ -1963,7 +1947,7 @@
                     </div>
 
                     <div class="space-y-1.5 text-xs text-slate-600">
-                        <div class="flex items-center gap-2"><i class="fa-solid fa-clock text-tennis-600 w-4"></i> ${l.startTime} - ${l.endTime}</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-clock text-tennis-600 w-4"></i> ${format24HourTime(l.startTime)} - ${format24HourTime(l.endTime)}</div>
                         <div class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-tennis-600 w-4"></i> ${l.location}</div>
                         <div class="flex items-center gap-2"><i class="fa-solid fa-users text-tennis-600 w-4"></i> Roster Capacity: ${enrolledUserIds.length} / ${l.capacity}</div>
                     </div>
@@ -2151,7 +2135,7 @@
 
                 tr.innerHTML = `
                     <td class="py-3 px-4 font-bold text-slate-800">${l.date}</td>
-                    <td class="py-3 px-4 text-slate-600">${l.startTime} - ${l.endTime}</td>
+                    <td class="py-3 px-4 text-slate-600">${format24HourTime(l.startTime)} - ${format24HourTime(l.endTime)}</td>
                     <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${l.level}</span></td>
                     <td class="py-3 px-4 text-slate-600">${l.location}</td>
                     <td class="py-3 px-4 font-bold text-slate-800">${l.capacity} Max</td>
@@ -2205,8 +2189,8 @@
             document.getElementById('lessonId').value = l.id;
             document.getElementById('lessonDate').value = l.date;
             document.getElementById('lessonLevel').value = l.level;
-            document.getElementById('lessonStartTime').value = l.startTime;
-            document.getElementById('lessonEndTime').value = l.endTime;
+            document.getElementById('lessonStartTime').value = format24HourTime(l.startTime);
+            document.getElementById('lessonEndTime').value = format24HourTime(l.endTime);
             document.getElementById('lessonLocation').value = l.location;
             openModal('modalLessonForm');
         }
@@ -2216,8 +2200,8 @@
             const id = document.getElementById('lessonId').value;
             const date = document.getElementById('lessonDate').value;
             const level = document.getElementById('lessonLevel').value;
-            const startTime = document.getElementById('lessonStartTime').value;
-            const endTime = document.getElementById('lessonEndTime').value;
+            const startTime = format24HourTime(document.getElementById('lessonStartTime').value);
+            const endTime = format24HourTime(document.getElementById('lessonEndTime').value);
             const location = document.getElementById('lessonLocation').value;
             const capacity = level === 'Beginner' ? 8 : 4;
 
@@ -2447,7 +2431,7 @@
                         <div>
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${l.level}</span>
                             <h5 class="font-bold text-slate-900 text-base inline ml-2">${l.date}</h5>
-                            <span class="text-xs text-slate-500 ml-2">(${l.startTime} - ${l.endTime})</span>
+                            <span class="text-xs text-slate-500 ml-2">(${format24HourTime(l.startTime)} - ${format24HourTime(l.endTime)})</span>
                         </div>
                         <div class="text-xs font-bold ${enrolledIds.length > l.capacity ? 'text-red-600' : 'text-slate-600'}">
                             Seats Enrolled: ${enrolledIds.length} / ${l.capacity} Max
@@ -2483,10 +2467,7 @@
         function confirmAndPublishEnrollment() {
             isSchedulePublished = true;
             saveState();
-            
-            // Trigger System Notification
             triggerPublishNotification();
-            
             showToast("Enrollment schedule confirmed & published!", "success");
         }
 
@@ -2560,13 +2541,13 @@
                 const enrolledUserIds = window.enrollments[l.id] || [];
 
                 if (enrolledUserIds.length === 0) {
-                    csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","${fire}","${amb.formattedText}","N/A","No Users Enrolled","N/A"\n`;
+                    csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${format24HourTime(l.startTime)}","${format24HourTime(l.endTime)}","${fire}","${amb.formattedText}","N/A","No Users Enrolled","N/A"\n`;
                 } else {
                     enrolledUserIds.forEach(uid => {
                         const u = window.users.find(x => x.id === uid);
                         const name = u ? u.fullName : "Unknown";
                         const contact = u ? u.contact : "N/A";
-                        csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","${fire}","${amb.formattedText}","${uid}","${name}","${contact}"\n`;
+                        csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${format24HourTime(l.startTime)}","${format24HourTime(l.endTime)}","${fire}","${amb.formattedText}","${uid}","${name}","${contact}"\n`;
                     });
                 }
             });
@@ -2611,7 +2592,6 @@
         }
     </script>
 
-    <!-- Register PWA Service Worker -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
