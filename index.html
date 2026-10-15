@@ -877,45 +877,6 @@
     </script>
 
     <script>
-        const DEFAULT_COHORTS = [
-            { id: 'c1', name: '1st Training Cohort: Dec 2026 - Feb 2027', startYear: 2026, startMonth: 11, endYear: 2027, endMonth: 1 }
-        ];
-
-        let cohorts = JSON.parse(localStorage.getItem('ace_tennis_cohorts')) || DEFAULT_COHORTS;
-        let activeCohortId = 'c1';
-
-        const DEFAULT_ADMIN = {
-            id: 'admin_1',
-            username: 'admin',
-            password: '123',
-            fullName: 'System Administrator',
-            email: 'admin@tennistraining.com',
-            contact: '+852 90000000',
-            isApproved: true,
-            isAdmin: true
-        };
-
-        const DEFAULT_USERS = [DEFAULT_ADMIN];
-        const DEFAULT_LESSONS = [];
-        const DEFAULT_REGISTRATIONS = {};
-        const DEFAULT_ENROLLMENTS = {};
-
-        // Persistent State
-        window.users = JSON.parse(localStorage.getItem('ace_tennis_users')) || DEFAULT_USERS;
-        window.lessons = JSON.parse(localStorage.getItem('ace_tennis_lessons')) || DEFAULT_LESSONS;
-        window.registrations = JSON.parse(localStorage.getItem('ace_tennis_regs')) || DEFAULT_REGISTRATIONS;
-        window.enrollments = JSON.parse(localStorage.getItem('ace_tennis_enrollments')) || DEFAULT_ENROLLMENTS;
-        let cohortTargetLessons = parseInt(localStorage.getItem('ace_tennis_target_lessons')) || 8;
-        let isSchedulePublished = JSON.parse(localStorage.getItem('ace_tennis_published')) || false;
-
-        window.currentUser = null;
-        let activeRegYear = 2026;
-        let activeRegMonth = 11;
-        let tempSelectedDates = new Set();
-        let myLessonsFilterActive = false;
-        let generatedOTPCode = null;
-        let regViewMode = 'grid'; // 'grid' or 'list'
-
         // ==========================================
         // DUTY ROSTER CALCULATION ALGORITHMS
         // ==========================================
@@ -937,32 +898,40 @@
 
         /**
          * Calculates Ambulance Stream Duty Watches (Day: 08:30-20:30, Night: 20:30-08:30)
-         * Pattern: Day, Day, Night, Off, Off across Teams A, B, C, D, E.
-         * Dec 7, 2026 Reference: Day = A, E | Night = B
+         * Pattern cycle for 5 watches (A, B, C, D, E):
+         * Dec 6: A(Day), B(Day), C(Night)
+         * Dec 7: A(Day), B(Night), E(Day)
+         * Dec 8: A(Night), D(Day), E(Day)
+         * Dec 9: C(Day), D(Day), E(Night)
+         * Dec 10: B(Day), C(Day), D(Night)
          */
         function getAmbulanceDutyWatches(year, monthIndex, day) {
             const anchor = new Date(2026, 11, 7); // Dec 7, 2026
             const target = new Date(year, monthIndex, day);
             const diffDays = Math.round((target - anchor) / (1000 * 60 * 60 * 24));
 
-            // Offsets on Dec 7, 2026:
-            // A: Day 1 (Day), E: Day 2 (Day), B: Day 3 (Night), C: Day 4 (Off), D: Day 5 (Off)
-            const teamOffsets = {
+            // Shift states on Dec 7, 2026:
+            // A: Day 1 (Day)
+            // B: Day 3 (Night)
+            // C: Day 4 (Off)
+            // D: Day 5 (Off)
+            // E: Day 2 (Day)
+            const teamShiftStates = {
                 'A': 0, // Day 1 (Day)
-                'E': 1, // Day 2 (Day)
                 'B': 2, // Day 3 (Night)
                 'C': 3, // Day 4 (Off)
-                'D': 4  // Day 5 (Off)
+                'D': 4, // Day 5 (Off)
+                'E': 1  // Day 2 (Day)
             };
 
             const dayWatches = [];
             const nightWatches = [];
 
-            Object.keys(teamOffsets).forEach(team => {
-                const step = ((diffDays + teamOffsets[team]) % 5 + 5) % 5;
-                if (step === 0 || step === 1) {
+            Object.keys(teamShiftStates).forEach(team => {
+                const state = ((diffDays + teamShiftStates[team]) % 5 + 5) % 5;
+                if (state === 0 || state === 1) {
                     dayWatches.push(team);
-                } else if (step === 2) {
+                } else if (state === 2) {
                     nightWatches.push(team);
                 }
             });
@@ -970,7 +939,7 @@
             dayWatches.sort();
             nightWatches.sort();
 
-            // Build full alphabetical shift string: "A(Day), B(Night), E(Day)"
+            // Formatted in strict alphabetical order (e.g., A(Day), B(Night), E(Day))
             let combinedTeams = [];
             ['A', 'B', 'C', 'D', 'E'].forEach(team => {
                 if (dayWatches.includes(team)) {
@@ -980,14 +949,10 @@
                 }
             });
 
-            const dayStr = dayWatches.join(',');
-            const nightStr = nightWatches.join(',');
-            const formattedText = `Amb: ${combinedTeams.join(', ')}`;
-
             return {
-                day: dayStr,
-                night: nightStr,
-                formattedText: formattedText
+                day: dayWatches.join(','),
+                night: nightWatches.join(','),
+                formattedText: `Amb: ${combinedTeams.join(', ')}`
             };
         }
 
