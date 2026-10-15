@@ -2558,13 +2558,58 @@
     </script>
 
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then((reg) => console.log('[PWA] Service Worker registered successfully:', reg.scope))
-                    .catch((err) => console.error('[PWA] Service Worker registration failed:', err));
-            });
+        // YOUR SUPABASE CREDENTIALS
+        const SUPABASE_URL = "https://crfotakmjlenpdxofynx.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyZm90YWttamxlbnBkeG9meW54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4NjY2MzgsImV4cCI6MjEwMjQ0MjYzOH0.IEIV2Np8bYuxq_rFC7T3VSg3yLOu53kvQw4TMD6w5cY";
+
+        let supabaseClient = null;
+
+        if (typeof window.supabase !== 'undefined' && SUPABASE_URL.includes("supabase.co")) {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("Connected to Supabase PostgreSQL Backend.");
+            } catch (err) {
+                console.log("Using Local Browser Storage fallback.");
+            }
         }
+
+        // ==========================================
+        // INITIAL STATE & DATA STORAGE
+        // ==========================================
+        let cohorts = JSON.parse(localStorage.getItem('ace_tennis_cohorts')) || [
+            { id: 'c_2026_1', name: '1st Training Cohort: Dec 2026 - Feb 2027', startYear: 2026, startMonth: 11, endYear: 2027, endMonth: 1 }
+        ];
+        let activeCohortId = cohorts[0].id;
+        let activeRegYear = cohorts[0].startYear;
+        let activeRegMonth = cohorts[0].startMonth;
+
+        window.users = JSON.parse(localStorage.getItem('ace_tennis_users')) || [
+            { id: 'admin_1', username: 'admin', password: '123', fullName: 'System Administrator', email: 'admin@tennistraining.com', contact: '+852 90000000', isApproved: true, isAdmin: true },
+            { id: 'u_1', username: 'john', password: '123', fullName: 'John CHAN', email: 'john@example.com', contact: '+852 91234567', isApproved: true, isAdmin: false },
+            { id: 'u_2', username: 'alice', password: '123', fullName: 'Alice WONG', email: 'alice@example.com', contact: '+852 98765432', isApproved: true, isAdmin: false }
+        ];
+
+        window.lessons = JSON.parse(localStorage.getItem('ace_tennis_lessons')) || [
+            { id: 'l_1', cohortId: 'c_2026_1', date: '2026-12-06', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
+            { id: 'l_2', cohortId: 'c_2026_1', date: '2026-12-07', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 2', capacity: 8 },
+            { id: 'l_3', cohortId: 'c_2026_1', date: '2026-12-08', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
+            { id: 'l_4', cohortId: 'c_2026_1', date: '2026-12-09', level: 'Intermediate', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 3', capacity: 4 },
+            { id: 'l_5', cohortId: 'c_2026_1', date: '2026-12-10', level: 'Intermediate', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 3', capacity: 4 }
+        ];
+
+        window.registrations = JSON.parse(localStorage.getItem('ace_tennis_regs')) || {};
+        window.enrollments = JSON.parse(localStorage.getItem('ace_tennis_enrollments')) || {};
+        let cohortTargetLessons = parseInt(localStorage.getItem('ace_tennis_target_lessons')) || 8;
+        let isSchedulePublished = JSON.parse(localStorage.getItem('ace_tennis_published')) || false;
+
+        window.currentUser = null;
+        let tempSelectedDates = new Set();
+        let myLessonsFilterActive = false;
+        let regViewMode = 'grid';
+        let generatedOTPCode = null;
     </script>
-</body>
-</html>
+
+    <script>
+        // ==========================================
+        // DUTY ROSTER CALCULATION ALGORITHMS
+        // ==========================================
