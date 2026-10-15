@@ -333,16 +333,31 @@
                     <!-- Dynamic List Cards -->
                 </div>
 
-                <!-- Calendar Legend -->
-                <div class="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-slate-500 pt-1">
-                    <div class="flex items-center space-x-2">
-                        <span class="w-3 h-3 rounded-full bg-emerald-500"></span> <span>Lesson Available</span>
+                <!-- Calendar Legend with Duty Watch Explanations -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2 text-xs text-slate-600">
+                    <div class="font-bold text-slate-800 flex items-center gap-1.5 text-xs uppercase tracking-wider">
+                        <i class="fa-solid fa-circle-info text-tennis-600"></i> Calendar Legend & Operational Duty Watch Indications
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="w-3 h-3 rounded-full bg-tennis-600"></span> <span>Selected Date</span>
+                    <div class="flex flex-wrap items-center gap-4 sm:gap-6 pt-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500"></span> <span>Lesson Available</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-tennis-600"></span> <span>Selected Date</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="w-3 h-3 rounded-full bg-slate-200"></span> <span>No Class</span>
+                        </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <span class="w-3 h-3 rounded-full bg-slate-200"></span> <span>No Class</span>
+                    <div class="border-t border-slate-100 pt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] leading-relaxed">
+                        <div>
+                            <span class="font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">Fire: Watch</span>
+                            <span>Hong Kong Fire Stream 24-hr Duty Watch (A, B, or C). Shift starts 09:00 AM.</span>
+                        </div>
+                        <div>
+                            <span class="font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">Amb: Watch</span>
+                            <span>Ambulance Stream Duty Watches (A, B, C, D, E). Day Shift (08:30-20:30), Night Shift (20:30-08:30).</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -903,6 +918,70 @@
         let myLessonsFilterActive = false;
         let generatedOTPCode = null;
         let regViewMode = 'grid'; // 'grid' or 'list'
+
+        // ==========================================
+        // DUTY ROSTER CALCULATION ALGORITHMS
+        // ==========================================
+
+        /**
+         * Calculates Fire Stream Duty Watch (24-hr shift 09:00 - 09:00)
+         * Pattern: B -> C -> A
+         * Anchor: 2026-01-01 is B
+         */
+        function getFireDutyWatch(year, monthIndex, day) {
+            const anchor = new Date(2026, 0, 1); // 2026-01-01 (Jan 1) = B
+            const target = new Date(year, monthIndex, day);
+            const diffDays = Math.round((target - anchor) / (1000 * 60 * 60 * 24));
+            
+            const watches = ['B', 'C', 'A'];
+            let idx = (diffDays % 3 + 3) % 3;
+            return watches[idx];
+        }
+
+        /**
+         * Calculates Ambulance Stream Duty Watches (Day: 0830-2030, Night: 2030-0830)
+         * Pattern: Day 1 (Day), Day 2 (Day), Day 3 (Night), Day 4 (Off), Day 5 (Off)
+         * Anchor: 2026-07-01
+         * Team A: Day 1 (Day)
+         * Team B: Day 2 (Day)
+         * Team C: Day 3 (Night)
+         * Team D: Day 4 (Off)
+         * Team E: Day 5 (Off)
+         */
+        function getAmbulanceDutyWatches(year, monthIndex, day) {
+            const anchor = new Date(2026, 6, 1); // July 1, 2026
+            const target = new Date(year, monthIndex, day);
+            const diffDays = Math.round((target - anchor) / (1000 * 60 * 60 * 24));
+
+            // Shift step for each team on July 1, 2026
+            const teamOffsets = {
+                'A': 0, // Day 1 (Day)
+                'B': 1, // Day 2 (Day)
+                'C': 2, // Day 3 (Night)
+                'D': 3, // Day 4 (Off)
+                'E': 4  // Day 5 (Off)
+            };
+
+            const dayWatches = [];
+            let nightWatch = '';
+
+            Object.keys(teamOffsets).forEach(team => {
+                const step = ((diffDays + teamOffsets[team]) % 5 + 5) % 5;
+                if (step === 0 || step === 1) {
+                    dayWatches.push(team);
+                } else if (step === 2) {
+                    nightWatch = team;
+                }
+            });
+
+            dayWatches.sort();
+
+            return {
+                day: dayWatches.join(', '),
+                night: nightWatch,
+                summary: `Day: ${dayWatches.join(', ')} | Night: ${nightWatch}`
+            };
+        }
 
         window.addEventListener('DOMContentLoaded', async () => {
             if (supabaseClient) {
@@ -1593,13 +1672,17 @@
                 const matchedLessons = window.lessons.filter(l => l.cohortId === activeCohortId && l.date === dateKey && l.level === selectedLevel);
                 const isSelected = tempSelectedDates.has(dateKey);
 
+                // Calculate Duty Watches for Fire Stream and Ambulance Stream
+                const fireWatch = getFireDutyWatch(activeRegYear, activeRegMonth, day);
+                const ambWatch = getAmbulanceDutyWatches(activeRegYear, activeRegMonth, day);
+
                 if (matchedLessons.length > 0) {
-                    availableLessonsInMonth.push({ day, dateKey, lessons: matchedLessons });
+                    availableLessonsInMonth.push({ day, dateKey, lessons: matchedLessons, fireWatch, ambWatch });
                 }
 
                 // Grid Card Rendering (Touch Optimised for Mobile Vertical View)
                 const card = document.createElement('div');
-                card.className = "min-h-[58px] sm:min-h-[85px] border rounded-xl sm:rounded-2xl p-1.5 sm:p-2.5 flex flex-col justify-between calendar-day-card relative cursor-pointer ";
+                card.className = "min-h-[90px] sm:min-h-[115px] border rounded-xl sm:rounded-2xl p-1.5 sm:p-2.5 flex flex-col justify-between calendar-day-card relative cursor-pointer ";
 
                 if (matchedLessons.length > 0) {
                     if (isSelected) {
@@ -1609,39 +1692,55 @@
                     }
 
                     card.innerHTML = `
-                        <div class="flex items-center justify-between">
-                            <span class="font-bold text-xs sm:text-sm ${isSelected ? 'text-white' : 'text-slate-800'}">${day}</span>
-                            <span class="${isSelected ? 'text-white' : 'text-emerald-600'} text-[10px] sm:text-xs">
-                                <i class="fa-solid ${isSelected ? 'fa-circle-check' : 'fa-circle-dot'}"></i>
-                            </span>
-                        </div>
-                        
-                        <!-- Desktop Time Badges -->
-                        <div class="hidden sm:block space-y-1 my-1">
-                            ${matchedLessons.map(l => `
-                                <div class="text-[9px] ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-200 text-emerald-900'} px-1.5 py-0.5 rounded-lg font-bold truncate">
-                                    <i class="fa-solid fa-clock"></i> ${l.startTime}
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-xs sm:text-sm ${isSelected ? 'text-white' : 'text-slate-800'}">${day}</span>
+                                <span class="${isSelected ? 'text-white' : 'text-emerald-600'} text-[10px] sm:text-xs">
+                                    <i class="fa-solid ${isSelected ? 'fa-circle-check' : 'fa-circle-dot'}"></i>
+                                </span>
+                            </div>
+
+                            <!-- Fire & Ambulance Duty Watch Indications -->
+                            <div class="mt-1 space-y-0.5 text-[8px] sm:text-[10px] font-mono font-bold leading-tight">
+                                <div class="${isSelected ? 'bg-tennis-800/80 text-tennis-100' : 'bg-red-100 text-red-900 border border-red-200'} px-1 py-0.5 rounded truncate">
+                                    F: ${fireWatch}
                                 </div>
-                            `).join('')}
-                        </div>
-                        <div class="hidden sm:block text-[9px] ${isSelected ? 'text-tennis-100 font-bold' : 'text-slate-500'} truncate">
-                            ${matchedLessons[0].location}
+                                <div class="${isSelected ? 'bg-tennis-800/80 text-tennis-100' : 'bg-indigo-100 text-indigo-900 border border-indigo-200'} px-1 py-0.5 rounded truncate">
+                                    A: ${ambWatch.day}(D) ${ambWatch.night}(N)
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Mobile Compact Time Pill -->
-                        <div class="sm:hidden mt-1">
+                        <!-- Class Time & Location Badges -->
+                        <div class="mt-1">
                             <div class="text-[9px] ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-200 text-emerald-900'} px-1 py-0.5 rounded font-black text-center truncate">
-                                ${matchedLessons[0].startTime.split(':')[0]}:${matchedLessons[0].startTime.split(':')[1]}
+                                <i class="fa-solid fa-clock text-[8px]"></i> ${matchedLessons[0].startTime}
+                            </div>
+                            <div class="hidden sm:block text-[8px] ${isSelected ? 'text-tennis-100 font-bold' : 'text-slate-500'} truncate mt-0.5">
+                                ${matchedLessons[0].location}
                             </div>
                         </div>
                     `;
 
                     card.onclick = () => toggleDateSelection(dateKey);
                 } else {
-                    card.className += "bg-slate-50/60 border-slate-200 text-slate-300";
+                    card.className += "bg-slate-50/60 border-slate-200 text-slate-400";
                     card.innerHTML = `
-                        <span class="font-medium text-xs text-slate-400">${day}</span>
-                        <span class="text-[9px] hidden sm:block italic text-slate-300">No class</span>
+                        <div class="flex items-center justify-between">
+                            <span class="font-medium text-xs text-slate-400">${day}</span>
+                        </div>
+
+                        <!-- Fire & Ambulance Duty Watch Indications even on Non-Class Days -->
+                        <div class="mt-1 space-y-0.5 text-[8px] sm:text-[10px] font-mono leading-tight">
+                            <div class="bg-slate-100 text-slate-600 px-1 py-0.5 rounded truncate border border-slate-200">
+                                F: ${fireWatch}
+                            </div>
+                            <div class="bg-slate-100 text-slate-600 px-1 py-0.5 rounded truncate border border-slate-200">
+                                A: ${ambWatch.day}(D) ${ambWatch.night}(N)
+                            </div>
+                        </div>
+
+                        <span class="text-[9px] hidden sm:block italic text-slate-300 mt-1">No class</span>
                     `;
                 }
 
@@ -1663,20 +1762,29 @@
                     const dayName = weekdays[dateObj.getDay()];
 
                     const row = document.createElement('div');
-                    row.className = `p-3.5 rounded-2xl border transition flex items-center justify-between gap-3 ${isSelected ? 'bg-tennis-600 text-white border-tennis-700 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-tennis-300'}`;
+                    row.className = `p-3.5 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isSelected ? 'bg-tennis-600 text-white border-tennis-700 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-tennis-300'}`;
 
                     row.innerHTML = `
-                        <div class="flex items-center space-x-3">
+                        <div class="flex items-start space-x-3">
                             <div class="w-11 h-11 rounded-xl ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-100 text-emerald-900'} flex flex-col items-center justify-center font-black shrink-0">
                                 <span class="text-xs uppercase leading-none">${dayName}</span>
                                 <span class="text-base leading-none">${item.day}</span>
                             </div>
-                            <div>
+                            <div class="space-y-1">
                                 <div class="font-bold text-xs sm:text-sm ${isSelected ? 'text-white' : 'text-slate-900'}">${item.dateKey}</div>
-                                <div class="text-[11px] ${isSelected ? 'text-tennis-100' : 'text-slate-500'} flex items-center gap-2 mt-0.5">
+                                <div class="text-[11px] ${isSelected ? 'text-tennis-100' : 'text-slate-500'} flex flex-wrap items-center gap-2">
                                     <span><i class="fa-solid fa-clock"></i> ${item.lessons[0].startTime} - ${item.lessons[0].endTime}</span>
                                     <span>•</span>
                                     <span><i class="fa-solid fa-location-dot"></i> ${item.lessons[0].location}</span>
+                                </div>
+                                <!-- Detailed Duty Watch Pill -->
+                                <div class="flex flex-wrap items-center gap-1.5 text-[10px] font-mono font-bold pt-0.5">
+                                    <span class="${isSelected ? 'bg-tennis-800 text-white' : 'bg-red-100 text-red-900'} px-2 py-0.5 rounded-md border border-red-200">
+                                        Fire: ${item.fireWatch} Watch
+                                    </span>
+                                    <span class="${isSelected ? 'bg-tennis-800 text-white' : 'bg-indigo-100 text-indigo-900'} px-2 py-0.5 rounded-md border border-indigo-200">
+                                        Amb: ${item.ambWatch.day}(Day), ${item.ambWatch.night}(Night)
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -1716,14 +1824,18 @@
             summary += `----------------------------------------\n`;
             summary += `Training Level: ${level}\n`;
             summary += `Total Available Dates Chosen: ${sortedDates.length} Days\n\n`;
-            summary += `SELECTED DATES DETAILS:\n`;
+            summary += `SELECTED DATES & DUTY WATCH DETAILS:\n`;
 
             sortedDates.forEach((d, idx) => {
                 const dateObj = new Date(d);
                 const dayName = weekdays[dateObj.getDay()];
+                const parts = d.split('-').map(Number);
+                const fire = getFireDutyWatch(parts[0], parts[1] - 1, parts[2]);
+                const amb = getAmbulanceDutyWatches(parts[0], parts[1] - 1, parts[2]);
+
                 const lessonList = window.lessons.filter(l => l.cohortId === activeCohortId && l.date === d && l.level === level);
                 const lessonInfo = lessonList.map(l => `${l.startTime}-${l.endTime} @ ${l.location}`).join(', ');
-                summary += `${idx + 1}. ${d} (${dayName}) -> [${lessonInfo || 'Scheduled Session'}]\n`;
+                summary += `${idx + 1}. ${d} (${dayName}) [${lessonInfo || 'Scheduled Session'}]\n   -> Fire: ${fire} | Amb: Day(${amb.day}), Night(${amb.night})\n`;
             });
 
             document.getElementById('regConfirmationSummaryText').value = summary;
@@ -1801,8 +1913,11 @@
                     return u ? u.fullName : 'Unknown';
                 });
 
+                const parts = l.date.split('-').map(Number);
                 const dateObj = new Date(l.date);
                 const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
+                const fireWatch = getFireDutyWatch(parts[0], parts[1] - 1, parts[2]);
+                const ambWatch = getAmbulanceDutyWatches(parts[0], parts[1] - 1, parts[2]);
 
                 const card = document.createElement('div');
                 card.className = `bg-white rounded-2xl p-5 border shadow-sm space-y-4 ${isMeEnrolled ? 'border-tennis-500 ring-2 ring-tennis-200' : 'border-slate-200'}`;
@@ -1818,10 +1933,22 @@
                         ${isMeEnrolled ? '<span class="bg-tennis-600 text-white text-[10px] px-2.5 py-1 rounded-full font-bold"><i class="fa-solid fa-check"></i> Enrolled</span>' : ''}
                     </div>
 
-                    <div class="space-y-1 text-xs text-slate-600">
+                    <div class="space-y-1.5 text-xs text-slate-600">
                         <div class="flex items-center gap-2"><i class="fa-solid fa-clock text-tennis-600 w-4"></i> ${l.startTime} - ${l.endTime}</div>
                         <div class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-tennis-600 w-4"></i> ${l.location}</div>
                         <div class="flex items-center gap-2"><i class="fa-solid fa-users text-tennis-600 w-4"></i> Roster Capacity: ${enrolledUserIds.length} / ${l.capacity}</div>
+                    </div>
+
+                    <!-- Duty Watch Summary Box -->
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1 text-[11px] font-mono">
+                        <div class="text-slate-800 font-bold flex items-center gap-1.5">
+                            <span class="bg-red-100 text-red-900 px-1.5 py-0.5 rounded border border-red-200">Fire</span>
+                            <span>Watch ${fireWatch}</span>
+                        </div>
+                        <div class="text-slate-800 font-bold flex items-center gap-1.5">
+                            <span class="bg-indigo-100 text-indigo-900 px-1.5 py-0.5 rounded border border-indigo-200">Amb</span>
+                            <span>Day: ${ambWatch.day} | Night: ${ambWatch.night}</span>
+                        </div>
                     </div>
 
                     <div class="border-t border-slate-100 pt-3">
@@ -2395,24 +2522,28 @@
 
         function exportEnrollmentDatabaseExcel() {
             let csvContent = "\uFEFF";
-            csvContent += "Cohort,Lesson ID,Date,Weekday,Level,Location,StartTime,EndTime,Enrolled User ID,Enrolled User Name,Contact\n";
+            csvContent += "Cohort,Lesson ID,Date,Weekday,Level,Location,StartTime,EndTime,Fire Watch,Amb Day Watch,Amb Night Watch,Enrolled User ID,Enrolled User Name,Contact\n";
 
             const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
             const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
             cohortLessons.forEach(l => {
+                const parts = l.date.split('-').map(Number);
                 const dateObj = new Date(l.date);
                 const dayName = weekdays[dateObj.getDay()];
+                const fire = getFireDutyWatch(parts[0], parts[1] - 1, parts[2]);
+                const amb = getAmbulanceDutyWatches(parts[0], parts[1] - 1, parts[2]);
+
                 const enrolledUserIds = window.enrollments[l.id] || [];
 
                 if (enrolledUserIds.length === 0) {
-                    csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","N/A","No Users Enrolled","N/A"\n`;
+                    csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","${fire}","${amb.day}","${amb.night}","N/A","No Users Enrolled","N/A"\n`;
                 } else {
                     enrolledUserIds.forEach(uid => {
                         const u = window.users.find(x => x.id === uid);
                         const name = u ? u.fullName : "Unknown";
                         const contact = u ? u.contact : "N/A";
-                        csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","${uid}","${name}","${contact}"\n`;
+                        csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","${fire}","${amb.day}","${amb.night}","${uid}","${name}","${contact}"\n`;
                     });
                 }
             });
