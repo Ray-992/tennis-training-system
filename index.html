@@ -73,6 +73,19 @@
         ::-webkit-scrollbar-thumb:hover {
             background: #16a34a;
         }
+
+        /* Tooltip Styles for Hover / Press and Hold */
+        .duty-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+        }
+        .group:hover .duty-tooltip,
+        .group:active .duty-tooltip,
+        .group:focus .duty-tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
     </style>
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
@@ -336,27 +349,19 @@
                 <!-- Calendar Legend with Duty Watch Explanations -->
                 <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2 text-xs text-slate-600">
                     <div class="font-bold text-slate-800 flex items-center gap-1.5 text-xs uppercase tracking-wider">
-                        <i class="fa-solid fa-circle-info text-tennis-600"></i> Calendar Legend & Operational Duty Watch Indications
+                        <i class="fa-solid fa-circle-info text-tennis-600"></i> Duty Watch Details & Touch Instructions
                     </div>
-                    <div class="flex flex-wrap items-center gap-4 sm:gap-6 pt-1">
-                        <div class="flex items-center space-x-2">
-                            <span class="w-3 h-3 rounded-full bg-emerald-500"></span> <span>Lesson Available</span>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="w-3 h-3 rounded-full bg-tennis-600"></span> <span>Selected Date</span>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <span class="w-3 h-3 rounded-full bg-slate-200"></span> <span>No Class</span>
-                        </div>
-                    </div>
+                    <p class="text-[11px] text-slate-500">
+                        💡 <strong>Hover mouse or press & hold</strong> on any calendar day to inspect full Fire and Ambulance duty rosters!
+                    </p>
                     <div class="border-t border-slate-100 pt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] leading-relaxed">
                         <div>
-                            <span class="font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">Fire: Watch</span>
-                            <span>Hong Kong Fire Stream 24-hr Duty Watch (A, B, or C). Shift starts 09:00 AM.</span>
+                            <span class="font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">Fire Stream</span>
+                            <span>24-hr Duty Watch (A, B, or C). Shift starts 09:00 AM.</span>
                         </div>
                         <div>
-                            <span class="font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">Amb: Watch</span>
-                            <span>Ambulance Stream Duty Watches (A, B, C, D, E). Day Shift (08:30-20:30), Night Shift (20:30-08:30).</span>
+                            <span class="font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">Ambulance Stream</span>
+                            <span>Day Shift (08:30-20:30), Night Shift (20:30-08:30) across 5 Watches (A, B, C, D, E).</span>
                         </div>
                     </div>
                 </div>
@@ -925,11 +930,11 @@
 
         /**
          * Calculates Fire Stream Duty Watch (24-hr shift 09:00 - 09:00)
-         * Pattern: B -> C -> A
-         * Anchor: 2026-01-01 is B
+         * Cycle Pattern: B -> C -> A
+         * Anchor Reference: 2026-01-01 is Watch B
          */
         function getFireDutyWatch(year, monthIndex, day) {
-            const anchor = new Date(2026, 0, 1); // 2026-01-01 (Jan 1) = B
+            const anchor = new Date(2026, 0, 1); // 2026-01-01 = B
             const target = new Date(year, monthIndex, day);
             const diffDays = Math.round((target - anchor) / (1000 * 60 * 60 * 24));
             
@@ -940,46 +945,53 @@
 
         /**
          * Calculates Ambulance Stream Duty Watches (Day: 0830-2030, Night: 2030-0830)
-         * Pattern: Day 1 (Day), Day 2 (Day), Day 3 (Night), Day 4 (Off), Day 5 (Off)
-         * Anchor: 2026-07-01
-         * Team A: Day 1 (Day)
-         * Team B: Day 2 (Day)
-         * Team C: Day 3 (Night)
-         * Team D: Day 4 (Off)
-         * Team E: Day 5 (Off)
+         * Cycle Pattern: Day 1 (Day), Day 2 (Day), Day 3 (Night), Day 4 (Off), Day 5 (Off)
+         * Anchor Reference: 2026-12-07
+         * Dec 7, 2026 Duty Status: Day = A, E | Night = B | Off = C, D
          */
         function getAmbulanceDutyWatches(year, monthIndex, day) {
-            const anchor = new Date(2026, 6, 1); // July 1, 2026
+            const anchor = new Date(2026, 11, 7); // Dec 7, 2026
             const target = new Date(year, monthIndex, day);
             const diffDays = Math.round((target - anchor) / (1000 * 60 * 60 * 24));
 
-            // Shift step for each team on July 1, 2026
+            // Offsets on Dec 7, 2026:
+            // A: Day 1 (Day), E: Day 2 (Day), B: Day 3 (Night), C: Day 4 (Off), D: Day 5 (Off)
             const teamOffsets = {
                 'A': 0, // Day 1 (Day)
-                'B': 1, // Day 2 (Day)
-                'C': 2, // Day 3 (Night)
-                'D': 3, // Day 4 (Off)
-                'E': 4  // Day 5 (Off)
+                'E': 1, // Day 2 (Day)
+                'B': 2, // Day 3 (Night)
+                'C': 3, // Day 4 (Off)
+                'D': 4  // Day 5 (Off)
             };
 
             const dayWatches = [];
-            let nightWatch = '';
+            const nightWatches = [];
 
             Object.keys(teamOffsets).forEach(team => {
                 const step = ((diffDays + teamOffsets[team]) % 5 + 5) % 5;
                 if (step === 0 || step === 1) {
                     dayWatches.push(team);
                 } else if (step === 2) {
-                    nightWatch = team;
+                    nightWatches.push(team);
                 }
             });
 
             dayWatches.sort();
+            nightWatches.sort();
+
+            const dayStr = dayWatches.join(',');
+            const nightStr = nightWatches.join(',');
+
+            let formattedText = `Amb: `;
+            let parts = [];
+            dayWatches.forEach(t => parts.push(`${t}(Day)`));
+            nightWatches.forEach(t => parts.push(`${t}(Night)`));
+            formattedText += parts.join(', ');
 
             return {
-                day: dayWatches.join(', '),
-                night: nightWatch,
-                summary: `Day: ${dayWatches.join(', ')} | Night: ${nightWatch}`
+                day: dayStr,
+                night: nightStr,
+                formattedText: formattedText
             };
         }
 
@@ -1680,9 +1692,9 @@
                     availableLessonsInMonth.push({ day, dateKey, lessons: matchedLessons, fireWatch, ambWatch });
                 }
 
-                // Grid Card Rendering (Touch Optimised for Mobile Vertical View)
+                // Grid Card Container with Hover Tooltip Group
                 const card = document.createElement('div');
-                card.className = "min-h-[90px] sm:min-h-[115px] border rounded-xl sm:rounded-2xl p-1.5 sm:p-2.5 flex flex-col justify-between calendar-day-card relative cursor-pointer ";
+                card.className = "group relative min-h-[90px] sm:min-h-[115px] border rounded-xl sm:rounded-2xl p-1.5 sm:p-2.5 flex flex-col justify-between calendar-day-card cursor-pointer ";
 
                 if (matchedLessons.length > 0) {
                     if (isSelected) {
@@ -1700,13 +1712,13 @@
                                 </span>
                             </div>
 
-                            <!-- Fire & Ambulance Duty Watch Indications -->
-                            <div class="mt-1 space-y-0.5 text-[8px] sm:text-[10px] font-mono font-bold leading-tight">
+                            <!-- Fire & Ambulance Compact Badges -->
+                            <div class="mt-1 space-y-0.5 text-[8px] sm:text-[9px] font-mono font-bold leading-tight">
                                 <div class="${isSelected ? 'bg-tennis-800/80 text-tennis-100' : 'bg-red-100 text-red-900 border border-red-200'} px-1 py-0.5 rounded truncate">
                                     F: ${fireWatch}
                                 </div>
                                 <div class="${isSelected ? 'bg-tennis-800/80 text-tennis-100' : 'bg-indigo-100 text-indigo-900 border border-indigo-200'} px-1 py-0.5 rounded truncate">
-                                    A: ${ambWatch.day}(D) ${ambWatch.night}(N)
+                                    A: ${ambWatch.day}(D)
                                 </div>
                             </div>
                         </div>
@@ -1716,8 +1728,17 @@
                             <div class="text-[9px] ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-200 text-emerald-900'} px-1 py-0.5 rounded font-black text-center truncate">
                                 <i class="fa-solid fa-clock text-[8px]"></i> ${matchedLessons[0].startTime}
                             </div>
-                            <div class="hidden sm:block text-[8px] ${isSelected ? 'text-tennis-100 font-bold' : 'text-slate-500'} truncate mt-0.5">
-                                ${matchedLessons[0].location}
+                        </div>
+
+                        <!-- Hover / Press-and-Hold Duty Roster Tooltip Popup -->
+                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-slate-900 text-white text-[10px] p-2.5 rounded-xl shadow-2xl z-30 pointer-events-none border border-slate-700 font-sans">
+                            <div class="font-bold text-tennis-400 border-b border-slate-700 pb-1 mb-1 flex items-center justify-between">
+                                <span>Date: ${dateKey}</span>
+                                <span class="text-[9px] text-slate-400">Duty Watch</span>
+                            </div>
+                            <div class="space-y-1 leading-normal font-mono">
+                                <div><strong class="text-red-400">Fire:</strong> ${fireWatch}</div>
+                                <div><strong class="text-indigo-300">Amb:</strong> ${ambWatch.day ? ambWatch.day + '(Day)' : ''}${ambWatch.night ? (ambWatch.day ? ', ' : '') + ambWatch.night + '(Night)' : ''}</div>
                             </div>
                         </div>
                     `;
@@ -1730,17 +1751,29 @@
                             <span class="font-medium text-xs text-slate-400">${day}</span>
                         </div>
 
-                        <!-- Fire & Ambulance Duty Watch Indications even on Non-Class Days -->
-                        <div class="mt-1 space-y-0.5 text-[8px] sm:text-[10px] font-mono leading-tight">
+                        <!-- Compact Badges -->
+                        <div class="mt-1 space-y-0.5 text-[8px] sm:text-[9px] font-mono leading-tight">
                             <div class="bg-slate-100 text-slate-600 px-1 py-0.5 rounded truncate border border-slate-200">
                                 F: ${fireWatch}
                             </div>
                             <div class="bg-slate-100 text-slate-600 px-1 py-0.5 rounded truncate border border-slate-200">
-                                A: ${ambWatch.day}(D) ${ambWatch.night}(N)
+                                A: ${ambWatch.day}(D)
                             </div>
                         </div>
 
                         <span class="text-[9px] hidden sm:block italic text-slate-300 mt-1">No class</span>
+
+                        <!-- Hover / Press-and-Hold Duty Roster Tooltip Popup -->
+                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 bg-slate-900 text-white text-[10px] p-2.5 rounded-xl shadow-2xl z-30 pointer-events-none border border-slate-700 font-sans">
+                            <div class="font-bold text-tennis-400 border-b border-slate-700 pb-1 mb-1 flex items-center justify-between">
+                                <span>Date: ${dateKey}</span>
+                                <span class="text-[9px] text-slate-400">Duty Watch</span>
+                            </div>
+                            <div class="space-y-1 leading-normal font-mono">
+                                <div><strong class="text-red-400">Fire:</strong> ${fireWatch}</div>
+                                <div><strong class="text-indigo-300">Amb:</strong> ${ambWatch.day ? ambWatch.day + '(Day)' : ''}${ambWatch.night ? (ambWatch.day ? ', ' : '') + ambWatch.night + '(Night)' : ''}</div>
+                            </div>
+                        </div>
                     `;
                 }
 
@@ -1777,14 +1810,10 @@
                                     <span>•</span>
                                     <span><i class="fa-solid fa-location-dot"></i> ${item.lessons[0].location}</span>
                                 </div>
-                                <!-- Detailed Duty Watch Pill -->
-                                <div class="flex flex-wrap items-center gap-1.5 text-[10px] font-mono font-bold pt-0.5">
-                                    <span class="${isSelected ? 'bg-tennis-800 text-white' : 'bg-red-100 text-red-900'} px-2 py-0.5 rounded-md border border-red-200">
-                                        Fire: ${item.fireWatch} Watch
-                                    </span>
-                                    <span class="${isSelected ? 'bg-tennis-800 text-white' : 'bg-indigo-100 text-indigo-900'} px-2 py-0.5 rounded-md border border-indigo-200">
-                                        Amb: ${item.ambWatch.day}(Day), ${item.ambWatch.night}(Night)
-                                    </span>
+                                <!-- Duty Watch Info Box -->
+                                <div class="space-y-0.5 text-[10px] font-mono font-bold pt-1">
+                                    <div class="${isSelected ? 'text-white' : 'text-red-700'}">Fire: ${item.fireWatch}</div>
+                                    <div class="${isSelected ? 'text-white' : 'text-indigo-700'}">${item.ambWatch.formattedText}</div>
                                 </div>
                             </div>
                         </div>
@@ -1835,7 +1864,7 @@
 
                 const lessonList = window.lessons.filter(l => l.cohortId === activeCohortId && l.date === d && l.level === level);
                 const lessonInfo = lessonList.map(l => `${l.startTime}-${l.endTime} @ ${l.location}`).join(', ');
-                summary += `${idx + 1}. ${d} (${dayName}) [${lessonInfo || 'Scheduled Session'}]\n   -> Fire: ${fire} | Amb: Day(${amb.day}), Night(${amb.night})\n`;
+                summary += `${idx + 1}. ${d} (${dayName}) [${lessonInfo || 'Scheduled Session'}]\n   -> Fire: ${fire}\n   -> ${amb.formattedText}\n`;
             });
 
             document.getElementById('regConfirmationSummaryText').value = summary;
@@ -1941,14 +1970,8 @@
 
                     <!-- Duty Watch Summary Box -->
                     <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1 text-[11px] font-mono">
-                        <div class="text-slate-800 font-bold flex items-center gap-1.5">
-                            <span class="bg-red-100 text-red-900 px-1.5 py-0.5 rounded border border-red-200">Fire</span>
-                            <span>Watch ${fireWatch}</span>
-                        </div>
-                        <div class="text-slate-800 font-bold flex items-center gap-1.5">
-                            <span class="bg-indigo-100 text-indigo-900 px-1.5 py-0.5 rounded border border-indigo-200">Amb</span>
-                            <span>Day: ${ambWatch.day} | Night: ${ambWatch.night}</span>
-                        </div>
+                        <div class="text-slate-800 font-bold">Fire: ${fireWatch}</div>
+                        <div class="text-slate-800 font-bold">${ambWatch.formattedText}</div>
                     </div>
 
                     <div class="border-t border-slate-100 pt-3">
@@ -2522,7 +2545,7 @@
 
         function exportEnrollmentDatabaseExcel() {
             let csvContent = "\uFEFF";
-            csvContent += "Cohort,Lesson ID,Date,Weekday,Level,Location,StartTime,EndTime,Fire Watch,Amb Day Watch,Amb Night Watch,Enrolled User ID,Enrolled User Name,Contact\n";
+            csvContent += "Cohort,Lesson ID,Date,Weekday,Level,Location,StartTime,EndTime,Fire Watch,Amb Watches,Enrolled User ID,Enrolled User Name,Contact\n";
 
             const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
             const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
@@ -2537,13 +2560,13 @@
                 const enrolledUserIds = window.enrollments[l.id] || [];
 
                 if (enrolledUserIds.length === 0) {
-                    csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","${fire}","${amb.day}","${amb.night}","N/A","No Users Enrolled","N/A"\n`;
+                    csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","${fire}","${amb.formattedText}","N/A","No Users Enrolled","N/A"\n`;
                 } else {
                     enrolledUserIds.forEach(uid => {
                         const u = window.users.find(x => x.id === uid);
                         const name = u ? u.fullName : "Unknown";
                         const contact = u ? u.contact : "N/A";
-                        csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","${fire}","${amb.day}","${amb.night}","${uid}","${name}","${contact}"\n`;
+                        csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${l.startTime}","${l.endTime}","${fire}","${amb.formattedText}","${uid}","${name}","${contact}"\n`;
                     });
                 }
             });
