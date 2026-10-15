@@ -112,6 +112,7 @@
 
     <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8">
 
+        <!-- AUTH VIEW (Login & Registration Forms) -->
         <div id="authView" class="max-w-md mx-auto my-8 space-y-4">
 
             <!-- Cohort Announcement Banner -->
@@ -862,7 +863,7 @@
     <script>
         // YOUR SUPABASE CREDENTIALS
         const SUPABASE_URL = "https://crfotakmjlenpdxofynx.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyZm90YWttamxlbnBkeG9meW54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4NjY2MzgsImV4cCI6MjEwMjQ0MjYzOH0.IEIV2Np8bYuxq_rFC7T3VSg3yLOu53kvQw4TMD6w5cY";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyZm90YWttamxlbnBkeG9feW54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4NjY2MzgsImV4cCI6MjEwMjQ0MjYzOH0.IEIV2Np8bYuxq_rFC7T3VSg3yLOu53kvQw4TMD6w5cY";
 
         let supabaseClient = null;
 
@@ -874,6 +875,41 @@
                 console.log("Using Local Browser Storage fallback.");
             }
         }
+
+        // ==========================================
+        // INITIAL STATE & DATA STORAGE
+        // ==========================================
+        let cohorts = JSON.parse(localStorage.getItem('ace_tennis_cohorts')) || [
+            { id: 'c_2026_1', name: '1st Training Cohort: Dec 2026 - Feb 2027', startYear: 2026, startMonth: 11, endYear: 2027, endMonth: 1 }
+        ];
+        let activeCohortId = cohorts[0].id;
+        let activeRegYear = cohorts[0].startYear;
+        let activeRegMonth = cohorts[0].startMonth;
+
+        window.users = JSON.parse(localStorage.getItem('ace_tennis_users')) || [
+            { id: 'admin_1', username: 'admin', password: '123', fullName: 'System Administrator', email: 'admin@tennistraining.com', contact: '+852 90000000', isApproved: true, isAdmin: true },
+            { id: 'u_1', username: 'john', password: '123', fullName: 'John CHAN', email: 'john@example.com', contact: '+852 91234567', isApproved: true, isAdmin: false },
+            { id: 'u_2', username: 'alice', password: '123', fullName: 'Alice WONG', email: 'alice@example.com', contact: '+852 98765432', isApproved: true, isAdmin: false }
+        ];
+
+        window.lessons = JSON.parse(localStorage.getItem('ace_tennis_lessons')) || [
+            { id: 'l_1', cohortId: 'c_2026_1', date: '2026-12-06', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
+            { id: 'l_2', cohortId: 'c_2026_1', date: '2026-12-07', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 2', capacity: 8 },
+            { id: 'l_3', cohortId: 'c_2026_1', date: '2026-12-08', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
+            { id: 'l_4', cohortId: 'c_2026_1', date: '2026-12-09', level: 'Intermediate', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 3', capacity: 4 },
+            { id: 'l_5', cohortId: 'c_2026_1', date: '2026-12-10', level: 'Intermediate', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 3', capacity: 4 }
+        ];
+
+        window.registrations = JSON.parse(localStorage.getItem('ace_tennis_regs')) || {};
+        window.enrollments = JSON.parse(localStorage.getItem('ace_tennis_enrollments')) || {};
+        let cohortTargetLessons = parseInt(localStorage.getItem('ace_tennis_target_lessons')) || 8;
+        let isSchedulePublished = JSON.parse(localStorage.getItem('ace_tennis_published')) || false;
+
+        window.currentUser = null;
+        let tempSelectedDates = new Set();
+        let myLessonsFilterActive = false;
+        let regViewMode = 'grid';
+        let generatedOTPCode = null;
     </script>
 
     <script>
@@ -972,7 +1008,11 @@
 
         window.addEventListener('DOMContentLoaded', async () => {
             if (supabaseClient) {
-                await loadDataFromSupabase();
+                // Fetch in background without blocking initial rendering
+                loadDataFromSupabase().then(() => {
+                    renderRegistrationCalendar();
+                    renderFinalSchedule();
+                }).catch(err => console.log("Background load sync:", err));
             }
             populateCohortDropdowns();
             saveState();
@@ -1239,40 +1279,74 @@
 
         function handleLogin(e) {
             e.preventDefault();
-            const usernameInput = document.getElementById('loginUsername').value.trim();
-            const passwordInput = document.getElementById('loginPassword').value.trim();
-            const rememberMe = document.getElementById('loginRememberMe').checked;
+            const btn = document.getElementById('loginSubmitBtn');
+            const btnText = document.getElementById('loginSubmitText');
+            const btnIcon = document.getElementById('loginSubmitIcon');
 
-            const foundUser = window.users.find(u => 
-                u.username.toLowerCase() === usernameInput.toLowerCase() || 
-                (u.email && u.email.toLowerCase() === usernameInput.toLowerCase())
-            );
+            try {
+                if (btn) btn.disabled = true;
+                if (btnText) btnText.textContent = "Signing In...";
+                if (btnIcon) btnIcon.className = "fa-solid fa-spinner animate-spin";
 
-            if (!foundUser) {
-                showToast("Account not found. Please check your username or email.", "error");
-                return;
+                const usernameInput = document.getElementById('loginUsername').value.trim();
+                const passwordInput = document.getElementById('loginPassword').value.trim();
+                const rememberMe = document.getElementById('loginRememberMe').checked;
+
+                if (!usernameInput || !passwordInput) {
+                    showToast("Please enter both username and password.", "warning");
+                    resetLoginBtn();
+                    return;
+                }
+
+                // Match against accounts array
+                const foundUser = window.users.find(u => 
+                    u.username.toLowerCase() === usernameInput.toLowerCase() || 
+                    (u.email && u.email.toLowerCase() === usernameInput.toLowerCase())
+                );
+
+                if (!foundUser) {
+                    showToast("Account not found. Please check your username or email.", "error");
+                    resetLoginBtn();
+                    return;
+                }
+
+                if (foundUser.password !== passwordInput) {
+                    showToast("Invalid password. Please try again.", "error");
+                    resetLoginBtn();
+                    return;
+                }
+
+                if (!foundUser.isApproved) {
+                    showToast("Account pending admin approval. Please wait for verification.", "warning");
+                    resetLoginBtn();
+                    return;
+                }
+
+                if (rememberMe) {
+                    localStorage.setItem('ace_tennis_remember_username', usernameInput);
+                    localStorage.setItem('ace_tennis_remember_password', passwordInput);
+                } else {
+                    localStorage.removeItem('ace_tennis_remember_username');
+                    localStorage.removeItem('ace_tennis_remember_password');
+                }
+
+                loginUserSuccess(foundUser);
+                showToast(`Welcome back, ${foundUser.fullName}!`, "success");
+            } catch (err) {
+                console.error("Login process error:", err);
+                showToast("An unexpected error occurred during login. Please try again.", "error");
+                resetLoginBtn();
             }
+        }
 
-            if (foundUser.password !== passwordInput) {
-                showToast("Invalid password.", "error");
-                return;
-            }
+        function resetLoginBtn() {
+            const btn = document.getElementById('loginSubmitBtn');
+            const btnText = document.getElementById('loginSubmitText');
+            const btnIcon = document.getElementById('loginSubmitIcon');
 
-            if (!foundUser.isApproved) {
-                showToast("Account pending admin approval. Please wait for verification.", "warning");
-                return;
-            }
-
-            if (rememberMe) {
-                localStorage.setItem('ace_tennis_remember_username', usernameInput);
-                localStorage.setItem('ace_tennis_remember_password', passwordInput);
-            } else {
-                localStorage.removeItem('ace_tennis_remember_username');
-                localStorage.removeItem('ace_tennis_remember_password');
-            }
-
-            loginUserSuccess(foundUser);
-            showToast(`Welcome back, ${foundUser.fullName}!`, "success");
+            if (btn) btn.disabled = false;
+            if (btnText) btnText.textContent = "Sign In";
+            if (btnIcon) btnIcon.className = "fa-solid fa-arrow-right";
         }
 
         async function handleRegister(e) {
@@ -2556,306 +2630,5 @@
             }, 3500);
         }
     </script>
-
-    <script>
-        // YOUR SUPABASE CREDENTIALS
-        const SUPABASE_URL = "https://crfotakmjlenpdxofynx.supabase.co";
-        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyZm90YWttamxlbnBkeG9meW54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4NjY2MzgsImV4cCI6MjEwMjQ0MjYzOH0.IEIV2Np8bYuxq_rFC7T3VSg3yLOu53kvQw4TMD6w5cY";
-
-        let supabaseClient = null;
-
-        if (typeof window.supabase !== 'undefined' && SUPABASE_URL.includes("supabase.co")) {
-            try {
-                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-                console.log("Connected to Supabase PostgreSQL Backend.");
-            } catch (err) {
-                console.log("Using Local Browser Storage fallback.");
-            }
-        }
-
-        // ==========================================
-        // INITIAL STATE & DATA STORAGE
-        // ==========================================
-        let cohorts = JSON.parse(localStorage.getItem('ace_tennis_cohorts')) || [
-            { id: 'c_2026_1', name: '1st Training Cohort: Dec 2026 - Feb 2027', startYear: 2026, startMonth: 11, endYear: 2027, endMonth: 1 }
-        ];
-        let activeCohortId = cohorts[0].id;
-        let activeRegYear = cohorts[0].startYear;
-        let activeRegMonth = cohorts[0].startMonth;
-
-        window.users = JSON.parse(localStorage.getItem('ace_tennis_users')) || [
-            { id: 'admin_1', username: 'admin', password: '123', fullName: 'System Administrator', email: 'admin@tennistraining.com', contact: '+852 90000000', isApproved: true, isAdmin: true },
-            { id: 'u_1', username: 'john', password: '123', fullName: 'John CHAN', email: 'john@example.com', contact: '+852 91234567', isApproved: true, isAdmin: false },
-            { id: 'u_2', username: 'alice', password: '123', fullName: 'Alice WONG', email: 'alice@example.com', contact: '+852 98765432', isApproved: true, isAdmin: false }
-        ];
-
-        window.lessons = JSON.parse(localStorage.getItem('ace_tennis_lessons')) || [
-            { id: 'l_1', cohortId: 'c_2026_1', date: '2026-12-06', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
-            { id: 'l_2', cohortId: 'c_2026_1', date: '2026-12-07', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 2', capacity: 8 },
-            { id: 'l_3', cohortId: 'c_2026_1', date: '2026-12-08', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
-            { id: 'l_4', cohortId: 'c_2026_1', date: '2026-12-09', level: 'Intermediate', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 3', capacity: 4 },
-            { id: 'l_5', cohortId: 'c_2026_1', date: '2026-12-10', level: 'Intermediate', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 3', capacity: 4 }
-        ];
-
-        window.registrations = JSON.parse(localStorage.getItem('ace_tennis_regs')) || {};
-        window.enrollments = JSON.parse(localStorage.getItem('ace_tennis_enrollments')) || {};
-        let cohortTargetLessons = parseInt(localStorage.getItem('ace_tennis_target_lessons')) || 8;
-        let isSchedulePublished = JSON.parse(localStorage.getItem('ace_tennis_published')) || false;
-
-        window.currentUser = null;
-        let tempSelectedDates = new Set();
-        let myLessonsFilterActive = false;
-        let regViewMode = 'grid';
-        let generatedOTPCode = null;
-    </script>
-
-    <script>
-        // ==========================================
-        // DUTY ROSTER CALCULATION ALGORITHMS
-        // ==========================================
-
-        /**
-         * Calculates Fire Stream Duty Watch (24-hr shift 09:00 - 09:00)
-         * Cycle Pattern: B -> C -> A
-         * Anchor Reference: 2026-01-01 is Watch B
-         */
-        function getFireDutyWatch(year, monthIndex, day) {
-            const anchor = new Date(2026, 0, 1); // 2026-01-01 = B
-            const target = new Date(year, monthIndex, day);
-            const diffDays = Math.round((target - anchor) / (1000 * 60 * 60 * 24));
-            
-            const watches = ['B', 'C', 'A'];
-            let idx = (diffDays % 3 + 3) % 3;
-            return watches[idx];
-        }
-
-        /**
-         * Calculates Ambulance Stream Duty Watches (Day: 08:30-20:30, Night: 20:30-08:30)
-         * Pattern cycle for 5 watches (A, B, C, D, E):
-         * Dec 6: A(Day), B(Day), C(Night)
-         * Dec 7: A(Day), B(Night), E(Day)
-         * Dec 8: A(Night), D(Day), E(Day)
-         * Dec 9: C(Day), D(Day), E(Night)
-         * Dec 10: B(Day), C(Day), D(Night)
-         */
-        function getAmbulanceDutyWatches(year, monthIndex, day) {
-            const anchor = new Date(2026, 11, 7); // Dec 7, 2026
-            const target = new Date(year, monthIndex, day);
-            const diffDays = Math.round((target - anchor) / (1000 * 60 * 60 * 24));
-
-            const teamShiftStates = {
-                'A': 0, // Day 1 (Day)
-                'B': 2, // Day 3 (Night)
-                'C': 3, // Day 4 (Off)
-                'D': 4, // Day 5 (Off)
-                'E': 1  // Day 2 (Day)
-            };
-
-            const dayWatches = [];
-            const nightWatches = [];
-
-            Object.keys(teamShiftStates).forEach(team => {
-                const state = ((diffDays + teamShiftStates[team]) % 5 + 5) % 5;
-                if (state === 0 || state === 1) {
-                    dayWatches.push(team);
-                } else if (state === 2) {
-                    nightWatches.push(team);
-                }
-            });
-
-            dayWatches.sort();
-            nightWatches.sort();
-
-            let combinedTeams = [];
-            ['A', 'B', 'C', 'D', 'E'].forEach(team => {
-                if (dayWatches.includes(team)) {
-                    combinedTeams.push(`${team}(Day)`);
-                } else if (nightWatches.includes(team)) {
-                    combinedTeams.push(`${team}(Night)`);
-                }
-            });
-
-            return {
-                day: dayWatches.join(','),
-                night: nightWatches.join(','),
-                formattedText: `Amb: ${combinedTeams.join(', ')}`
-            };
-        }
-
-        /**
-         * Formats time strings into standard 24-hour hh:mm format
-         */
-        function format24HourTime(timeStr) {
-            if (!timeStr) return '';
-            const parts = timeStr.split(':');
-            if (parts.length >= 2) {
-                const hh = String(parts[0]).padStart(2, '0');
-                const mm = String(parts[1]).padStart(2, '0');
-                return `${hh}:${mm}`;
-            }
-            return timeStr;
-        }
-
-        window.addEventListener('DOMContentLoaded', async () => {
-            if (supabaseClient) {
-                // Fetch in background without blocking initial rendering
-                loadDataFromSupabase().then(() => {
-                    renderRegistrationCalendar();
-                    renderFinalSchedule();
-                }).catch(err => console.log("Background load sync:", err));
-            }
-            populateCohortDropdowns();
-            saveState();
-            checkAutoLoginSession();
-            requestNotificationPermission();
-        });
-
-        function requestNotificationPermission() {
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission().then(permission => {
-                    if (permission === 'granted') {
-                        console.log("System Notification permission granted.");
-                    }
-                });
-            }
-        }
-
-        async function loadDataFromSupabase() {
-            if (!supabaseClient) return;
-            try {
-                // 1. Fetch Users
-                const { data: dbUsers, error: uErr } = await supabaseClient.from('users').select('*');
-                if (!uErr && dbUsers && dbUsers.length > 0) {
-                    const fetched = dbUsers.map(u => ({
-                        id: u.id,
-                        username: u.username,
-                        password: u.password,
-                        fullName: u.full_name,
-                        email: u.email || `${u.username}@tennistraining.com`,
-                        contact: u.contact,
-                        isApproved: u.is_approved,
-                        isAdmin: u.is_admin
-                    }));
-
-                    fetched.forEach(f => {
-                        const idx = window.users.findIndex(x => x.id === f.id);
-                        if (idx !== -1) {
-                            window.users[idx] = f;
-                        } else {
-                            window.users.push(f);
-                        }
-                    });
-                }
-
-                // 2. Fetch Lessons
-                const { data: dbLessons, error: lErr } = await supabaseClient.from('lessons').select('*');
-                if (!lErr && dbLessons) {
-                    window.lessons = dbLessons.map(l => ({
-                        id: l.id,
-                        cohortId: l.cohort_id,
-                        date: l.date,
-                        level: l.level,
-                        startTime: format24HourTime(l.start_time),
-                        endTime: format24HourTime(l.end_time),
-                        location: l.location,
-                        capacity: l.capacity
-                    }));
-                }
-
-                // 3. Fetch Registrations
-                const { data: dbRegs, error: rErr } = await supabaseClient.from('registrations').select('*');
-                if (!rErr && dbRegs) {
-                    const regsObj = {};
-                    dbRegs.forEach(r => {
-                        regsObj[`${r.user_id}_${r.cohort_id}`] = r.available_dates || [];
-                    });
-                    window.registrations = regsObj;
-                }
-
-                // 4. Fetch Enrollments
-                const { data: dbEnrollments, error: eErr } = await supabaseClient.from('enrollments').select('*');
-                if (!eErr && dbEnrollments) {
-                    const enrollObj = {};
-                    dbEnrollments.forEach(e => {
-                        if (!enrollObj[e.lesson_id]) enrollObj[e.lesson_id] = [];
-                        enrollObj[e.lesson_id].push(e.user_id);
-                    });
-                    window.enrollments = enrollObj;
-                }
-            } catch (err) {
-                console.log("Supabase initial fetch:", err);
-            }
-        }
-
-        function handleLogin(e) {
-            e.preventDefault();
-            const btn = document.getElementById('loginSubmitBtn');
-            const btnText = document.getElementById('loginSubmitText');
-            const btnIcon = document.getElementById('loginSubmitIcon');
-
-            try {
-                if (btn) btn.disabled = true;
-                if (btnText) btnText.textContent = "Signing In...";
-                if (btnIcon) btnIcon.className = "fa-solid fa-spinner animate-spin";
-
-                const usernameInput = document.getElementById('loginUsername').value.trim();
-                const passwordInput = document.getElementById('loginPassword').value.trim();
-                const rememberMe = document.getElementById('loginRememberMe').checked;
-
-                if (!usernameInput || !passwordInput) {
-                    showToast("Please enter both username and password.", "warning");
-                    resetLoginBtn();
-                    return;
-                }
-
-                // Match against accounts array
-                const foundUser = window.users.find(u => 
-                    u.username.toLowerCase() === usernameInput.toLowerCase() || 
-                    (u.email && u.email.toLowerCase() === usernameInput.toLowerCase())
-                );
-
-                if (!foundUser) {
-                    showToast("Account not found. Please check your username or email.", "error");
-                    resetLoginBtn();
-                    return;
-                }
-
-                if (foundUser.password !== passwordInput) {
-                    showToast("Invalid password. Please try again.", "error");
-                    resetLoginBtn();
-                    return;
-                }
-
-                if (!foundUser.isApproved) {
-                    showToast("Account pending admin approval. Please wait for verification.", "warning");
-                    resetLoginBtn();
-                    return;
-                }
-
-                if (rememberMe) {
-                    localStorage.setItem('ace_tennis_remember_username', usernameInput);
-                    localStorage.setItem('ace_tennis_remember_password', passwordInput);
-                } else {
-                    localStorage.removeItem('ace_tennis_remember_username');
-                    localStorage.removeItem('ace_tennis_remember_password');
-                }
-
-                loginUserSuccess(foundUser);
-                showToast(`Welcome back, ${foundUser.fullName}!`, "success");
-            } catch (err) {
-                console.error("Login process error:", err);
-                showToast("An unexpected error occurred during login. Please try again.", "error");
-                resetLoginBtn();
-            }
-        }
-
-        function resetLoginBtn() {
-            const btn = document.getElementById('loginSubmitBtn');
-            const btnText = document.getElementById('loginSubmitText');
-            const btnIcon = document.getElementById('loginSubmitIcon');
-
-            if (btn) btn.disabled = false;
-            if (btnText) btnText.textContent = "Sign In";
-            if (btnIcon) btnIcon.className = "fa-solid fa-arrow-right";
-        }
-    </script>
+</body>
+</html>
