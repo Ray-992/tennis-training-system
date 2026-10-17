@@ -330,7 +330,7 @@
                 </div>
 
                 <!-- 1. Calendar Grid View Container (Clean layout without duty text) -->
-                <div id="calendarGridWrapper" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 sm:p-6 overflow-hidden">
+                <div id="calendarGridWrapper" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 sm:p-6 overflow-visible">
                     <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">
                         <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                     </div>
@@ -342,26 +342,6 @@
                 <!-- 2. Mobile List / Agenda View Container (Optimized Vertical Scrolling) -->
                 <div id="calendarListWrapper" class="hidden space-y-2">
                     <!-- Dynamic List Cards -->
-                </div>
-
-                <!-- Calendar Legend with Duty Watch Explanations -->
-                <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2 text-xs text-slate-600">
-                    <div class="font-bold text-slate-800 flex items-center gap-1.5 text-xs uppercase tracking-wider">
-                        <i class="fa-solid fa-circle-info text-tennis-600"></i> Duty Watch Details & Touch Instructions
-                    </div>
-                    <p class="text-[11px] text-slate-500">
-                        💡 <strong>Hover mouse or press & hold</strong> on any calendar day to inspect full Fire and Ambulance duty rosters!
-                    </p>
-                    <div class="border-t border-slate-100 pt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] leading-relaxed">
-                        <div>
-                            <span class="font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">Fire Stream</span>
-                            <span>24-hr Duty Watch (A, B, or C). Shift starts 09:00 AM.</span>
-                        </div>
-                        <div>
-                            <span class="font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">Ambulance Stream</span>
-                            <span>Day Shift (08:30-20:30), Night Shift (20:30-08:30) across 5 Watches (A, B, C, D, E).</span>
-                        </div>
-                    </div>
                 </div>
             </div>
 
@@ -1732,12 +1712,13 @@
                     availableLessonsInMonth.push({ day, dateKey, lessons: matchedLessons, fireWatch, ambWatch });
                 }
 
-                // Grid Card Container (Clean view with no shift text displayed directly)
+                // Grid Card Container
                 const card = document.createElement('div');
-                card.className = "group relative min-h-[85px] sm:min-h-[105px] border rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col justify-between calendar-day-card cursor-pointer ";
+                card.className = "group relative z-10 hover:z-30 min-h-[85px] sm:min-h-[105px] border rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col justify-between calendar-day-card cursor-pointer ";
 
                 if (matchedLessons.length > 0) {
                     const startTimeFormatted = format24HourTime(matchedLessons[0].startTime);
+                    const locationVenue = matchedLessons[0].location;
                     
                     if (isSelected) {
                         card.className += "bg-tennis-600 text-white border-tennis-700 shadow-md font-bold";
@@ -1755,15 +1736,18 @@
                             </div>
                         </div>
 
-                        <!-- 24-Hour Time Badge -->
-                        <div class="mt-2">
-                            <div class="text-[10px] sm:text-xs ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-200 text-emerald-900'} px-1.5 py-1 rounded-lg font-black text-center truncate">
+                        <!-- 24-Hour Time & Venue Badge -->
+                        <div class="mt-2 space-y-1">
+                            <div class="text-[10px] sm:text-xs ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-200 text-emerald-900'} px-1.5 py-0.5 rounded-lg font-black text-center truncate">
                                 <i class="fa-solid fa-clock text-[9px] mr-0.5"></i> ${startTimeFormatted}
+                            </div>
+                            <div class="text-[9px] sm:text-[10px] ${isSelected ? 'text-tennis-100' : 'text-slate-600'} font-semibold text-center truncate">
+                                <i class="fa-solid fa-location-dot text-[8px] mr-0.5"></i> ${locationVenue}
                             </div>
                         </div>
 
                         <!-- Hover / Press-and-Hold Duty Roster Tooltip Popup -->
-                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-2xl z-30 pointer-events-none border border-slate-700 font-sans">
+                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-2xl z-50 pointer-events-none border border-slate-700 font-sans">
                             <div class="font-bold text-tennis-400 border-b border-slate-700 pb-1 mb-1.5 flex items-center justify-between">
                                 <span>Date: ${dateKey}</span>
                                 <span class="text-[9px] text-slate-400">Duty Watch</span>
@@ -1786,7 +1770,7 @@
                         <span class="text-[10px] hidden sm:block italic text-slate-300 mt-auto">No class</span>
 
                         <!-- Hover / Press-and-Hold Duty Roster Tooltip Popup -->
-                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-2xl z-30 pointer-events-none border border-slate-700 font-sans">
+                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-2xl z-50 pointer-events-none border border-slate-700 font-sans">
                             <div class="font-bold text-tennis-400 border-b border-slate-700 pb-1 mb-1.5 flex items-center justify-between">
                                 <span>Date: ${dateKey}</span>
                                 <span class="text-[9px] text-slate-400">Duty Watch</span>
