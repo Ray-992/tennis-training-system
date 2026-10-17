@@ -330,7 +330,7 @@
                 </div>
 
                 <!-- 1. Calendar Grid View Container (Clean layout without duty text) -->
-                <div id="calendarGridWrapper" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 sm:p-6 overflow-hidden">
+                <div id="calendarGridWrapper" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 sm:p-6 overflow-visible">
                     <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">
                         <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
                     </div>
@@ -1714,7 +1714,7 @@
 
                 // Grid Card Container
                 const card = document.createElement('div');
-                card.className = "group relative min-h-[85px] sm:min-h-[105px] border rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col justify-between calendar-day-card cursor-pointer ";
+                card.className = "group relative z-10 hover:z-30 min-h-[85px] sm:min-h-[105px] border rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col justify-between calendar-day-card cursor-pointer ";
 
                 if (matchedLessons.length > 0) {
                     const startTimeFormatted = format24HourTime(matchedLessons[0].startTime);
@@ -1747,7 +1747,7 @@
                         </div>
 
                         <!-- Hover / Press-and-Hold Duty Roster Tooltip Popup -->
-                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-2xl z-30 pointer-events-none border border-slate-700 font-sans">
+                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-2xl z-50 pointer-events-none border border-slate-700 font-sans">
                             <div class="font-bold text-tennis-400 border-b border-slate-700 pb-1 mb-1.5 flex items-center justify-between">
                                 <span>Date: ${dateKey}</span>
                                 <span class="text-[9px] text-slate-400">Duty Watch</span>
@@ -1770,7 +1770,7 @@
                         <span class="text-[10px] hidden sm:block italic text-slate-300 mt-auto">No class</span>
 
                         <!-- Hover / Press-and-Hold Duty Roster Tooltip Popup -->
-                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-2xl z-30 pointer-events-none border border-slate-700 font-sans">
+                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-2xl z-50 pointer-events-none border border-slate-700 font-sans">
                             <div class="font-bold text-tennis-400 border-b border-slate-700 pb-1 mb-1.5 flex items-center justify-between">
                                 <span>Date: ${dateKey}</span>
                                 <span class="text-[9px] text-slate-400">Duty Watch</span>
