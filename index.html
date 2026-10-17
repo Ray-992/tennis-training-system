@@ -934,30 +934,31 @@
 
         /**
          * Calculates Ambulance Stream Duty Watches (Day: 08:30-20:30, Night: 20:30-08:30)
-         * Pattern cycle for 5 watches (A, B, C, D, E):
-         * Dec 6: A(Day), B(Day), C(Night)
-         * Dec 7: A(Day), B(Night), E(Day)
-         * Dec 8: A(Night), D(Day), E(Day)
-         * Dec 9: C(Day), D(Day), E(Night)
-         * Dec 10: B(Day), C(Day), D(Night)
+         * Each team follows 5-day cycle: Day 1 (Day), Day 2 (Day), Day 3 (Night), Day 4 (Off), Day 5 (Off)
+         * Anchor Reference: Dec 6, 2026
+         *   Team A: Day 1 (Day)
+         *   Team B: Day 2 (Day)
+         *   Team C: Day 3 (Night)
+         *   Team D: Day 4 (Off)
+         *   Team E: Day 5 (Off)
          */
         function getAmbulanceDutyWatches(year, monthIndex, day) {
-            const anchor = new Date(2026, 11, 7); // Dec 7, 2026
+            const anchor = new Date(2026, 11, 6); // Dec 6, 2026
             const target = new Date(year, monthIndex, day);
             const diffDays = Math.round((target - anchor) / (1000 * 60 * 60 * 24));
 
-            // Shift states on Dec 7, 2026:
-            // A: Day 1 (Day)
-            // B: Day 3 (Night)
-            // C: Day 4 (Off)
-            // D: Day 5 (Off)
-            // E: Day 2 (Day)
+            // Initial shift state index (0..4) on Dec 6, 2026:
+            // 0 = Day 1 (Day)
+            // 1 = Day 2 (Day)
+            // 2 = Day 3 (Night)
+            // 3 = Day 4 (Off)
+            // 4 = Day 5 (Off)
             const teamShiftStates = {
                 'A': 0, // Day 1 (Day)
-                'B': 2, // Day 3 (Night)
-                'C': 3, // Day 4 (Off)
-                'D': 4, // Day 5 (Off)
-                'E': 1  // Day 2 (Day)
+                'B': 1, // Day 2 (Day)
+                'C': 2, // Day 3 (Night)
+                'D': 3, // Day 4 (Off)
+                'E': 4  // Day 5 (Off)
             };
 
             const dayWatches = [];
@@ -975,7 +976,7 @@
             dayWatches.sort();
             nightWatches.sort();
 
-            // Formatted in strict alphabetical order (e.g., A(Day), B(Night), E(Day))
+            // Formatted in strict alphabetical order (e.g., A(Day), B(Day), C(Night))
             let combinedTeams = [];
             ['A', 'B', 'C', 'D', 'E'].forEach(team => {
                 if (dayWatches.includes(team)) {
