@@ -447,6 +447,31 @@
                         </button>
                     </div>
 
+                    <div id="adminPendingAlertBanner" class="hidden p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs font-bold items-center gap-2">
+                        <i class="fa-solid fa-bell text-amber-600"></i>
+                        <span id="adminPendingAlertText">Attention Admin: User accounts pending approval!</span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold">
+                                    <th class="py-3 px-4">Full Name</th>
+                                    <th class="py-3 px-4">Email</th>
+                                    <th class="py-3 px-4">Contact Phone</th>
+                                    <th class="py-3 px-4">Username</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4">Role</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userApprovalTableBody">
+                                <!-- Dynamic User Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <!-- SUB-TAB 1.5: Manage Cohorts -->
                 <div id="adminViewCohorts" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
