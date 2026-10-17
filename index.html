@@ -407,70 +407,74 @@
                     </div>
 
                     <!-- Target Lessons Config -->
-                    <div class="bg-white p-3 rounded-xl border border-amber-300 shadow-sm flex items-center space-x-3">
-                        <i class="fa-solid fa-sliders text-amber-600 text-lg"></i>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-600">Cohort Target Lessons/User</label>
-                            <input type="number" id="adminCohortTargetInput" value="8" min="1" max="30" onchange="updateCohortTargetLessons(this.value)"
-                                   class="w-20 font-bold text-slate-800 border border-slate-300 rounded-lg px-2 py-1 text-center text-xs outline-none focus:ring-2 focus:ring-amber-500">
-                        </div>
+                <div class="bg-white p-3 rounded-xl border border-amber-300 shadow-sm flex items-center space-x-3">
+                    <i class="fa-solid fa-sliders text-amber-600 text-lg"></i>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-600">Cohort Target Lessons/User</label>
+                        <input type="number" id="adminCohortTargetInput" value="8" min="1" max="30" onchange="updateCohortTargetLessons(this.value)"
+                               class="w-20 font-bold text-slate-800 border border-slate-300 rounded-lg px-2 py-1 text-center text-xs outline-none focus:ring-2 focus:ring-amber-500">
                     </div>
                 </div>
+            </div>
 
-                <!-- Admin Sub Nav Tabs -->
-                <div class="flex border-b border-slate-200 gap-2 overflow-x-auto">
-                    <button id="adminSubTabUsers" onclick="switchAdminSubTab('users')" class="py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2 whitespace-nowrap">
-                        <i class="fa-solid fa-user-check"></i> Account Approvals & Admins <span id="pendingBadgeCount" class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
-                    </button>
-                    <button id="adminSubTabLessons" onclick="switchAdminSubTab('lessons')" class="py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2 whitespace-nowrap">
-                        <i class="fa-solid fa-calendar-plus"></i> Manage Lessons & Slots
-                    </button>
-                    <button id="adminSubTabEnrollments" onclick="switchAdminSubTab('enrollments')" class="py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2 whitespace-nowrap">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> Priority Auto-Assignment
-                    </button>
-                </div>
+            <!-- Admin Sub Nav Tabs -->
+            <div class="flex border-b border-slate-200 gap-2 overflow-x-auto">
+                <button id="adminSubTabUsers" onclick="switchAdminSubTab('users')" class="py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-user-check"></i> Account Approvals & Admins <span id="pendingBadgeCount" class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+                </button>
+                <button id="adminSubTabCohorts" onclick="switchAdminSubTab('cohorts')" class="py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-layer-group"></i> Manage Cohorts
+                </button>
+                <button id="adminSubTabLessons" onclick="switchAdminSubTab('lessons')" class="py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-calendar-plus"></i> Manage Lessons & Slots
+                </button>
+                <button id="adminSubTabEnrollments" onclick="switchAdminSubTab('enrollments')" class="py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2 whitespace-nowrap">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Priority Auto-Assignment
+                </button>
+            </div>
 
-                <!-- SUB-TAB 1: Account Verification & Admin Delegation Requests -->
-                <div id="adminViewUsers" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <!-- SUB-TAB: Account Verification & Admin Delegation Requests -->
+            <div id="adminViewUsers" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h4 class="font-bold text-slate-800 text-base flex items-center gap-2">
                                 <i class="fa-solid fa-id-card text-amber-500"></i> User Accounts & Admin Delegation
-                            </h4>
-                            <p class="text-xs text-slate-500">Approve or reject new registration requests, and authorize users as Admins.</p>
-                        </div>
-                        <button onclick="exportUserDatabaseExcel()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow">
-                            <i class="fa-solid fa-file-excel"></i> Export Accounts (Excel)
-                        </button>
-                    </div>
+            <!-- SUB-TAB 1: Account Verification -->
 
-                    <div id="adminPendingAlertBanner" class="hidden p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs font-bold items-center gap-2">
-                        <i class="fa-solid fa-bell text-amber-600"></i>
-                        <span id="adminPendingAlertText">Attention Admin: User accounts pending approval!</span>
+            <!-- SUB-TAB COHORTS: Manage Training Cohorts -->
+            <div id="adminViewCohorts" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <h4 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-amber-500"></i> Training Cohort Management
+                        </h4>
+                        <p class="text-xs text-slate-500">Create, edit training date ranges, or delete training cohorts.</p>
                     </div>
-
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-left text-xs border-collapse">
-                            <thead>
-                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold">
-                                    <th class="py-3 px-4">Full Name</th>
-                                    <th class="py-3 px-4">Email</th>
-                                    <th class="py-3 px-4">Contact Phone</th>
-                                    <th class="py-3 px-4">Username</th>
-                                    <th class="py-3 px-4">Status</th>
-                                    <th class="py-3 px-4">Role</th>
-                                    <th class="py-3 px-4 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="userApprovalTableBody">
-                                <!-- Dynamic User Rows -->
-                            </tbody>
-                        </table>
-                    </div>
+                    <button onclick="openAddCohortModal()" class="px-4 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-plus"></i> Add New Cohort
+                    </button>
                 </div>
 
-                <!-- SUB-TAB 2: Manage Lessons -->
-                <div id="adminViewLessons" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold">
+                                <th class="py-3 px-4">Cohort Name</th>
+                                <th class="py-3 px-4">Start Period</th>
+                                <th class="py-3 px-4">End Period</th>
+                                <th class="py-3 px-4">Status</th>
+                                <th class="py-3 px-4 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cohortsTableBody">
+                            <!-- Dynamic Cohort Rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- SUB-TAB 2: Manage Lessons -->
+            <div id="adminViewLessons" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
                     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
                             <h4 class="font-bold text-slate-800 text-base">Schedule Lessons & Slots</h4>
@@ -743,33 +747,71 @@
     </div>
 
     <!-- MODAL 7: Roster Summary Table -->
-    <div id="modalPreviewRoster" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
+
+    <!-- MODAL 8: Add/Edit Cohort Modal -->
+    <div id="modalCohortForm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-table-list text-amber-600"></i> Auto-Assignment Summary (Target: <span id="previewTargetCount">8</span> Lessons/User)
-                </h3>
-                <button onclick="closeModal('modalPreviewRoster')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+                <h3 id="cohortModalTitle" class="text-base font-bold text-slate-900">Add Training Cohort</h3>
+                <button onclick="closeModal('modalCohortForm')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
-                <table class="w-full text-left text-xs border-collapse">
-                    <thead class="bg-slate-50 text-slate-600 uppercase sticky top-0 font-bold">
-                        <tr>
-                            <th class="py-3 px-4">Student Name</th>
-                            <th class="py-3 px-4">Contact</th>
-                            <th class="py-3 px-4 text-center">Available Dates Submitted</th>
-                            <th class="py-3 px-4 text-center">Enrolled Lessons Assigned</th>
-                            <th class="py-3 px-4 text-center">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="previewRosterTableBody">
-                        <!-- Dynamic Summary Rows -->
-                    </tbody>
-                </table>
-            </div>
-            <div class="flex justify-end border-t border-slate-100 pt-3">
-                <button onclick="closeModal('modalPreviewRoster')" class="px-5 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold">Close</button>
-            </div>
+            <form onsubmit="handleSaveCohort(event)" class="space-y-4">
+                <input type="hidden" id="cohortModalId">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Cohort Display Name</label>
+                    <input type="text" id="cohortModalName" required placeholder="e.g. 2nd Training Cohort: Mar 2027 - May 2027" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Start Year</label>
+                        <input type="number" id="cohortModalStartYear" required min="2025" max="2035" value="2026" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Start Month</label>
+                        <select id="cohortModalStartMonth" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none font-bold">
+                            <option value="0">January</option>
+                            <option value="1">February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11" selected>December</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">End Year</label>
+                        <input type="number" id="cohortModalEndYear" required min="2025" max="2035" value="2027" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">End Month</label>
+                        <select id="cohortModalEndMonth" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none font-bold">
+                            <option value="0">January</option>
+                            <option value="1" selected>February</option>
+                            <option value="2">March</option>
+                            <option value="3">April</option>
+                            <option value="4">May</option>
+                            <option value="5">June</option>
+                            <option value="6">July</option>
+                            <option value="7">August</option>
+                            <option value="8">September</option>
+                            <option value="9">October</option>
+                            <option value="10">November</option>
+                            <option value="11">December</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modalCohortForm')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">Save Cohort</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -1884,18 +1926,20 @@
 
         function switchAdminSubTab(subTab) {
             const btnUsers = document.getElementById('adminSubTabUsers');
+            const btnCohorts = document.getElementById('adminSubTabCohorts');
             const btnLessons = document.getElementById('adminSubTabLessons');
             const btnEnrollments = document.getElementById('adminSubTabEnrollments');
 
             const viewUsers = document.getElementById('adminViewUsers');
+            const viewCohorts = document.getElementById('adminViewCohorts');
             const viewLessons = document.getElementById('adminViewLessons');
             const viewEnrollments = document.getElementById('adminViewEnrollments');
 
-            [btnUsers, btnLessons, btnEnrollments].forEach(b => {
+            [btnUsers, btnCohorts, btnLessons, btnEnrollments].forEach(b => {
                 if (b) b.className = "py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2 whitespace-nowrap";
             });
 
-            [viewUsers, viewLessons, viewEnrollments].forEach(v => {
+            [viewUsers, viewCohorts, viewLessons, viewEnrollments].forEach(v => {
                 if (v) v.classList.add('hidden');
             });
 
@@ -1903,6 +1947,10 @@
                 btnUsers.className = "py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2 whitespace-nowrap";
                 viewUsers.classList.remove('hidden');
                 renderAdminUsersTable();
+            } else if (subTab === 'cohorts') {
+                btnCohorts.className = "py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2 whitespace-nowrap";
+                viewCohorts.classList.remove('hidden');
+                renderAdminCohortsTable();
             } else if (subTab === 'lessons') {
                 btnLessons.className = "py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2 whitespace-nowrap";
                 viewLessons.classList.remove('hidden');
@@ -1911,6 +1959,112 @@
                 btnEnrollments.className = "py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2 whitespace-nowrap";
                 viewEnrollments.classList.remove('hidden');
                 renderAdminEnrollmentsView();
+            }
+        }
+
+        // ==========================================
+        // COHORT MANAGEMENT FUNCTIONS
+        // ==========================================
+        function renderAdminCohortsTable() {
+            const tbody = document.getElementById('cohortsTableBody');
+            tbody.innerHTML = '';
+
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+            cohorts.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-50 transition";
+                const isActive = c.id === activeCohortId;
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">${c.name}</td>
+                    <td class="py-3 px-4 text-slate-600 font-mono">${monthNames[c.startMonth]} ${c.startYear}</td>
+                    <td class="py-3 px-4 text-slate-600 font-mono">${monthNames[c.endMonth]} ${c.endYear}</td>
+                    <td class="py-3 px-4">
+                        ${isActive 
+                            ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800"><i class="fa-solid fa-circle-check mr-1"></i> Active</span>`
+                            : `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">Inactive</span>`
+                        }
+                    </td>
+                    <td class="py-3 px-4 text-right space-x-1.5">
+                        ${!isActive ? `<button onclick="changeActiveCohort('${c.id}')" class="px-2 py-1 bg-tennis-600 hover:bg-tennis-700 text-white rounded-lg text-xs font-bold shadow">Set Active</button>` : ''}
+                        <button onclick="openEditCohortModal('${c.id}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-pen"></i> Edit</button>
+                        ${cohorts.length > 1 ? `<button onclick="deleteCohort('${c.id}')" class="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-trash"></i> Delete</button>` : ''}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function openAddCohortModal() {
+            document.getElementById('cohortModalTitle').textContent = "Add New Cohort";
+            document.getElementById('cohortModalId').value = '';
+            document.getElementById('cohortModalName').value = '';
+            document.getElementById('cohortModalStartYear').value = 2027;
+            document.getElementById('cohortModalStartMonth').value = 2; // March
+            document.getElementById('cohortModalEndYear').value = 2027;
+            document.getElementById('cohortModalEndMonth').value = 4; // May
+            openModal('modalCohortForm');
+        }
+
+        function openEditCohortModal(cohortId) {
+            const c = cohorts.find(x => x.id === cohortId);
+            if (!c) return;
+
+            document.getElementById('cohortModalTitle').textContent = "Edit Cohort Period";
+            document.getElementById('cohortModalId').value = c.id;
+            document.getElementById('cohortModalName').value = c.name;
+            document.getElementById('cohortModalStartYear').value = c.startYear;
+            document.getElementById('cohortModalStartMonth').value = c.startMonth;
+            document.getElementById('cohortModalEndYear').value = c.endYear;
+            document.getElementById('cohortModalEndMonth').value = c.endMonth;
+            openModal('modalCohortForm');
+        }
+
+        function handleSaveCohort(e) {
+            e.preventDefault();
+            const id = document.getElementById('cohortModalId').value;
+            const name = document.getElementById('cohortModalName').value.trim();
+            const startYear = parseInt(document.getElementById('cohortModalStartYear').value);
+            const startMonth = parseInt(document.getElementById('cohortModalStartMonth').value);
+            const endYear = parseInt(document.getElementById('cohortModalEndYear').value);
+            const endMonth = parseInt(document.getElementById('cohortModalEndMonth').value);
+
+            if (id) {
+                const idx = cohorts.findIndex(x => x.id === id);
+                if (idx !== -1) {
+                    cohorts[idx] = { id, name, startYear, startMonth, endYear, endMonth };
+                }
+            } else {
+                const newId = 'c_' + Date.now();
+                cohorts.push({ id: newId, name, startYear, startMonth, endYear, endMonth });
+            }
+
+            saveState();
+            populateCohortDropdowns();
+            renderAdminCohortsTable();
+            closeModal('modalCohortForm');
+            showToast("Cohort details updated successfully!", "success");
+        }
+
+        function deleteCohort(cohortId) {
+            if (cohorts.length <= 1) {
+                showToast("Cannot delete the only cohort.", "error");
+                return;
+            }
+
+            if (cohortId === activeCohortId) {
+                showToast("Cannot delete the active cohort. Set another cohort as active first.", "warning");
+                return;
+            }
+
+            const idx = cohorts.findIndex(c => c.id === cohortId);
+            if (idx !== -1) {
+                cohorts.splice(idx, 1);
+                saveState();
+                populateCohortDropdowns();
+                renderAdminCohortsTable();
+                showToast("Cohort deleted successfully.", "info");
             }
         }
 
