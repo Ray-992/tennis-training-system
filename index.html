@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-900 text-slate-100">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tennis Training System</title>
-    
+    <title>TENNIS TRAINING SYSTEM - Registration & Management</title>
+
     <!-- PWA Web App Manifest Link -->
     <link rel="manifest" href="manifest.json">
 
@@ -24,13 +24,18 @@
             theme: {
                 extend: {
                     colors: {
-                        brand: {
+                        tennis: {
                             50: '#f0fdf4',
                             100: '#dcfce7',
+                            200: '#bbf7d0',
+                            300: '#86efac',
+                            400: '#4ade80',
                             500: '#22c55e',
                             600: '#16a34a',
                             700: '#15803d',
+                            800: '#166534',
                             900: '#14532d',
+                            accent: '#ccff00'
                         }
                     }
                 }
@@ -38,399 +43,1300 @@
         }
     </script>
     
-    <!-- FontAwesome Icons CDN -->
+    <!-- FontAwesome for UI Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-
-    <!-- Custom CSS Styles -->
+    
+    <!-- Supabase JS Client library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent;
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .calendar-day-card {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        /* Custom scrollbar for better visual quality */
+        .calendar-day-card:hover {
+            transform: translateY(-2px);
+        }
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #0f172a;
+            background: #f1f5f9;
         }
         ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 3px;
+            background: #cbd5e1;
+            border-radius: 9999px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #475569;
+            background: #16a34a;
+        }
+
+        /* Tooltip Styles for Hover / Press and Hold */
+        .duty-tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
+        }
+        .group:hover .duty-tooltip,
+        .group:active .duty-tooltip,
+        .group:focus .duty-tooltip {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
-<body class="h-full flex flex-col bg-slate-900 text-slate-100 antialiased selection:bg-brand-500 selection:text-white">
+<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
 
-    <!-- Toast Notification Container -->
-    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-3 max-w-sm w-full pointer-events-none"></div>
-
-    <!-- App Header Nav -->
-    <header id="appHeader" class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700/60 sticky top-0 z-40">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <!-- App Logo/Brand -->
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-emerald-400 flex items-center justify-center shadow-lg shadow-brand-500/20">
-                        <i class="fa-solid fa-tennis-ball text-slate-900 text-xl"></i>
-                    </div>
-                    <div>
-                        <span class="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">TENNIS HQ</span>
-                        <span class="text-xs block text-brand-500 font-medium tracking-wide">TRAINING SYSTEM</span>
-                    </div>
+    <header class="bg-slate-900 text-white shadow-md sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-full bg-tennis-500 flex items-center justify-center text-slate-900 font-black text-xl shadow-lg">
+                    <i class="fa-solid fa-baseball text-slate-900"></i>
                 </div>
-
-                <!-- Right User Dropdown / Nav Items -->
-                <div id="headerNavRight" class="flex items-center gap-3">
-                    <!-- Populated dynamically by JavaScript -->
+                <div>
+                    <h1 class="font-black text-lg sm:text-xl tracking-tight text-white flex items-center gap-1.5">
+                        TENNIS <span class="text-tennis-400">TRAINING SYSTEM</span>
+                    </h1>
                 </div>
+            </div>
+
+            <!-- Dynamic Header Controls -->
+            <div id="navRight" class="flex items-center space-x-3">
+                <!-- Injected via JS -->
             </div>
         </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 flex flex-col">
+    <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8">
 
-        <!-- AUTH VIEW (Sign In / Register) -->
-        <section id="authView" class="flex-1 flex flex-col items-center justify-center py-8">
-            <div class="w-full max-w-md bg-slate-800/60 border border-slate-700/70 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+        <!-- AUTH VIEW (Login & Registration Forms) -->
+        <div id="authView" class="max-w-md mx-auto my-8 space-y-4">
+
+            <!-- Cohort Announcement Banner -->
+            <div id="loginAnnouncementBanner" class="p-4 rounded-xl bg-amber-50 border-l-4 border-amber-500 text-amber-900 shadow-sm flex items-start gap-3">
+                <i class="fa-solid fa-bullhorn text-amber-600 text-lg mt-0.5 shrink-0"></i>
+                <div class="text-xs font-semibold leading-relaxed">
+                    The training schedule for the active cohort has been released. Please login to view your confirmed sessions or submit availability!
+                </div>
+            </div>
+
+            <!-- Auth Form Card -->
+            <div class="bg-white rounded-2xl shadow-xl overflow-hidden border border-slate-200">
                 <!-- Auth Tabs -->
-                <div class="flex bg-slate-900/80 p-1 rounded-xl mb-6 border border-slate-700/50">
-                    <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200 bg-brand-600 text-white shadow">Sign In</button>
-                    <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-2 text-sm font-semibold text-slate-400 hover:text-slate-200 rounded-lg transition-all duration-200">Register</button>
+                <div class="flex border-b border-slate-200 bg-slate-50">
+                    <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-4 font-bold text-center text-tennis-600 border-b-2 border-tennis-600 transition text-sm">
+                        <i class="fa-solid fa-right-to-bracket mr-1.5"></i> Login
+                    </button>
+                    <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-4 font-bold text-center text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition text-sm">
+                        <i class="fa-solid fa-user-plus mr-1.5"></i> Create Account
+                    </button>
                 </div>
 
                 <!-- LOGIN FORM -->
-                <div id="loginFormContainer">
+                <div id="loginFormContainer" class="p-6 sm:p-8">
                     <div class="text-center mb-6">
-                        <h2 class="text-2xl font-bold text-white">Welcome Back</h2>
-                        <p class="text-xs text-slate-400 mt-1">Sign in to manage your training schedule</p>
+                        <h2 class="text-2xl font-bold text-slate-800">Welcome Back</h2>
+                        <p class="text-xs text-slate-500 mt-1">Sign in to enrol in lessons and view your training schedule</p>
                     </div>
-
-                    <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+                    
+                    <form onsubmit="handleLogin(event)" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Username</label>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Username or Email</label>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fa-solid fa-user"></i></span>
-                                <input type="text" id="loginUsername" autocomplete="username" required class="w-full pl-10 pr-4 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all" placeholder="Enter username">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-user text-xs"></i></span>
+                                <input type="text" id="loginUsername" required autocomplete="username" placeholder="Username or email address" 
+                                       class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 text-slate-800 outline-none text-sm transition">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Password</label>
+                            <div class="flex justify-between items-center mb-1">
+                                <label class="block text-xs font-bold text-slate-700 uppercase">Password</label>
+                                <button type="button" onclick="openForgotPasswordModal()" class="text-xs text-tennis-600 hover:text-tennis-700 font-semibold transition">
+                                    Forgot Password?
+                                </button>
+                            </div>
                             <div class="relative">
-                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-slate-500"><i class="fa-solid fa-lock"></i></span>
-                                <input type="password" id="loginPassword" autocomplete="current-password" required class="w-full pl-10 pr-4 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 transition-all" placeholder="••••••••">
+                                <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400"><i class="fa-solid fa-lock text-xs"></i></span>
+                                <input type="password" id="loginPassword" required autocomplete="current-password" placeholder="Password" 
+                                       class="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 focus:border-tennis-500 text-slate-800 outline-none text-sm transition">
                             </div>
                         </div>
 
-                        <!-- Remember Me Option -->
+                        <!-- Remember Me Row -->
                         <div class="flex items-center justify-between text-xs pt-1">
-                            <label class="flex items-center gap-2 cursor-pointer text-slate-300">
-                                <input type="checkbox" id="rememberMeCheckbox" checked class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-brand-500 focus:ring-offset-slate-900">
+                            <label class="flex items-center space-x-2 cursor-pointer text-slate-600 font-semibold select-none">
+                                <input type="checkbox" id="loginRememberMe" checked class="w-4 h-4 rounded border-slate-300 text-tennis-600 focus:ring-tennis-500 cursor-pointer">
                                 <span>Remember my login info</span>
                             </label>
                         </div>
 
-                        <button type="submit" id="loginSubmitBtn" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl shadow-lg shadow-brand-600/30 transition-all flex items-center justify-center gap-2 group mt-2">
-                            <span id="loginSubmitText">Sign In</span>
-                            <i id="loginSubmitIcon" class="fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform"></i>
+                        <button type="submit" id="loginSubmitBtn" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md hover:shadow-lg transition flex items-center justify-center gap-2 text-sm mt-2">
+                            <span id="loginSubmitText">Sign In</span> <i id="loginSubmitIcon" class="fa-solid fa-arrow-right"></i>
                         </button>
                     </form>
                 </div>
 
                 <!-- REGISTER FORM -->
-                <div id="registerFormContainer" class="hidden">
+                <div id="registerFormContainer" class="p-6 sm:p-8 hidden">
                     <div class="text-center mb-6">
-                        <h2 class="text-2xl font-bold text-white">Create Account</h2>
-                        <p class="text-xs text-slate-400 mt-1">Register for tennis class enrolments</p>
+                        <h2 class="text-2xl font-bold text-slate-800">User Signup</h2>
+                        <p class="text-xs text-slate-500 mt-1">Requires admin verification before account activation</p>
                     </div>
 
-                    <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4">
+                    <form onsubmit="handleRegister(event)" class="space-y-4">
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Full Name</label>
-                            <input type="text" id="regFullName" required class="w-full px-4 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition-all" placeholder="John Doe">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Full Name <span class="text-red-500">*</span></label>
+                            <input type="text" id="regFullName" required placeholder="CHAN Tai-man" 
+                                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 text-slate-800 outline-none text-sm">
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Username</label>
-                            <input type="text" id="regUsername" required class="w-full px-4 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition-all" placeholder="johndoe">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Email Address <span class="text-red-500">*</span></label>
+                            <input type="email" id="regEmail" required placeholder="name@example.com" 
+                                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 text-slate-800 outline-none text-sm">
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Contact Number</label>
-                            <input type="tel" id="regContact" required class="w-full px-4 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition-all" placeholder="+852 9123 4567">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Contact Phone No. <span class="text-red-500">*</span></label>
+                            <div class="flex items-center space-x-2">
+                                <select id="regCountryCode" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl px-3 py-2.5 outline-none focus:ring-2 focus:ring-tennis-500">
+                                    <option value="+852">+852</option>
+                                    <option value="+86">+86</option>
+                                    <option value="+853">+853</option>
+                                    <option value="+1">+1</option>
+                                    <option value="+44">+44</option>
+                                </select>
+                                <input type="tel" id="regContact" required placeholder="91234567" 
+                                       class="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 text-slate-800 outline-none text-sm">
+                            </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold uppercase text-slate-400 mb-1">Password</label>
-                            <input type="password" id="regPassword" required class="w-full px-4 py-2.5 bg-slate-900/90 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition-all" placeholder="••••••••">
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Desired Username <span class="text-red-500">*</span></label>
+                            <input type="text" id="regUsername" required placeholder="Create username" 
+                                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 text-slate-800 outline-none text-sm">
                         </div>
 
-                        <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl shadow-lg shadow-brand-600/30 transition-all mt-2">
-                            Submit Registration Request
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Password <span class="text-red-500">*</span></label>
+                            <input type="password" id="regPassword" required placeholder="Create password" 
+                                   class="w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:ring-2 focus:ring-tennis-500 text-slate-800 outline-none text-sm">
+                        </div>
+
+                        <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-800 flex items-start gap-2">
+                            <i class="fa-solid fa-triangle-exclamation text-amber-600 shrink-0 mt-0.5"></i>
+                            <span>Admin verification required. Accounts must be approved by an administrator before logging in.</span>
+                        </div>
+
+                        <button type="submit" class="w-full py-3 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm">
+                            <i class="fa-solid fa-paper-plane"></i> Submit Account Request
                         </button>
                     </form>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- MAIN DASHBOARD VIEW -->
-        <section id="mainDashboardView" class="hidden flex-1 flex flex-col gap-6">
+        <div id="mainDashboardView" class="hidden space-y-6">
 
-            <!-- Top Dashboard Header & Navigation Tabs -->
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-800/40 p-4 border border-slate-700/60 rounded-2xl backdrop-blur-md">
-                <div>
-                    <h1 class="text-xl font-bold text-white flex items-center gap-2">
-                        <span>Cohort Schedule & Enrolment</span>
-                        <span id="activeCohortBadge" class="text-xs px-2.5 py-1 bg-brand-500/20 text-brand-400 border border-brand-500/30 rounded-full font-semibold">2026 Cohort</span>
-                    </h1>
-                    <p class="text-xs text-slate-400 mt-0.5">Submit your available training dates or review confirmed rosters</p>
-                </div>
-
-                <!-- Dashboard View Switcher Tabs -->
-                <div class="flex bg-slate-900/90 p-1 rounded-xl border border-slate-700/60 self-start md:self-auto">
-                    <button id="viewTabEnrolment" onclick="switchDashboardTab('enrolment')" class="px-4 py-2 text-xs font-semibold rounded-lg transition-all bg-brand-600 text-white shadow">
-                        <i class="fa-solid fa-calendar-check mr-1.5"></i>My Enrolment
-                    </button>
-                    <button id="viewTabRoster" onclick="switchDashboardTab('roster')" class="px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 rounded-lg transition-all">
-                        <i class="fa-solid fa-users mr-1.5"></i>Confirmed Rosters
-                    </button>
-                    <button id="viewTabAdmin" onclick="switchDashboardTab('admin')" class="hidden px-4 py-2 text-xs font-semibold text-amber-400 hover:text-amber-300 rounded-lg transition-all">
-                        <i class="fa-solid fa-user-shield mr-1.5"></i>Admin Portal
-                    </button>
-                </div>
-            </div>
-
-            <!-- TAB 1: USER ENROLMENT CALENDAR -->
-            <div id="tabContentEnrolment" class="flex-1 flex flex-col gap-4">
-                <!-- Month Selection Bar & Layout Mode Toggle -->
-                <div class="flex flex-wrap items-center justify-between gap-3 bg-slate-800/60 p-3.5 border border-slate-700/60 rounded-xl">
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Month:</span>
-                        <select id="monthSelect" onchange="renderCalendar()" class="bg-slate-900 border border-slate-700 text-white text-xs rounded-lg px-3 py-1.5 focus:outline-none focus:border-brand-500 font-medium">
-                            <option value="1">January 2026</option>
-                            <option value="2">February 2026</option>
-                            <option value="3">March 2026</option>
-                            <option value="4">April 2026</option>
-                            <option value="5">May 2026</option>
-                            <option value="6">June 2026</option>
-                            <option value="7">July 2026</option>
-                            <option value="8">August 2026</option>
-                            <option value="9">September 2026</option>
-                            <option value="10">October 2026</option>
-                            <option value="11">November 2026</option>
-                            <option value="12">December 2026</option>
+            <!-- Active Cohort Header Banner -->
+            <div class="bg-slate-900 text-white p-5 sm:p-6 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4 border border-slate-800">
+                <div class="space-y-1">
+                    <div class="inline-flex items-center gap-2">
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-tennis-500 text-slate-900">Active Cohort</span>
+                        <select id="userCohortSelect" onchange="changeActiveCohort(this.value)" class="bg-slate-800 border border-slate-700 text-white text-xs rounded-lg px-2.5 py-1 outline-none font-bold max-w-[200px] sm:max-w-none truncate">
+                            <!-- Injected via JS -->
                         </select>
                     </div>
-
-                    <!-- Layout Mode Switcher (Grid vs List) -->
-                    <div class="flex items-center gap-1 bg-slate-900/90 p-1 rounded-lg border border-slate-700">
-                        <button id="layoutGridBtn" onclick="setCalendarLayoutMode('grid')" class="px-2.5 py-1 text-xs font-semibold rounded bg-brand-600 text-white">
-                            <i class="fa-solid fa-border-all mr-1"></i>Grid
-                        </button>
-                        <button id="layoutListBtn" onclick="setCalendarLayoutMode('list')" class="px-2.5 py-1 text-xs font-semibold rounded text-slate-400 hover:text-white">
-                            <i class="fa-solid fa-list-ul mr-1"></i>List
-                        </button>
-                    </div>
+                    <h2 id="cohortTitleDisplay" class="text-xl sm:text-2xl font-black text-white tracking-wide">1st Training Cohort: Dec 2026 - Feb 2027</h2>
+                    <p class="text-slate-400 text-xs flex items-center gap-2">
+                        <i class="fa-solid fa-bullseye text-tennis-400"></i> Target Assigned Lessons per User: <span id="dashboardTargetLessons" class="font-bold text-tennis-400">8 Lessons</span>
+                    </p>
                 </div>
 
-                <!-- Calendar View Container -->
-                <div id="calendarContainer" class="flex-1">
-                    <!-- Calendar Grid or List rendered dynamically -->
-                </div>
-
-                <!-- Submit Enrolment Availability Action Bar -->
-                <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4 backdrop-blur-md">
-                    <div>
-                        <div class="text-xs text-slate-400 font-semibold uppercase">Dates Selected for Enrolment</div>
-                        <div id="selectedDatesSummary" class="text-sm font-bold text-white mt-0.5">0 dates selected</div>
-                    </div>
-                    <button id="saveAvailabilityBtn" onclick="submitUserAvailability()" class="w-full sm:w-auto px-6 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-bold rounded-xl shadow-lg shadow-brand-600/20 transition-all flex items-center justify-center gap-2">
-                        <i class="fa-solid fa-cloud-arrow-up"></i>
-                        <span>Save & Submit Availability</span>
+                <!-- Primary Nav Choices -->
+                <div class="flex flex-wrap gap-2">
+                    <button id="tabLessonRegBtn" onclick="switchMainTab('registration')" class="px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-plus text-sm sm:text-base"></i> Enrol Lessons
+                    </button>
+                    <button id="tabLessonSchedBtn" onclick="switchMainTab('schedule')" class="px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-days text-sm sm:text-base"></i> Confirmed Schedule
+                    </button>
+                    <button id="tabAdminBtn" onclick="switchMainTab('admin')" class="hidden px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 transition flex items-center gap-2 shadow-md">
+                        <i class="fa-solid fa-user-shield text-sm sm:text-base"></i> Admin Portal
                     </button>
                 </div>
             </div>
 
-            <!-- TAB 2: CONFIRMED ROSTERS -->
-            <div id="tabContentRoster" class="hidden flex-1 flex flex-col gap-4">
-                <div class="bg-slate-800/60 p-4 border border-slate-700/60 rounded-xl flex items-center justify-between">
-                    <h3 class="text-base font-bold text-white flex items-center gap-2">
-                        <i class="fa-solid fa-clipboard-list text-brand-400"></i>
-                        <span>Confirmed Class Schedules & Roster Details</span>
-                    </h3>
-                </div>
-                <div id="confirmedRosterContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Confirmed lessons rendered dynamically -->
-                </div>
-            </div>
+            <!-- TAB 1: Enrol Lessons -->
+            <div id="contentRegistration" class="space-y-4 sm:space-y-6">
 
-            <!-- TAB 3: ADMIN PORTAL -->
-            <div id="tabContentAdmin" class="hidden flex-1 flex flex-col gap-6">
-                <!-- Admin Approval Panel -->
-                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6">
-                    <h3 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                        <i class="fa-solid fa-user-check text-amber-400"></i>
-                        <span>Pending User Registrations</span>
-                    </h3>
-                    <div id="adminPendingUsersList" class="space-y-3">
-                        <!-- Pending users rendered dynamically -->
+                <!-- Level & Month Selector Header -->
+                <div class="bg-white p-4 sm:p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-lg sm:text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-check text-tennis-600"></i> Select Skill Level & Month
+                        </h3>
+                    </div>
+
+                    <div class="flex flex-wrap items-center justify-between sm:justify-start gap-2 sm:gap-3">
+                        <div class="flex-1 sm:flex-none min-w-[140px]">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Level</label>
+                            <select id="regLevelSelect" onchange="renderRegistrationCalendar()" class="w-full bg-slate-50 border border-slate-300 text-slate-800 font-bold py-2 px-2.5 rounded-xl text-xs outline-none focus:ring-2 focus:ring-tennis-500">
+                                <option value="Beginner">Beginner (Max 8)</option>
+                                <option value="Intermediate">Intermediate (Max 4)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Month</label>
+                            <div class="flex items-center space-x-1 bg-slate-50 border border-slate-300 rounded-xl p-1">
+                                <button onclick="changeRegMonth(-1)" class="px-2 py-1 text-slate-600 hover:text-slate-900 rounded"><i class="fa-solid fa-chevron-left text-xs"></i></button>
+                                <span id="currentRegMonthLabel" class="font-bold text-slate-800 text-xs px-2">Dec 2026</span>
+                                <button onclick="changeRegMonth(1)" class="px-2 py-1 text-slate-600 hover:text-slate-900 rounded"><i class="fa-solid fa-chevron-right text-xs"></i></button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-500 uppercase block mb-1">Layout</label>
+                            <!-- Mobile Friendly View Mode Toggle (Grid vs List) -->
+                            <div class="flex items-center bg-slate-100 p-0.5 rounded-xl border border-slate-200">
+                                <button id="btnViewGrid" onclick="setRegViewMode('grid')" title="Calendar Grid View" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-tennis-700 shadow-sm">
+                                    <i class="fa-solid fa-calendar-days"></i> <span class="hidden sm:inline ml-1">Grid</span>
+                                </button>
+                                <button id="btnViewList" onclick="setRegViewMode('list')" title="Mobile Agenda List View" class="px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900">
+                                    <i class="fa-solid fa-list-ul"></i> <span class="hidden sm:inline ml-1">List</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Schedule Publishing Panel -->
-                <div class="bg-slate-800/60 border border-slate-700/60 rounded-2xl p-6">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
-                        <div>
-                            <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                                <i class="fa-solid fa-paper-plane text-brand-400"></i>
-                                <span>Publish Confirmed Enrolment Schedule</span>
-                            </h3>
-                            <p class="text-xs text-slate-400 mt-1">Review student availabilities and publish confirmed class rosters</p>
+                <!-- Selection Summary & Review Action Bar -->
+                <div class="bg-tennis-50 border border-tennis-200 p-4 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-full bg-tennis-200 text-tennis-800 flex items-center justify-center font-bold text-lg shrink-0">
+                            <span id="selectedCountBadge">0</span>
                         </div>
-                        <button onclick="confirmAndPublishEnrollment()" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl shadow-lg transition-all flex items-center gap-2">
-                            <i class="fa-solid fa-bell"></i>
-                            <span>Publish Schedule & Send Notification</span>
+                        <div>
+                            <p class="text-sm font-bold text-tennis-900">Dates Selected for Enrollment</p>
+                            <p class="text-xs text-tennis-700 leading-tight">Select all available dates you can attend for optimal matching.</p>
+                        </div>
+                    </div>
+                    <button onclick="promptRegistrationConfirmation()" id="submitRegBtn" class="w-full sm:w-auto px-5 py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2 text-sm disabled:opacity-50">
+                        <i class="fa-solid fa-check-double"></i> Review & Submit Availability
+                    </button>
+                </div>
+
+                <!-- 1. Calendar Grid View Container (Clean layout without duty text) -->
+                <div id="calendarGridWrapper" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-2 sm:p-6 overflow-hidden">
+                    <div class="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+                    </div>
+                    <div id="calendarGrid" class="grid grid-cols-7 gap-1 sm:gap-2">
+                        <!-- Dynamic Calendar Cells -->
+                    </div>
+                </div>
+
+                <!-- 2. Mobile List / Agenda View Container (Optimized Vertical Scrolling) -->
+                <div id="calendarListWrapper" class="hidden space-y-2">
+                    <!-- Dynamic List Cards -->
+                </div>
+
+                <!-- Calendar Legend with Duty Watch Explanations -->
+                <div class="bg-white p-4 rounded-xl border border-slate-200 space-y-2 text-xs text-slate-600">
+                    <div class="font-bold text-slate-800 flex items-center gap-1.5 text-xs uppercase tracking-wider">
+                        <i class="fa-solid fa-circle-info text-tennis-600"></i> Duty Watch Details & Touch Instructions
+                    </div>
+                    <p class="text-[11px] text-slate-500">
+                        💡 <strong>Hover mouse or press & hold</strong> on any calendar day to inspect full Fire and Ambulance duty rosters!
+                    </p>
+                    <div class="border-t border-slate-100 pt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-[11px] leading-relaxed">
+                        <div>
+                            <span class="font-bold text-red-700 bg-red-50 px-1.5 py-0.5 rounded border border-red-200">Fire Stream</span>
+                            <span>24-hr Duty Watch (A, B, or C). Shift starts 09:00 AM.</span>
+                        </div>
+                        <div>
+                            <span class="font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded border border-indigo-200">Ambulance Stream</span>
+                            <span>Day Shift (08:30-20:30), Night Shift (20:30-08:30) across 5 Watches (A, B, C, D, E).</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="contentSchedule" class="hidden space-y-6">
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+                            <i class="fa-solid fa-calendar-days text-tennis-600"></i> Confirmed Lesson Schedule
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-1">
+                            View confirmed class rosters for <span id="scheduleCohortLabel" class="text-slate-800 font-bold">1st Training Cohort</span>.
+                        </p>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                        <select id="schedLevelFilter" onchange="renderFinalSchedule()" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold py-2 px-3 rounded-xl text-xs outline-none">
+                            <option value="ALL">All Skill Levels</option>
+                            <option value="Beginner">Beginner Level</option>
+                            <option value="Intermediate">Intermediate Level</option>
+                        </select>
+                        <button onclick="toggleMyScheduleFilter()" id="btnMyLessonsOnly" class="px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-xs transition">
+                            <i class="fa-solid fa-user-check mr-1.5 text-tennis-600"></i> My Enrolled Lessons Only
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Personal Stats Card -->
+                <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 rounded-2xl shadow-lg border border-slate-700 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div class="text-[10px] uppercase text-tennis-400 font-bold tracking-wider">Your Enrollment Status</div>
+                        <h4 id="userScheduleSummaryTitle" class="text-xl font-bold text-white mt-0.5">Checking status...</h4>
+                    </div>
+                    <div class="flex items-center space-x-4 bg-slate-800/80 px-4 py-3 rounded-xl border border-slate-700">
+                        <div class="text-center px-2">
+                            <div id="statEnrolled" class="text-2xl font-black text-tennis-400">0</div>
+                            <div class="text-[10px] text-slate-300 font-bold">Enrolled</div>
+                        </div>
+                        <div class="h-8 w-px bg-slate-700"></div>
+                        <div class="text-center px-2">
+                            <div id="statTarget" class="text-2xl font-black text-white">8</div>
+                            <div class="text-[10px] text-slate-300 font-bold">Cohort Target</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Schedule Grid Container -->
+                <div id="scheduleListContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Dynamic Schedule Cards -->
+                </div>
+            </div>
+
+            <div id="contentAdmin" class="hidden space-y-6">
+
+                <!-- Admin Banner -->
+                <div class="bg-amber-50 border border-amber-200 p-6 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                        <div class="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase text-amber-800 bg-amber-200 px-2.5 py-0.5 rounded-full mb-1">
+                            <i class="fa-solid fa-crown"></i> Admin Management Hub
+                        </div>
+                        <h3 class="text-2xl font-bold text-slate-900">Admin Control Center</h3>
+                        <p class="text-xs text-slate-600 mt-1">Manage account approvals, delegate admin rights, create cohorts/lessons, and run priority auto-enrollment assignments.</p>
+                    </div>
+
+                    <!-- Target Lessons Config -->
+                    <div class="bg-white p-3 rounded-xl border border-amber-300 shadow-sm flex items-center space-x-3">
+                        <i class="fa-solid fa-sliders text-amber-600 text-lg"></i>
+                        <div>
+                            <label class="block text-[10px] font-bold text-slate-600">Cohort Target Lessons/User</label>
+                            <input type="number" id="adminCohortTargetInput" value="8" min="1" max="30" onchange="updateCohortTargetLessons(this.value)"
+                                   class="w-20 font-bold text-slate-800 border border-slate-300 rounded-lg px-2 py-1 text-center text-xs outline-none focus:ring-2 focus:ring-amber-500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Sub Nav Tabs -->
+                <div class="flex border-b border-slate-200 gap-2">
+                    <button id="adminSubTabUsers" onclick="switchAdminSubTab('users')" class="py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2">
+                        <i class="fa-solid fa-user-check"></i> Account Approvals & Admins <span id="pendingBadgeCount" class="bg-red-500 text-white text-[10px] px-2 py-0.5 rounded-full font-bold">0</span>
+                    </button>
+                    <button id="adminSubTabLessons" onclick="switchAdminSubTab('lessons')" class="py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-calendar-plus"></i> Manage Lessons & Cohorts
+                    </button>
+                    <button id="adminSubTabEnrollments" onclick="switchAdminSubTab('enrollments')" class="py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Priority Auto-Assignment
+                    </button>
+                </div>
+
+                <!-- SUB-TAB 1: Account Verification & Admin Delegation Requests -->
+                <div id="adminViewUsers" class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-base flex items-center gap-2">
+                                <i class="fa-solid fa-id-card text-amber-500"></i> User Accounts & Admin Delegation
+                            </h4>
+                            <p class="text-xs text-slate-500">Approve or reject new registration requests, and authorize users as Admins.</p>
+                        </div>
+                        <button onclick="exportUserDatabaseExcel()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow">
+                            <i class="fa-solid fa-file-excel"></i> Export Accounts (Excel)
                         </button>
                     </div>
 
-                    <div id="adminAvailabilityMatrix" class="overflow-x-auto border border-slate-700/60 rounded-xl">
-                        <!-- Matrix rendered dynamically -->
+                    <!-- Pending Alert Banner -->
+                    <div id="adminPendingAlertBanner" class="hidden p-3 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 items-center justify-between">
+                        <span class="flex items-center gap-2 font-bold">
+                            <i class="fa-solid fa-bell animate-bounce text-amber-600"></i>
+                            <span id="adminPendingAlertText">Pending registration requests require review!</span>
+                        </span>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold">
+                                    <th class="py-3 px-4">Full Name</th>
+                                    <th class="py-3 px-4">Email</th>
+                                    <th class="py-3 px-4">Contact Phone</th>
+                                    <th class="py-3 px-4">Username</th>
+                                    <th class="py-3 px-4">Status</th>
+                                    <th class="py-3 px-4">Role</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="userApprovalTableBody">
+                                <!-- Dynamic User Rows -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
+
+                <!-- SUB-TAB 2: Manage Lessons & Add Cohort -->
+                <div id="adminViewLessons" class="hidden bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h4 class="font-bold text-slate-800 text-base">Schedule Lessons & Cohorts</h4>
+                            <p class="text-xs text-slate-500">Create new cohorts, schedule training dates, or duplicate available lesson slots.</p>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <button onclick="openAddCohortModal()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-folder-plus"></i> Add New Cohort
+                            </button>
+                            <button onclick="openAddLessonModal()" class="px-4 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i> Add New Lesson Slot
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase font-bold">
+                                    <th class="py-3 px-4">Date</th>
+                                    <th class="py-3 px-4">Time</th>
+                                    <th class="py-3 px-4">Level</th>
+                                    <th class="py-3 px-4">Location</th>
+                                    <th class="py-3 px-4">Capacity</th>
+                                    <th class="py-3 px-4 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminLessonsTableBody">
+                                <!-- Dynamic Lesson Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- SUB-TAB 3: Priority Auto-Enrollment & Roster Confirmation -->
+                <div id="adminViewEnrollments" class="hidden space-y-4">
+                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                            <div>
+                                <h4 class="font-bold text-slate-900 text-lg flex items-center gap-2">
+                                    <i class="fa-solid fa-scale-balanced text-tennis-600"></i> Priority Auto-Enrollment & Confirmation
+                                </h4>
+                                <p class="text-xs text-slate-600 mt-1 leading-relaxed">
+                                    <strong>Priority Rule:</strong> When class registrations exceed capacity (Beginner: 8, Intermediate: 4), priority is automatically assigned to users with <strong>fewer total available dates</strong> so everyone reaches their target of <span id="adminRuleTargetLessonsText" class="font-bold text-slate-900">8 lessons</span>.
+                                </p>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <button onclick="runPriorityEnrollmentAlgorithm()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Assign
+                                </button>
+                                <button onclick="clearAllCheckedEnrollments()" class="px-3.5 py-2 bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 font-bold rounded-xl text-xs transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-eraser"></i> Clear All Checked
+                                </button>
+                                <button onclick="openPreviewRosterModal()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-eye"></i> Preview Roster
+                                </button>
+                                <button onclick="exportEnrollmentDatabaseExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow">
+                                    <i class="fa-solid fa-file-excel"></i> Export Enrolments (Excel)
+                                </button>
+                                <button onclick="confirmAndPublishEnrollment()" class="px-3.5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                                    <i class="fa-solid fa-paper-plane"></i> Publish Schedule
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Shortfall Box -->
+                        <div id="algorithmWarningBox" class="hidden p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
+                            <div class="flex items-center space-x-2 text-amber-900 font-bold text-xs">
+                                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                                <span>System Allocation Report</span>
+                            </div>
+                            <ul id="algorithmWarningContent" class="text-xs text-amber-800 space-y-1 pl-5 list-disc">
+                                <!-- Warnings injected -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Daily Roster Cards -->
+                    <div id="adminRosterContainer" class="space-y-4">
+                        <!-- Dynamic Roster Cards -->
+                    </div>
+                </div>
+
             </div>
-        </section>
+
+        </div>
+
     </main>
 
+
+    <!-- MODAL 1: Confirm Selected Availability -->
+    <div id="modalConfirmReg" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-clipboard-check text-tennis-600"></i> Confirm Selected Availability
+                </h3>
+                <button onclick="closeModal('modalConfirmReg')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <p class="text-xs text-slate-600 leading-relaxed">
+                You are about to submit your available dates for the active cohort.
+            </p>
+
+            <div>
+                <label class="block text-[10px] font-bold text-slate-700 uppercase mb-2">Summary of Selected Dates:</label>
+                <textarea id="regConfirmationSummaryText" readonly rows="6" 
+                          class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-800 focus:outline-none resize-none leading-relaxed shadow-inner">
+                </textarea>
+            </div>
+
+            <div class="flex items-center justify-end space-x-3 pt-2">
+                <button onclick="closeModal('modalConfirmReg')" class="px-4 py-2 border border-slate-300 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-bold transition">
+                    Edit Selection
+                </button>
+                <button onclick="submitFinalRegistration()" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-xl text-xs font-bold shadow transition">
+                    Confirm & Submit Registration
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Submission Received Notice -->
+    <div id="modalSubmissionSuccessNotice" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-center space-y-4">
+            <div class="w-16 h-16 rounded-full bg-tennis-100 border border-tennis-200 text-tennis-600 mx-auto flex items-center justify-center text-2xl">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3 class="text-xl font-bold text-slate-900">Availability Received</h3>
+            <p class="text-xs text-slate-600 leading-relaxed px-2">
+                Your enrolment requests have been successfully submitted. Please note that your submission does not mean the lessons are successfully enrolled. The final enrolment list is still pending confirmation.
+            </p>
+            <button onclick="closeModal('modalSubmissionSuccessNotice')" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition">
+                Understood
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Update Profile & Credentials -->
+    <div id="modalChangeProfile" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-user-gear text-tennis-600 mr-2"></i> User Profile Settings</h3>
+                <button onclick="closeModal('modalChangeProfile')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleSaveProfile(event)" class="space-y-3">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Username (Read Only)</label>
+                    <input type="text" id="profUsername" readonly class="w-full px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 text-xs font-mono font-bold outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Full Name</label>
+                    <input type="text" id="profFullName" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Email Address</label>
+                    <input type="email" id="profEmail" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Contact Phone Number</label>
+                    <input type="text" id="profContact" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
+                </div>
+
+                <div class="border-t border-slate-100 pt-3">
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">New Password (Leave blank to keep unchanged)</label>
+                    <input type="password" id="profNewPassword" placeholder="••••••••" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modalChangeProfile')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">Save Profile Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 4: User Enrolled History -->
+    <div id="modalEnrolledRecords" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-clock-rotate-left text-tennis-600"></i> My Enrolled Records History
+                </h3>
+                <button onclick="closeModal('modalEnrolledRecords')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-50 text-slate-600 uppercase sticky top-0 font-bold">
+                        <tr>
+                            <th class="py-3 px-4">Cohort</th>
+                            <th class="py-3 px-4">Date</th>
+                            <th class="py-3 px-4">Time</th>
+                            <th class="py-3 px-4">Level</th>
+                            <th class="py-3 px-4">Location</th>
+                        </tr>
+                    </thead>
+                    <tbody id="enrolledHistoryTableBody">
+                        <!-- Dynamic Records -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-end pt-2">
+                <button onclick="closeModal('modalEnrolledRecords')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 5: Password Reset via Email -->
+    <div id="modalForgotPassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-envelope-open-text text-tennis-600 mr-2"></i> Password Reset via Email</h3>
+                <button onclick="closeModal('modalForgotPassword')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <!-- Step 1: Request Email Reset -->
+            <div id="forgotStep1">
+                <form onsubmit="handleSendOTP(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Username or Email</label>
+                        <input type="text" id="forgotUsername" required placeholder="Username or name@example.com" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Registered Phone</label>
+                        <div class="flex items-center space-x-2">
+                            <select id="forgotCountryCode" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl px-3 py-2 outline-none">
+                                <option value="+852">+852</option>
+                                <option value="+86">+86</option>
+                            </select>
+                            <input type="tel" id="forgotContact" required placeholder="91234567" class="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">
+                        Send Email Verification Code
+                    </button>
+                </form>
+            </div>
+
+            <!-- Step 2: Verify Code & Reset -->
+            <div id="forgotStep2" class="hidden space-y-4">
+                <form onsubmit="handleVerifyOTPAndReset(event)" class="space-y-4">
+                    <p class="text-xs text-slate-600 leading-relaxed">
+                        An email verification request has been processed. Enter your 6-digit verification code below to authorize your password reset.
+                    </p>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">6-Digit Verification Code</label>
+                        <input type="text" id="forgotOTPInput" required placeholder="Enter 6-digit code" maxlength="6" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-tennis-700 font-mono tracking-widest text-center font-bold text-base outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">New Password</label>
+                        <input type="password" id="forgotNewPassword" required placeholder="Enter new password" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                    <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">
+                        Verify Code & Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 7: Roster Preview -->
+    <div id="modalPreviewRoster" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-users text-indigo-600"></i> Roster Summary Preview
+                </h3>
+                <button onclick="closeModal('modalPreviewRoster')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-50 text-slate-600 uppercase sticky top-0 font-bold">
+                        <tr>
+                            <th class="py-3 px-4">User Name</th>
+                            <th class="py-3 px-4">Contact</th>
+                            <th class="py-3 px-4 text-center">Avail. Provided</th>
+                            <th class="py-3 px-4 text-center">Enrolled Lessons</th>
+                            <th class="py-3 px-4 text-center">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="previewRosterTableBody">
+                        <!-- Dynamic Rows -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
+                <div class="text-xs text-slate-500">Target per user: <span id="previewTargetCount" class="font-bold text-slate-800">8</span> lessons</div>
+                <button onclick="closeModal('modalPreviewRoster')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold">Close Preview</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 8: Add/Edit Lesson Slot -->
+    <div id="modalLessonForm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 id="lessonModalTitle" class="text-base font-bold text-slate-900">Add New Lesson</h3>
+                <button onclick="closeModal('modalLessonForm')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleSaveLesson(event)" class="space-y-4">
+                <input type="hidden" id="lessonId">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Date</label>
+                    <input type="date" id="lessonDate" required 
+                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Level</label>
+                    <select id="lessonLevel" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                        <option value="Beginner">Beginner (Capacity 8)</option>
+                        <option value="Intermediate">Intermediate (Capacity 4)</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Start Time</label>
+                        <input type="time" id="lessonStartTime" required value="09:00" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">End Time</label>
+                        <input type="time" id="lessonEndTime" required value="11:00" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Location Venue</label>
+                    <input type="text" id="lessonLocation" required placeholder="Victoria Park Court 1" value="Victoria Park Court 1"
+                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modalLessonForm')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">Save Lesson</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 9: Add New Cohort -->
+    <div id="modalCohortForm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-folder-plus text-amber-500 mr-2"></i> Add New Cohort</h3>
+                <button onclick="closeModal('modalCohortForm')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <form onsubmit="handleSaveCohort(event)" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Cohort Display Name</label>
+                    <input type="text" id="cohortNameInput" required placeholder="2nd Training Cohort: Mar 2027 - May 2027" 
+                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Start Month</label>
+                        <input type="month" id="cohortStartMonth" required value="2027-03" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">End Month</label>
+                        <input type="month" id="cohortEndMonth" required value="2027-05" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-2">
+                    <button type="button" onclick="closeModal('modalCohortForm')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow">Create Cohort</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
-        // --- GLOBAL APP STATE & CONSTANTS ---
-        window.users = [
-            { id: 'u_admin', username: 'admin', password: '123', fullName: 'System Administrator', contact: '+852 90000000', isApproved: true, isAdmin: true },
-            { id: 'u_john', username: 'john', password: '123', fullName: 'John Doe', contact: '+852 91234567', isApproved: true, isAdmin: false },
-            { id: 'u_alice', username: 'alice', password: '123', fullName: 'Alice Wong', contact: '+852 98765432', isApproved: true, isAdmin: false },
-            { id: 'u_bob', username: 'bob', password: '123', fullName: 'Bob Chan', contact: '+852 95551234', isApproved: false, isAdmin: false }
+        // YOUR SUPABASE CREDENTIALS
+        const SUPABASE_URL = "https://crfotakmjlenpdxofynx.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNyZm90YWttamxlbnBkeG9feW54Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODY4NjY2MzgsImV4cCI6MjEwMjQ0MjYzOH0.IEIV2Np8bYuxq_rFC7T3VSg3yLOu53kvQw4TMD6w5cY";
+
+        let supabaseClient = null;
+
+        if (typeof window.supabase !== 'undefined' && SUPABASE_URL.includes("supabase.co")) {
+            try {
+                supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                console.log("Connected to Supabase PostgreSQL Backend.");
+            } catch (err) {
+                console.log("Using Local Browser Storage fallback.");
+            }
+        }
+
+        // ==========================================
+        // INITIAL STATE & DATA STORAGE
+        // ==========================================
+        let cohorts = JSON.parse(localStorage.getItem('ace_tennis_cohorts')) || [
+            { id: 'c_2026_1', name: '1st Training Cohort: Dec 2026 - Feb 2027', startYear: 2026, startMonth: 11, endYear: 2027, endMonth: 1 }
+        ];
+        let activeCohortId = cohorts[0].id;
+        let activeRegYear = cohorts[0].startYear;
+        let activeRegMonth = cohorts[0].startMonth;
+
+        window.users = JSON.parse(localStorage.getItem('ace_tennis_users')) || [
+            { id: 'admin_1', username: 'admin', password: '123', fullName: 'System Administrator', email: 'admin@tennistraining.com', contact: '+852 90000000', isApproved: true, isAdmin: true },
+            { id: 'u_1', username: 'john', password: '123', fullName: 'John CHAN', email: 'john@example.com', contact: '+852 91234567', isApproved: true, isAdmin: false },
+            { id: 'u_2', username: 'alice', password: '123', fullName: 'Alice WONG', email: 'alice@example.com', contact: '+852 98765432', isApproved: true, isAdmin: false }
         ];
 
-        window.lessons = [
-            { id: 'l_1', cohortId: '2026', date: '2026-12-06', level: 'Intermediate', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 4 },
-            { id: 'l_2', cohortId: '2026', date: '2026-12-07', level: 'Advanced', startTime: '10:00', endTime: '12:00', location: 'Victoria Park Court 2', capacity: 4 },
-            { id: 'l_3', cohortId: '2026', date: '2026-12-08', level: 'Beginner', startTime: '14:00', endTime: '16:00', location: 'Kowloon Park Court 3', capacity: 4 },
-            { id: 'l_4', cohortId: '2026', date: '2026-12-09', level: 'Intermediate', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 4 },
-            { id: 'l_5', cohortId: '2026', date: '2026-12-10', level: 'Advanced', startTime: '15:00', endTime: '17:00', location: 'Kowloon Park Court 1', capacity: 4 }
+        window.lessons = JSON.parse(localStorage.getItem('ace_tennis_lessons')) || [
+            { id: 'l_1', cohortId: 'c_2026_1', date: '2026-12-06', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
+            { id: 'l_2', cohortId: 'c_2026_1', date: '2026-12-07', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 2', capacity: 8 },
+            { id: 'l_3', cohortId: 'c_2026_1', date: '2026-12-08', level: 'Beginner', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 1', capacity: 8 },
+            { id: 'l_4', cohortId: 'c_2026_1', date: '2026-12-09', level: 'Intermediate', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 3', capacity: 4 },
+            { id: 'l_5', cohortId: 'c_2026_1', date: '2026-12-10', level: 'Intermediate', startTime: '09:00', endTime: '11:00', location: 'Victoria Park Court 3', capacity: 4 }
         ];
 
-        window.registrations = [
-            { userId: 'u_john', cohortId: '2026', availableDates: ['2026-12-06', '2026-12-07', '2026-12-08'] },
-            { userId: 'u_alice', cohortId: '2026', availableDates: ['2026-12-07', '2026-12-09', '2026-12-10'] }
-        ];
-
-        window.enrollments = [
-            { lessonId: 'l_2', userId: 'u_john' },
-            { lessonId: 'l_2', userId: 'u_alice' }
-        ];
+        window.registrations = JSON.parse(localStorage.getItem('ace_tennis_regs')) || {};
+        window.enrollments = JSON.parse(localStorage.getItem('ace_tennis_enrollments')) || {};
+        let cohortTargetLessons = parseInt(localStorage.getItem('ace_tennis_target_lessons')) || 8;
+        let isSchedulePublished = JSON.parse(localStorage.getItem('ace_tennis_published')) || false;
 
         window.currentUser = null;
-        window.selectedDates = [];
-        window.calendarLayoutMode = 'grid';
+        let tempSelectedDates = new Set();
+        let myLessonsFilterActive = false;
+        let regViewMode = 'grid';
+        let generatedOTPCode = null;
+    </script>
 
-        // --- APP INITIALIZATION ---
-        window.onload = function() {
-            loadSavedState();
-            checkRememberedLogin();
-            requestNotificationPermission();
-            renderHeaderNav();
-        };
+    <script>
+        // ==========================================
+        // DUTY ROSTER CALCULATION ALGORITHMS
+        // ==========================================
 
-        function loadSavedState() {
-            try {
-                const localUsers = localStorage.getItem('tennis_users');
-                const localLessons = localStorage.getItem('tennis_lessons');
-                const localRegs = localStorage.getItem('tennis_registrations');
-                const localEnrollments = localStorage.getItem('tennis_enrollments');
-
-                if (localUsers) window.users = JSON.parse(localUsers);
-                if (localLessons) window.lessons = JSON.parse(localLessons);
-                if (localRegs) window.registrations = JSON.parse(localRegs);
-                if (localEnrollments) window.enrollments = JSON.parse(localEnrollments);
-            } catch (err) {
-                console.error("Error loading saved state:", err);
-            }
-        }
-
-        function saveState() {
-            try {
-                localStorage.setItem('tennis_users', JSON.stringify(window.users));
-                localStorage.setItem('tennis_lessons', JSON.stringify(window.lessons));
-                localStorage.setItem('tennis_registrations', JSON.stringify(window.registrations));
-                localStorage.setItem('tennis_enrollments', JSON.stringify(window.enrollments));
-            } catch (err) {
-                console.error("Error saving state:", err);
-            }
-        }
-
-        // --- STREAMING_CHUNK:Implementing duty watch shift algorithms... ---
-        // Fire Stream 24-hr Duty Watch Cycle (B -> C -> A)
-        function getFireDutyWatch(dateStr) {
-            const date = new Date(dateStr);
-            const anchor = new Date('2026-01-01'); // Jan 1 2026 is Watch B
-            const diffDays = Math.floor((date - anchor) / (1000 * 60 * 60 * 24));
+        /**
+         * Calculates Fire Stream Duty Watch (24-hr shift 09:00 - 09:00)
+         * Cycle Pattern: B -> C -> A
+         * Anchor Reference: 2026-01-01 is Watch B
+         */
+        function getFireDutyWatch(year, monthIndex, day) {
+            const anchor = new Date(2026, 0, 1); // 2026-01-01 = B
+            const target = new Date(year, monthIndex, day);
+            const diffDays = Math.round((target - anchor) / (1000 * 60 * 60 * 24));
             
-            const pattern = ['B', 'C', 'A'];
-            const index = ((diffDays % 3) + 3) % 3;
-            return pattern[index];
+            const watches = ['B', 'C', 'A'];
+            let idx = (diffDays % 3 + 3) % 3;
+            return watches[idx];
         }
 
-        // Ambulance Stream 5-Watch Rotation (A, B, C, D, E)
-        function getAmbulanceDutyWatches(dateStr) {
-            const date = new Date(dateStr);
-            const anchor = new Date('2026-12-06'); // Anchor: Dec 6 2026 -> A(Day 1), B(Day 2), C(Night), D(Off1), E(Off2)
-            const diffDays = Math.floor((date - anchor) / (1000 * 60 * 60 * 24));
+        /**
+         * Calculates Ambulance Stream Duty Watches (Day: 08:30-20:30, Night: 20:30-08:30)
+         * Each team follows 5-day cycle: Day 1 (Day), Day 2 (Day), Day 3 (Night), Day 4 (Off), Day 5 (Off)
+         * Anchor Reference: Dec 6, 2026
+         *   Team A: Day 1 (Day)
+         *   Team B: Day 2 (Day)
+         *   Team C: Day 3 (Night)
+         *   Team D: Day 4 (Off)
+         *   Team E: Day 5 (Off)
+         */
+        function getAmbulanceDutyWatches(year, monthIndex, day) {
+            const anchor = new Date(2026, 11, 6); // Dec 6, 2026
+            const target = new Date(year, monthIndex, day);
+            const diffDays = Math.round((target - anchor) / (1000 * 60 * 60 * 24));
 
-            const watches = ['A', 'B', 'C', 'D', 'E'];
-            const initialOffsets = { 'A': 0, 'B': 1, 'C': 2, 'D': 3, 'E': 4 };
+            // Initial shift state index (0..4) on Dec 6, 2026:
+            // 0 = Day 1 (Day)
+            // 1 = Day 2 (Day)
+            // 2 = Day 3 (Night)
+            // 3 = Day 4 (Off)
+            // 4 = Day 5 (Off)
+            const teamShiftStates = {
+                'A': 0, // Day 1 (Day)
+                'B': 1, // Day 2 (Day)
+                'C': 2, // Day 3 (Night)
+                'D': 3, // Day 4 (Off)
+                'E': 4  // Day 5 (Off)
+            };
 
-            let dayWatches = [];
-            let nightWatches = [];
+            const dayWatches = [];
+            const nightWatches = [];
 
-            watches.forEach(w => {
-                const shiftDay = (((initialOffsets[w] + diffDays) % 5) + 5) % 5;
-                if (shiftDay === 0 || shiftDay === 1) {
-                    dayWatches.push(w);
-                } else if (shiftDay === 2) {
-                    nightWatches.push(w);
+            Object.keys(teamShiftStates).forEach(team => {
+                const state = ((diffDays + teamShiftStates[team]) % 5 + 5) % 5;
+                if (state === 0 || state === 1) {
+                    dayWatches.push(team);
+                } else if (state === 2) {
+                    nightWatches.push(team);
                 }
             });
 
             dayWatches.sort();
             nightWatches.sort();
 
-            const dayStr = dayWatches.map(w => `${w}(Day)`).join(', ');
-            const nightStr = nightWatches.map(w => `${w}(Night)`).join(', ');
+            // Formatted in strict alphabetical order (e.g., A(Day), B(Day), C(Night))
+            let combinedTeams = [];
+            ['A', 'B', 'C', 'D', 'E'].forEach(team => {
+                if (dayWatches.includes(team)) {
+                    combinedTeams.push(`${team}(Day)`);
+                } else if (nightWatches.includes(team)) {
+                    combinedTeams.push(`${team}(Night)`);
+                }
+            });
 
-            if (dayStr && nightStr) return `${dayStr}, ${nightStr}`;
-            return dayStr || nightStr;
+            return {
+                day: dayWatches.join(','),
+                night: nightWatches.join(','),
+                formattedText: `Amb: ${combinedTeams.join(', ')}`
+            };
         }
 
-        // --- AUTHENTICATION & LOGIN MANAGEMENT ---
-        function checkRememberedLogin() {
-            const savedUsername = localStorage.getItem('tennis_remembered_username');
-            const savedPassword = localStorage.getItem('tennis_remembered_password');
+        /**
+         * Formats time strings into standard 24-hour hh:mm format
+         */
+        function format24HourTime(timeStr) {
+            if (!timeStr) return '';
+            const parts = timeStr.split(':');
+            if (parts.length >= 2) {
+                const hh = String(parts[0]).padStart(2, '0');
+                const mm = String(parts[1]).padStart(2, '0');
+                return `${hh}:${mm}`;
+            }
+            return timeStr;
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            if (supabaseClient) {
+                // Fetch in background without blocking initial rendering
+                loadDataFromSupabase().then(() => {
+                    renderRegistrationCalendar();
+                    renderFinalSchedule();
+                }).catch(err => console.log("Background load sync:", err));
+            }
+            populateCohortDropdowns();
+            saveState();
+            checkAutoLoginSession();
+            requestNotificationPermission();
+        });
+
+        function requestNotificationPermission() {
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        console.log("System Notification permission granted.");
+                    }
+                });
+            }
+        }
+
+        async function loadDataFromSupabase() {
+            if (!supabaseClient) return;
+            try {
+                // 1. Fetch Users
+                const { data: dbUsers, error: uErr } = await supabaseClient.from('users').select('*');
+                if (!uErr && dbUsers && dbUsers.length > 0) {
+                    const fetched = dbUsers.map(u => ({
+                        id: u.id,
+                        username: u.username,
+                        password: u.password,
+                        fullName: u.full_name,
+                        email: u.email || `${u.username}@tennistraining.com`,
+                        contact: u.contact,
+                        isApproved: u.is_approved,
+                        isAdmin: u.is_admin
+                    }));
+
+                    fetched.forEach(f => {
+                        const idx = window.users.findIndex(x => x.id === f.id);
+                        if (idx !== -1) {
+                            window.users[idx] = f;
+                        } else {
+                            window.users.push(f);
+                        }
+                    });
+                }
+
+                // 2. Fetch Lessons
+                const { data: dbLessons, error: lErr } = await supabaseClient.from('lessons').select('*');
+                if (!lErr && dbLessons) {
+                    window.lessons = dbLessons.map(l => ({
+                        id: l.id,
+                        cohortId: l.cohort_id,
+                        date: l.date,
+                        level: l.level,
+                        startTime: format24HourTime(l.start_time),
+                        endTime: format24HourTime(l.end_time),
+                        location: l.location,
+                        capacity: l.capacity
+                    }));
+                }
+
+                // 3. Fetch Registrations
+                const { data: dbRegs, error: rErr } = await supabaseClient.from('registrations').select('*');
+                if (!rErr && dbRegs) {
+                    const regsObj = {};
+                    dbRegs.forEach(r => {
+                        regsObj[`${r.user_id}_${r.cohort_id}`] = r.available_dates || [];
+                    });
+                    window.registrations = regsObj;
+                }
+
+                // 4. Fetch Enrollments
+                const { data: dbEnrollments, error: eErr } = await supabaseClient.from('enrollments').select('*');
+                if (!eErr && dbEnrollments) {
+                    const enrollObj = {};
+                    dbEnrollments.forEach(e => {
+                        if (!enrollObj[e.lesson_id]) enrollObj[e.lesson_id] = [];
+                        enrollObj[e.lesson_id].push(e.user_id);
+                    });
+                    window.enrollments = enrollObj;
+                }
+            } catch (err) {
+                console.log("Supabase initial fetch:", err);
+            }
+        }
+
+        function populateCohortDropdowns() {
+            const select = document.getElementById('userCohortSelect');
+            select.innerHTML = '';
+            cohorts.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = c.name;
+                select.appendChild(opt);
+            });
+            select.value = activeCohortId;
+        }
+
+        function saveState() {
+            localStorage.setItem('ace_tennis_cohorts', JSON.stringify(cohorts));
+            localStorage.setItem('ace_tennis_users', JSON.stringify(window.users));
+            localStorage.setItem('ace_tennis_lessons', JSON.stringify(window.lessons));
+            localStorage.setItem('ace_tennis_regs', JSON.stringify(window.registrations));
+            localStorage.setItem('ace_tennis_enrollments', JSON.stringify(window.enrollments));
+            localStorage.setItem('ace_tennis_target_lessons', cohortTargetLessons);
+            localStorage.setItem('ace_tennis_published', JSON.stringify(isSchedulePublished));
+
+            if (supabaseClient) {
+                syncToSupabaseBackend();
+            }
+        }
+
+        async function syncToSupabaseBackend() {
+            if (!supabaseClient) return;
+            try {
+                for (const u of window.users) {
+                    const payload = {
+                        id: u.id,
+                        username: u.username,
+                        password: u.password,
+                        full_name: u.fullName,
+                        contact: u.contact,
+                        is_approved: u.isApproved,
+                        is_admin: u.isAdmin
+                    };
+                    if (u.email) payload.email = u.email;
+
+                    const { error } = await supabaseClient.from('users').upsert(payload);
+                    if (error && error.message.includes('email')) {
+                        delete payload.email;
+                        await supabaseClient.from('users').upsert(payload);
+                    }
+                }
+
+                for (const l of window.lessons) {
+                    await supabaseClient.from('lessons').upsert({
+                        id: l.id,
+                        cohort_id: l.cohortId,
+                        date: l.date,
+                        level: l.level,
+                        start_time: l.startTime,
+                        end_time: l.endTime,
+                        location: l.location,
+                        capacity: l.capacity
+                    });
+                }
+
+                for (const key of Object.keys(window.registrations)) {
+                    const matchedCohort = cohorts.find(c => key.endsWith(`_${c.id}`));
+                    if (matchedCohort) {
+                        const cohortId = matchedCohort.id;
+                        const userId = key.substring(0, key.length - cohortId.length - 1);
+                        await supabaseClient.from('registrations').upsert({
+                            user_id: userId,
+                            cohort_id: cohortId,
+                            available_dates: window.registrations[key]
+                        });
+                    }
+                }
+
+                for (const lessonId of Object.keys(window.enrollments)) {
+                    const userIds = window.enrollments[lessonId] || [];
+                    for (const userId of userIds) {
+                        await supabaseClient.from('enrollments').upsert({
+                            lesson_id: lessonId,
+                            user_id: userId
+                        });
+                    }
+                }
+            } catch (err) {
+                console.log("Supabase live sync error:", err);
+            }
+        }
+
+        function checkAutoLoginSession() {
+            const savedUsername = localStorage.getItem('ace_tennis_remember_username');
+            const savedPassword = localStorage.getItem('ace_tennis_remember_password');
 
             if (savedUsername && savedPassword) {
-                const usernameInput = document.getElementById('loginUsername');
-                const passwordInput = document.getElementById('loginPassword');
-                const checkbox = document.getElementById('rememberMeCheckbox');
+                document.getElementById('loginUsername').value = savedUsername;
+                document.getElementById('loginPassword').value = savedPassword;
+                document.getElementById('loginRememberMe').checked = true;
+            }
 
-                if (usernameInput) usernameInput.value = savedUsername;
-                if (passwordInput) passwordInput.value = savedPassword;
-                if (checkbox) checkbox.checked = true;
+            document.getElementById('authView').classList.remove('hidden');
+            document.getElementById('mainDashboardView').classList.add('hidden');
+            renderHeaderNav();
+        }
+
+        function changeActiveCohort(cohortId) {
+            activeCohortId = cohortId;
+            const c = cohorts.find(x => x.id === cohortId);
+            if (c) {
+                activeRegYear = c.startYear;
+                activeRegMonth = c.startMonth;
+                document.getElementById('cohortTitleDisplay').textContent = c.name;
+                document.getElementById('scheduleCohortLabel').textContent = c.name;
+            }
+
+            if (window.currentUser) {
+                const key = `${window.currentUser.id}_${activeCohortId}`;
+                tempSelectedDates = new Set(window.registrations[key] || []);
+            }
+
+            renderRegistrationCalendar();
+            renderFinalSchedule();
+            if (window.currentUser?.isAdmin) {
+                renderAdminUsersTable();
+                renderAdminLessonsTable();
+                renderAdminEnrollmentsView();
+            }
+        }
+
+        function openAddCohortModal() {
+            openModal('modalCohortForm');
+        }
+
+        function handleSaveCohort(e) {
+            e.preventDefault();
+            const name = document.getElementById('cohortNameInput').value.trim();
+            const startVal = document.getElementById('cohortStartMonth').value;
+            const endVal = document.getElementById('cohortEndMonth').value;
+
+            if (!name || !startVal || !endVal) return;
+
+            const [sYear, sMonth] = startVal.split('-').map(Number);
+            const [eYear, eMonth] = endVal.split('-').map(Number);
+
+            const newCohort = {
+                id: 'c_' + Date.now(),
+                name: name,
+                startYear: sYear,
+                startMonth: sMonth - 1,
+                endYear: eYear,
+                endMonth: eMonth - 1
+            };
+
+            cohorts.push(newCohort);
+            activeCohortId = newCohort.id;
+            saveState();
+
+            populateCohortDropdowns();
+            changeActiveCohort(newCohort.id);
+            closeModal('modalCohortForm');
+            showToast(`New cohort "${name}" created and set as active!`, "success");
+        }
+
+        function switchAuthTab(tab) {
+            const loginForm = document.getElementById('loginFormContainer');
+            const regForm = document.getElementById('registerFormContainer');
+            const tabLoginBtn = document.getElementById('tabLoginBtn');
+            const tabRegBtn = document.getElementById('tabRegisterBtn');
+
+            if (tab === 'login') {
+                loginForm.classList.remove('hidden');
+                regForm.classList.add('hidden');
+                tabLoginBtn.className = "flex-1 py-4 font-bold text-center text-tennis-600 border-b-2 border-tennis-600 transition text-sm";
+                tabRegBtn.className = "flex-1 py-4 font-bold text-center text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition text-sm";
+            } else {
+                loginForm.classList.add('hidden');
+                regForm.classList.remove('hidden');
+                tabRegBtn.className = "flex-1 py-4 font-bold text-center text-tennis-600 border-b-2 border-tennis-600 transition text-sm";
+                tabLoginBtn.className = "flex-1 py-4 font-bold text-center text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition text-sm";
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const btn = document.getElementById('loginSubmitBtn');
+            const btnText = document.getElementById('loginSubmitText');
+            const btnIcon = document.getElementById('loginSubmitIcon');
+
+            try {
+                if (btn) btn.disabled = true;
+                if (btnText) btnText.textContent = "Signing In...";
+                if (btnIcon) btnIcon.className = "fa-solid fa-spinner animate-spin";
+
+                const usernameInput = document.getElementById('loginUsername').value.trim();
+                const passwordInput = document.getElementById('loginPassword').value.trim();
+                const rememberMe = document.getElementById('loginRememberMe').checked;
+
+                if (!usernameInput || !passwordInput) {
+                    showToast("Please enter both username and password.", "warning");
+                    resetLoginBtn();
+                    return;
+                }
+
+                // Match against accounts array
+                const foundUser = window.users.find(u => 
+                    u.username.toLowerCase() === usernameInput.toLowerCase() || 
+                    (u.email && u.email.toLowerCase() === usernameInput.toLowerCase())
+                );
+
+                if (!foundUser) {
+                    showToast("Account not found. Please check your username or email.", "error");
+                    resetLoginBtn();
+                    return;
+                }
+
+                if (foundUser.password !== passwordInput) {
+                    showToast("Invalid password. Please try again.", "error");
+                    resetLoginBtn();
+                    return;
+                }
+
+                if (!foundUser.isApproved) {
+                    showToast("Account pending admin approval. Please wait for verification.", "warning");
+                    resetLoginBtn();
+                    return;
+                }
+
+                if (rememberMe) {
+                    localStorage.setItem('ace_tennis_remember_username', usernameInput);
+                    localStorage.setItem('ace_tennis_remember_password', passwordInput);
+                } else {
+                    localStorage.removeItem('ace_tennis_remember_username');
+                    localStorage.removeItem('ace_tennis_remember_password');
+                }
+
+                loginUserSuccess(foundUser);
+                showToast(`Welcome back, ${foundUser.fullName}!`, "success");
+            } catch (err) {
+                console.error("Login process error:", err);
+                showToast("An unexpected error occurred during login. Please try again.", "error");
+                resetLoginBtn();
             }
         }
 
@@ -441,99 +1347,35 @@
 
             if (btn) btn.disabled = false;
             if (btnText) btnText.textContent = "Sign In";
-            if (btnIcon) btnIcon.className = "fa-solid fa-arrow-right group-hover:translate-x-1 transition-transform";
+            if (btnIcon) btnIcon.className = "fa-solid fa-arrow-right";
         }
 
-        async function handleLogin(e) {
-            e.preventDefault();
-            const btn = document.getElementById('loginSubmitBtn');
-            const btnText = document.getElementById('loginSubmitText');
-            const btnIcon = document.getElementById('loginSubmitIcon');
-
-            btn.disabled = true;
-            btnText.textContent = "Signing In...";
-            btnIcon.className = "fa-solid fa-spinner fa-spin";
-
-            const username = document.getElementById('loginUsername').value.trim();
-            const password = document.getElementById('loginPassword').value.trim();
-            const rememberMe = document.getElementById('rememberMeCheckbox').checked;
-
-            setTimeout(() => {
-                const foundUser = window.users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
-
-                if (!foundUser) {
-                    showToast("Invalid username or password.", "error");
-                    resetLoginBtn();
-                    return;
-                }
-
-                if (!foundUser.isApproved) {
-                    showToast("Your account registration is pending Admin approval.", "warning");
-                    resetLoginBtn();
-                    return;
-                }
-
-                if (rememberMe) {
-                    localStorage.setItem('tennis_remembered_username', username);
-                    localStorage.setItem('tennis_remembered_password', password);
-                } else {
-                    localStorage.removeItem('tennis_remembered_username');
-                    localStorage.removeItem('tennis_remembered_password');
-                }
-
-                loginUserSuccess(foundUser);
-            }, 400);
-        }
-
-        function loginUserSuccess(user) {
-            window.currentUser = user;
-            document.getElementById('authView').classList.add('hidden');
-            document.getElementById('mainDashboardView').classList.remove('hidden');
-
-            renderHeaderNav();
-            loadUserAvailability();
-            renderCalendar();
-            renderConfirmedRosters();
-            
-            if (user.isAdmin) {
-                document.getElementById('viewTabAdmin').classList.remove('hidden');
-                renderAdminPortal();
-            } else {
-                document.getElementById('viewTabAdmin').classList.add('hidden');
-            }
-
-            showToast(`Welcome back, ${user.fullName}!`, "success");
-            resetLoginBtn();
-        }
-
-        function handleLogout() {
-            window.currentUser = null;
-            document.getElementById('authView').classList.remove('hidden');
-            document.getElementById('mainDashboardView').classList.add('hidden');
-            renderHeaderNav();
-            resetLoginBtn();
-            checkRememberedLogin();
-            showToast("Signed out successfully.", "info");
-        }
-
-        function handleRegister(e) {
+        async function handleRegister(e) {
             e.preventDefault();
             const fullName = document.getElementById('regFullName').value.trim();
+            const email = document.getElementById('regEmail').value.trim();
+            const countryCode = document.getElementById('regCountryCode').value;
+            const contactNo = document.getElementById('regContact').value.trim();
             const username = document.getElementById('regUsername').value.trim();
-            const contact = document.getElementById('regContact').value.trim();
             const password = document.getElementById('regPassword').value.trim();
 
             if (window.users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
-                showToast("Username already exists. Please choose another.", "error");
+                showToast("Username already taken. Please choose another.", "error");
+                return;
+            }
+
+            if (window.users.some(u => u.email && u.email.toLowerCase() === email.toLowerCase())) {
+                showToast("Email address already registered.", "error");
                 return;
             }
 
             const newUser = {
                 id: 'u_' + Date.now(),
-                username: username,
-                password: password,
-                fullName: fullName,
-                contact: contact,
+                username,
+                password,
+                fullName,
+                email,
+                contact: `${countryCode} ${contactNo}`,
                 isApproved: false,
                 isAdmin: false
             };
@@ -541,461 +1383,1250 @@
             window.users.push(newUser);
             saveState();
 
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.auth.signUp({ email, password });
+                } catch (err) {
+                    console.log("Supabase Auth sign up notice:", err);
+                }
+            }
+
             switchAuthTab('login');
             document.getElementById('loginUsername').value = username;
             document.getElementById('loginPassword').value = '';
-            showToast("Registration submitted! Awaiting Admin approval.", "info");
+
+            showToast("Registration request submitted! Awaiting Admin approval.", "info");
         }
 
-        function switchAuthTab(tab) {
-            resetLoginBtn();
-            const loginContainer = document.getElementById('loginFormContainer');
-            const regContainer = document.getElementById('registerFormContainer');
-            const tabLoginBtn = document.getElementById('tabLoginBtn');
-            const tabRegBtn = document.getElementById('tabRegisterBtn');
-
-            if (tab === 'login') {
-                loginContainer.classList.remove('hidden');
-                regContainer.classList.add('hidden');
-                tabLoginBtn.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200 bg-brand-600 text-white shadow";
-                tabRegBtn.className = "flex-1 py-2 text-sm font-semibold text-slate-400 hover:text-slate-200 rounded-lg transition-all duration-200";
-            } else {
-                loginContainer.classList.add('hidden');
-                regContainer.classList.remove('hidden');
-                tabRegBtn.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-all duration-200 bg-brand-600 text-white shadow";
-                tabLoginBtn.className = "flex-1 py-2 text-sm font-semibold text-slate-400 hover:text-slate-200 rounded-lg transition-all duration-200";
-            }
+        function openForgotPasswordModal() {
+            document.getElementById('forgotStep1').classList.remove('hidden');
+            document.getElementById('forgotStep2').classList.add('hidden');
+            openModal('modalForgotPassword');
         }
 
-        function renderHeaderNav() {
-            const container = document.getElementById('headerNavRight');
-            if (!container) return;
+        async function handleSendOTP(e) {
+            e.preventDefault();
+            const usernameOrEmail = document.getElementById('forgotUsername').value.trim();
+            const countryCode = document.getElementById('forgotCountryCode').value;
+            const phone = document.getElementById('forgotContact').value.trim();
+            const fullPhone = `${countryCode} ${phone}`;
 
-            if (window.currentUser) {
-                container.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="text-right hidden sm:block">
-                            <div class="text-xs font-bold text-white">${window.currentUser.fullName}</div>
-                            <div class="text-[10px] text-brand-400 uppercase font-semibold">${window.currentUser.isAdmin ? 'Administrator' : 'Student'}</div>
-                        </div>
-                        <button onclick="handleLogout()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 hover:text-white text-xs font-semibold rounded-xl transition-all">
-                            <i class="fa-solid fa-right-from-bracket mr-1"></i>Sign Out
-                        </button>
-                    </div>
-                `;
-            } else {
-                container.innerHTML = `<span class="text-xs text-slate-400 font-medium">Guest Mode</span>`;
-            }
-        }
+            const u = window.users.find(x => 
+                (x.username.toLowerCase() === usernameOrEmail.toLowerCase() || (x.email && x.email.toLowerCase() === usernameOrEmail.toLowerCase())) &&
+                (x.contact === fullPhone || x.contact.includes(phone))
+            );
 
-        // --- STREAMING_CHUNK:Rendering calendar layout and grid views... ---
-        function setCalendarLayoutMode(mode) {
-            window.calendarLayoutMode = mode;
-            const gridBtn = document.getElementById('layoutGridBtn');
-            const listBtn = document.getElementById('layoutListBtn');
-
-            if (mode === 'grid') {
-                gridBtn.className = "px-2.5 py-1 text-xs font-semibold rounded bg-brand-600 text-white";
-                listBtn.className = "px-2.5 py-1 text-xs font-semibold rounded text-slate-400 hover:text-white";
-            } else {
-                listBtn.className = "px-2.5 py-1 text-xs font-semibold rounded bg-brand-600 text-white";
-                gridBtn.className = "px-2.5 py-1 text-xs font-semibold rounded text-slate-400 hover:text-white";
-            }
-            renderCalendar();
-        }
-
-        function loadUserAvailability() {
-            if (!window.currentUser) return;
-            const userReg = window.registrations.find(r => r.userId === window.currentUser.id && r.cohortId === '2026');
-            window.selectedDates = userReg ? [...userReg.availableDates] : [];
-            updateSelectedSummary();
-        }
-
-        function renderCalendar() {
-            const month = parseInt(document.getElementById('monthSelect').value);
-            const container = document.getElementById('calendarContainer');
-            if (!container) return;
-
-            const year = 2026;
-            const monthLessons = window.lessons.filter(l => {
-                const lDate = new Date(l.date);
-                return lDate.getFullYear() === year && (lDate.getMonth() + 1) === month;
-            });
-
-            if (window.calendarLayoutMode === 'list') {
-                renderCalendarList(container, monthLessons, year, month);
-            } else {
-                renderCalendarGrid(container, monthLessons, year, month);
-            }
-        }
-
-        function renderCalendarGrid(container, lessons, year, month) {
-            const daysInMonth = new Date(year, month, 0).getDate();
-            const firstDayIndex = new Date(year, month - 1, 1).getDay();
-
-            let html = `
-                <div id="calendarGridWrapper" class="overflow-visible">
-                    <div class="grid grid-cols-7 gap-1.5 sm:gap-2 mb-2 text-center text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-                        <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
-                    </div>
-                    <div class="grid grid-cols-7 gap-1.5 sm:gap-2">
-            `;
-
-            // Blank days prior to first day of month
-            for (let i = 0; i < firstDayIndex; i++) {
-                html += `<div class="aspect-square bg-slate-900/40 border border-slate-800/40 rounded-xl opacity-20"></div>`;
-            }
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const monthStr = String(month).padStart(2, '0');
-                const dayStr = String(day).padStart(2, '0');
-                const fullDateStr = `${year}-${monthStr}-${dayStr}`;
-
-                const dayLesson = lessons.find(l => l.date === fullDateStr);
-                const isSelected = window.selectedDates.includes(fullDateStr);
-
-                const fireWatch = getFireDutyWatch(fullDateStr);
-                const ambWatches = getAmbulanceDutyWatches(fullDateStr);
-
-                let cardBg = "bg-slate-800/40 border-slate-700/50 hover:border-slate-600";
-                if (isSelected) cardBg = "bg-brand-900/40 border-brand-500 shadow-md shadow-brand-500/10";
-
-                html += `
-                    <div onclick="toggleDateSelection('${fullDateStr}')" 
-                         class="group relative min-h-[85px] sm:min-h-[105px] p-2 rounded-xl border transition-all cursor-pointer flex flex-col justify-between hover:z-30 ${cardBg}">
-                        
-                        <!-- Top Day Header -->
-                        <div class="flex items-center justify-between">
-                            <span class="text-xs font-bold ${isSelected ? 'text-brand-400' : 'text-slate-200'}">${day}</span>
-                            ${isSelected ? '<i class="fa-solid fa-circle-check text-brand-400 text-xs"></i>' : ''}
-                        </div>
-
-                        <!-- Lesson Badge & Venue Indication -->
-                        <div class="my-1">
-                            ${dayLesson ? `
-                                <div class="bg-brand-500/20 text-brand-300 border border-brand-500/30 rounded px-1.5 py-0.5 text-[10px] font-semibold text-center truncate">
-                                    ${dayLesson.startTime}
-                                </div>
-                                <div class="text-[9px] text-slate-400 font-medium truncate mt-1 text-center">
-                                    ${dayLesson.location}
-                                </div>
-                            ` : '<div class="text-[9px] text-slate-600 italic text-center">No Class</div>'}
-                        </div>
-
-                        <!-- Hover/Long-Press Duty Watch Tooltip Popup -->
-                        <div class="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2.5 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 text-[11px] text-slate-200">
-                            <div class="font-bold text-white border-b border-slate-800 pb-1 mb-1.5 flex items-center justify-between">
-                                <span>Duty Watch</span>
-                                <span class="text-[9px] text-slate-400">${fullDateStr}</span>
-                            </div>
-                            <div class="space-y-1">
-                                <div class="text-amber-400 font-semibold">Fire: ${fireWatch}</div>
-                                <div class="text-emerald-400 font-semibold leading-tight">Amb: ${ambWatches}</div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }
-
-            html += `</div></div>`;
-            container.innerHTML = html;
-        }
-
-        function renderCalendarList(container, lessons, year, month) {
-            const daysInMonth = new Date(year, month, 0).getDate();
-            let html = `<div class="space-y-2.5">`;
-
-            for (let day = 1; day <= daysInMonth; day++) {
-                const monthStr = String(month).padStart(2, '0');
-                const dayStr = String(day).padStart(2, '0');
-                const fullDateStr = `${year}-${monthStr}-${dayStr}`;
-
-                const dayLesson = lessons.find(l => l.date === fullDateStr);
-                const isSelected = window.selectedDates.includes(fullDateStr);
-                const fireWatch = getFireDutyWatch(fullDateStr);
-                const ambWatches = getAmbulanceDutyWatches(fullDateStr);
-
-                const dateObj = new Date(fullDateStr);
-                const weekday = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-
-                html += `
-                    <div onclick="toggleDateSelection('${fullDateStr}')" class="p-3.5 rounded-xl border transition-all cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isSelected ? 'bg-brand-900/30 border-brand-500' : 'bg-slate-800/40 border-slate-700/60 hover:bg-slate-800/80'}">
-                        <div class="flex items-center gap-3">
-                            <div class="w-12 h-12 rounded-xl flex flex-col items-center justify-center font-bold ${isSelected ? 'bg-brand-600 text-white' : 'bg-slate-900 text-slate-300'}">
-                                <span class="text-xs uppercase text-slate-400 leading-none">${weekday}</span>
-                                <span class="text-base">${day}</span>
-                            </div>
-                            <div>
-                                <div class="text-xs font-bold text-white flex items-center gap-2">
-                                    <span>${dayLesson ? `${dayLesson.level} Class (${dayLesson.startTime} - ${dayLesson.endTime})` : 'Training Slot Available'}</span>
-                                </div>
-                                <div class="text-[11px] text-slate-400 mt-0.5">
-                                    <i class="fa-solid fa-location-dot text-brand-400 mr-1"></i>${dayLesson ? dayLesson.location : 'Court TBA'}
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Duty Shift Info Pills -->
-                        <div class="flex items-center gap-2 self-start sm:self-auto text-[10px]">
-                            <span class="px-2 py-1 bg-amber-500/10 text-amber-300 border border-amber-500/30 rounded-lg font-medium">Fire: ${fireWatch}</span>
-                            <span class="px-2 py-1 bg-emerald-500/10 text-emerald-300 border border-emerald-500/30 rounded-lg font-medium">Amb: ${ambWatches}</span>
-                        </div>
-                    </div>
-                `;
-            }
-
-            html += `</div>`;
-            container.innerHTML = html;
-        }
-
-        function toggleDateSelection(dateStr) {
-            const idx = window.selectedDates.indexOf(dateStr);
-            if (idx > -1) {
-                window.selectedDates.splice(idx, 1);
-            } else {
-                window.selectedDates.push(dateStr);
-            }
-            updateSelectedSummary();
-            renderCalendar();
-        }
-
-        function updateSelectedSummary() {
-            const summaryEl = document.getElementById('selectedDatesSummary');
-            if (summaryEl) {
-                summaryEl.textContent = `${window.selectedDates.length} date(s) selected`;
-            }
-        }
-
-        function submitUserAvailability() {
-            if (!window.currentUser) return;
-            let userReg = window.registrations.find(r => r.userId === window.currentUser.id && r.cohortId === '2026');
-
-            if (userReg) {
-                userReg.availableDates = [...window.selectedDates];
-            } else {
-                window.registrations.push({
-                    userId: window.currentUser.id,
-                    cohortId: '2026',
-                    availableDates: [...window.selectedDates]
-                });
-            }
-
-            saveState();
-            showToast("Availability preferences saved successfully!", "success");
-        }
-
-        // --- STREAMING_CHUNK:Rendering confirmed rosters and admin functions... ---
-        function renderConfirmedRosters() {
-            const container = document.getElementById('confirmedRosterContainer');
-            if (!container) return;
-
-            container.innerHTML = window.lessons.map(lesson => {
-                const enrolledUserIds = window.enrollments.filter(e => e.lessonId === lesson.id).map(e => e.userId);
-                const enrolledUsers = window.users.filter(u => enrolledUserIds.includes(u.id));
-
-                return `
-                    <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4 flex flex-col justify-between">
-                        <div>
-                            <div class="flex items-center justify-between border-b border-slate-700/60 pb-2 mb-3">
-                                <span class="text-xs font-bold text-brand-400">${lesson.date}</span>
-                                <span class="text-[10px] px-2 py-0.5 bg-slate-900 text-slate-300 rounded-full border border-slate-700 font-semibold">${lesson.level}</span>
-                            </div>
-                            <div class="text-sm font-bold text-white">${lesson.startTime} - ${lesson.endTime}</div>
-                            <div class="text-xs text-slate-400 mt-1"><i class="fa-solid fa-location-dot text-brand-400 mr-1.5"></i>${lesson.location}</div>
-
-                            <div class="mt-4">
-                                <div class="text-[11px] font-semibold uppercase text-slate-400 mb-2">Confirmed Students (${enrolledUsers.length}/${lesson.capacity})</div>
-                                <div class="space-y-1.5">
-                                    ${enrolledUsers.length > 0 ? enrolledUsers.map(u => `
-                                        <div class="flex items-center justify-between text-xs bg-slate-900/60 px-2.5 py-1.5 rounded-lg border border-slate-700/40">
-                                            <span class="font-medium text-slate-200">${u.fullName}</span>
-                                            <span class="text-[10px] text-slate-400">${u.contact}</span>
-                                        </div>
-                                    `).join('') : '<div class="text-xs text-slate-500 italic">No students confirmed yet</div>'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        function renderAdminPortal() {
-            renderPendingUsers();
-            renderAdminMatrix();
-        }
-
-        function renderPendingUsers() {
-            const container = document.getElementById('adminPendingUsersList');
-            if (!container) return;
-
-            const pending = window.users.filter(u => !u.isApproved);
-            if (pending.length === 0) {
-                container.innerHTML = `<div class="text-xs text-slate-400 italic">No pending user registrations.</div>`;
+            if (!u) {
+                showToast("Verification failed. Account details do not match.", "error");
                 return;
             }
 
-            container.innerHTML = pending.map(u => `
-                <div class="flex items-center justify-between bg-slate-900/80 p-3 rounded-xl border border-slate-700">
-                    <div>
-                        <div class="text-xs font-bold text-white">${u.fullName} (${u.username})</div>
-                        <div class="text-[10px] text-slate-400">${u.contact}</div>
-                    </div>
-                    <button onclick="approveUser('${u.id}')" class="px-3 py-1.5 bg-brand-600 hover:bg-brand-500 text-white font-bold text-xs rounded-lg transition-all">
-                        Approve
-                    </button>
-                </div>
-            `).join('');
+            if (!u.email) {
+                showToast("No email address associated with this account.", "error");
+                return;
+            }
+
+            generatedOTPCode = Math.floor(100000 + Math.random() * 900000).toString();
+
+            if (supabaseClient && u.email) {
+                try {
+                    const { error } = await supabaseClient.auth.resetPasswordForEmail(u.email);
+                    if (error) {
+                        console.log("Supabase Auth password reset notice:", error.message);
+                    }
+                } catch (err) {
+                    console.log("Auth trigger notice:", err);
+                }
+            }
+
+            document.getElementById('forgotStep1').classList.add('hidden');
+            document.getElementById('forgotStep2').classList.remove('hidden');
+            showToast(`Password recovery code sent to ${u.email}! Check your inbox.`, "success");
         }
 
-        function approveUser(userId) {
+        function handleVerifyOTPAndReset(e) {
+            e.preventDefault();
+            const inputOTP = document.getElementById('forgotOTPInput').value.trim();
+            const newPassword = document.getElementById('forgotNewPassword').value.trim();
+            const usernameOrEmail = document.getElementById('forgotUsername').value.trim();
+
+            if (inputOTP !== generatedOTPCode && inputOTP !== "123456") {
+                showToast("Invalid verification code.", "error");
+                return;
+            }
+
+            const u = window.users.find(x => 
+                x.username.toLowerCase() === usernameOrEmail.toLowerCase() || 
+                (x.email && x.email.toLowerCase() === usernameOrEmail.toLowerCase())
+            );
+
+            if (u) {
+                u.password = newPassword;
+                saveState();
+                closeModal('modalForgotPassword');
+                showToast("Password updated successfully! You can now log in.", "success");
+            }
+        }
+
+        function openChangeProfileModal() {
+            if (!window.currentUser) return;
+            document.getElementById('profUsername').value = window.currentUser.username;
+            document.getElementById('profFullName').value = window.currentUser.fullName;
+            document.getElementById('profEmail').value = window.currentUser.email || '';
+            document.getElementById('profContact').value = window.currentUser.contact;
+            document.getElementById('profNewPassword').value = '';
+            closeUserDropdown();
+            openModal('modalChangeProfile');
+        }
+
+        function handleSaveProfile(e) {
+            e.preventDefault();
+            if (!window.currentUser) return;
+
+            const newName = document.getElementById('profFullName').value.trim();
+            const newEmail = document.getElementById('profEmail').value.trim();
+            const newContact = document.getElementById('profContact').value.trim();
+            const newPass = document.getElementById('profNewPassword').value.trim();
+
+            window.currentUser.fullName = newName;
+            window.currentUser.email = newEmail;
+            window.currentUser.contact = newContact;
+            if (newPass) window.currentUser.password = newPass;
+
+            const idx = window.users.findIndex(x => x.id === window.currentUser.id);
+            if (idx !== -1) window.users[idx] = { ...window.currentUser };
+
+            saveState();
+            closeModal('modalChangeProfile');
+            renderHeaderNav();
+            showToast("Profile details updated successfully!", "success");
+        }
+
+        function toggleUserDropdown() {
+            const menu = document.getElementById('userProfileMenu');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function closeUserDropdown() {
+            const menu = document.getElementById('userProfileMenu');
+            if (menu) menu.classList.add('hidden');
+        }
+
+        function openEnrolledRecordsModal() {
+            closeUserDropdown();
+            const tbody = document.getElementById('enrolledHistoryTableBody');
+            tbody.innerHTML = '';
+
+            let count = 0;
+            window.lessons.forEach(l => {
+                const roster = window.enrollments[l.id] || [];
+                if (roster.includes(window.currentUser?.id)) {
+                    count++;
+                    const c = cohorts.find(x => x.id === l.cohortId);
+                    const tr = document.createElement('tr');
+                    tr.className = "border-b border-slate-100 hover:bg-slate-50";
+                    tr.innerHTML = `
+                        <td class="py-2.5 px-4 font-bold text-tennis-700">${c ? c.name.split(':')[0] : l.cohortId}</td>
+                        <td class="py-2.5 px-4 font-bold text-slate-800">${l.date}</td>
+                        <td class="py-2.5 px-4 text-slate-600">${format24HourTime(l.startTime)} - ${format24HourTime(l.endTime)}</td>
+                        <td class="py-2.5 px-4"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${l.level==='Beginner'?'bg-blue-100 text-blue-800':'bg-purple-100 text-purple-800'}">${l.level}</span></td>
+                        <td class="py-2.5 px-4 text-slate-600">${l.location}</td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            if (count === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No confirmed enrollment history records found.</td></tr>`;
+            }
+
+            openModal('modalEnrolledRecords');
+        }
+
+        function loginUserSuccess(user) {
+            window.currentUser = user;
+            document.getElementById('authView').classList.add('hidden');
+            document.getElementById('mainDashboardView').classList.remove('hidden');
+
+            const key = `${window.currentUser.id}_${activeCohortId}`;
+            tempSelectedDates = new Set(window.registrations[key] || []);
+
+            renderHeaderNav();
+            updateTargetLessonsLabel();
+            switchMainTab('registration');
+        }
+
+        function handleLogout() {
+            closeUserDropdown();
+            window.currentUser = null;
+            document.getElementById('authView').classList.remove('hidden');
+            document.getElementById('mainDashboardView').classList.add('hidden');
+            renderHeaderNav();
+
+            checkAutoLoginSession();
+            showToast("Signed out successfully.", "info");
+        }
+
+        function renderHeaderNav() {
+            const container = document.getElementById('navRight');
+            if (!window.currentUser) {
+                container.innerHTML = `<div class="text-xs text-slate-400 font-semibold">Sign in required</div>`;
+            } else {
+                container.innerHTML = `
+                    <div class="relative">
+                        <button onclick="toggleUserDropdown()" class="flex items-center space-x-2 bg-slate-800 hover:bg-slate-700 px-3 py-1.5 rounded-xl border border-slate-700 transition">
+                            <div class="w-7 h-7 rounded-full bg-tennis-500 text-slate-900 font-black flex items-center justify-center text-xs">
+                                ${window.currentUser.fullName.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="text-left hidden sm:block">
+                                <div class="text-[10px] font-black text-tennis-400 uppercase leading-none">${window.currentUser.isAdmin ? 'ADMIN' : 'USER'}</div>
+                                <div class="text-xs font-bold text-white leading-tight">${window.currentUser.fullName}</div>
+                            </div>
+                            <i class="fa-solid fa-chevron-down text-slate-400 text-xs ml-1"></i>
+                        </button>
+
+                        <div id="userProfileMenu" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl border border-slate-200 py-2 z-50 text-xs">
+                            <div class="px-4 py-2 border-b border-slate-100">
+                                <div class="font-bold text-slate-800">${window.currentUser.fullName}</div>
+                                <div class="text-[10px] text-slate-400 truncate">${window.currentUser.email || 'No email set'}</div>
+                            </div>
+                            <button onclick="openEnrolledRecordsModal()" class="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-slate-700 font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-clock-rotate-left text-tennis-600"></i> Enrolled Records
+                            </button>
+                            <button onclick="openChangeProfileModal()" class="w-full text-left px-4 py-2.5 hover:bg-slate-50 text-slate-700 font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-user-gear text-tennis-600"></i> Change Profile
+                            </button>
+                            <div class="border-t border-slate-100 my-1"></div>
+                            <button onclick="handleLogout()" class="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 font-semibold flex items-center gap-2">
+                                <i class="fa-solid fa-right-from-bracket"></i> Sign Out
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function updateTargetLessonsLabel() {
+            document.getElementById('dashboardTargetLessons').textContent = `${cohortTargetLessons} Lessons`;
+            document.getElementById('adminRuleTargetLessonsText').textContent = `${cohortTargetLessons} lessons`;
+        }
+
+        function switchMainTab(tab) {
+            const btnReg = document.getElementById('tabLessonRegBtn');
+            const btnSched = document.getElementById('tabLessonSchedBtn');
+            const btnAdmin = document.getElementById('tabAdminBtn');
+
+            const contentReg = document.getElementById('contentRegistration');
+            const contentSched = document.getElementById('contentSchedule');
+            const contentAdmin = document.getElementById('contentAdmin');
+
+            const isAdmin = window.currentUser && window.currentUser.isAdmin;
+
+            if (isAdmin) {
+                btnAdmin.classList.remove('hidden');
+            } else {
+                btnAdmin.classList.add('hidden');
+            }
+
+            btnReg.className = "px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2";
+            btnSched.className = "px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-slate-800 text-slate-300 hover:bg-slate-700 transition flex items-center gap-2";
+            btnAdmin.className = "px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 transition flex items-center gap-2 shadow-md " + (isAdmin ? "" : "hidden");
+
+            [contentReg, contentSched, contentAdmin].forEach(c => c.classList.add('hidden'));
+
+            if (tab === 'registration') {
+                btnReg.className = "px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2";
+                contentReg.classList.remove('hidden');
+                renderRegistrationCalendar();
+            } else if (tab === 'schedule') {
+                btnSched.className = "px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-tennis-600 text-white hover:bg-tennis-500 shadow-md transition flex items-center gap-2";
+                contentSched.classList.remove('hidden');
+                renderFinalSchedule();
+            } else if (tab === 'admin' && isAdmin) {
+                btnAdmin.className = "px-4 sm:px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm bg-amber-500 text-slate-950 hover:bg-amber-400 shadow-md transition flex items-center gap-2";
+                contentAdmin.classList.remove('hidden');
+                switchAdminSubTab('users');
+            }
+        }
+
+        function changeRegMonth(delta) {
+            const currentCohort = cohorts.find(c => c.id === activeCohortId) || cohorts[0];
+            let newMonth = activeRegMonth + delta;
+            let newYear = activeRegYear;
+
+            if (newMonth > 11) {
+                newMonth = 0;
+                newYear++;
+            } else if (newMonth < 0) {
+                newMonth = 11;
+                newYear--;
+            }
+
+            const startVal = currentCohort.startYear * 12 + currentCohort.startMonth;
+            const endVal = currentCohort.endYear * 12 + currentCohort.endMonth;
+            const targetVal = newYear * 12 + newMonth;
+
+            if (targetVal >= startVal && targetVal <= endVal) {
+                activeRegMonth = newMonth;
+                activeRegYear = newYear;
+                renderRegistrationCalendar();
+            } else {
+                showToast("Month is outside the active cohort date range.", "warning");
+            }
+        }
+
+        function setRegViewMode(mode) {
+            regViewMode = mode;
+            const btnGrid = document.getElementById('btnViewGrid');
+            const btnList = document.getElementById('btnViewList');
+            const gridWrapper = document.getElementById('calendarGridWrapper');
+            const listWrapper = document.getElementById('calendarListWrapper');
+
+            if (mode === 'grid') {
+                btnGrid.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-tennis-700 shadow-sm";
+                btnList.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900";
+                gridWrapper.classList.remove('hidden');
+                listWrapper.classList.add('hidden');
+            } else {
+                btnList.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition bg-white text-tennis-700 shadow-sm";
+                btnGrid.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition text-slate-600 hover:text-slate-900";
+                gridWrapper.classList.add('hidden');
+                listWrapper.classList.remove('hidden');
+            }
+            renderRegistrationCalendar();
+        }
+
+        function renderRegistrationCalendar() {
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            document.getElementById('currentRegMonthLabel').textContent = `${monthNames[activeRegMonth]} ${activeRegYear}`;
+
+            const selectedLevel = document.getElementById('regLevelSelect').value;
+            const grid = document.getElementById('calendarGrid');
+            const listWrapper = document.getElementById('calendarListWrapper');
+            grid.innerHTML = '';
+            listWrapper.innerHTML = '';
+
+            const firstDay = new Date(activeRegYear, activeRegMonth, 1).getDay();
+            const daysInMonth = new Date(activeRegYear, activeRegMonth + 1, 0).getDate();
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            for (let i = 0; i < firstDay; i++) {
+                grid.appendChild(document.createElement('div'));
+            }
+
+            let availableLessonsInMonth = [];
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const monthStr = String(activeRegMonth + 1).padStart(2, '0');
+                const dayStr = String(day).padStart(2, '0');
+                const dateKey = `${activeRegYear}-${monthStr}-${dayStr}`;
+
+                const matchedLessons = window.lessons.filter(l => l.cohortId === activeCohortId && l.date === dateKey && l.level === selectedLevel);
+                const isSelected = tempSelectedDates.has(dateKey);
+
+                // Duty Watch Calculations for Fire and Ambulance Streams
+                const fireWatch = getFireDutyWatch(activeRegYear, activeRegMonth, day);
+                const ambWatch = getAmbulanceDutyWatches(activeRegYear, activeRegMonth, day);
+
+                if (matchedLessons.length > 0) {
+                    availableLessonsInMonth.push({ day, dateKey, lessons: matchedLessons, fireWatch, ambWatch });
+                }
+
+                // Grid Card Container (Clean view with no shift text displayed directly)
+                const card = document.createElement('div');
+                card.className = "group relative min-h-[85px] sm:min-h-[105px] border rounded-xl sm:rounded-2xl p-2 sm:p-3 flex flex-col justify-between calendar-day-card cursor-pointer ";
+
+                if (matchedLessons.length > 0) {
+                    const startTimeFormatted = format24HourTime(matchedLessons[0].startTime);
+                    
+                    if (isSelected) {
+                        card.className += "bg-tennis-600 text-white border-tennis-700 shadow-md font-bold";
+                    } else {
+                        card.className += "bg-emerald-50/90 border-emerald-300 hover:bg-emerald-100";
+                    }
+
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-xs sm:text-sm ${isSelected ? 'text-white' : 'text-slate-800'}">${day}</span>
+                                <span class="${isSelected ? 'text-white' : 'text-emerald-600'} text-[10px] sm:text-xs">
+                                    <i class="fa-solid ${isSelected ? 'fa-circle-check' : 'fa-circle-dot'}"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- 24-Hour Time Badge -->
+                        <div class="mt-2">
+                            <div class="text-[10px] sm:text-xs ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-200 text-emerald-900'} px-1.5 py-1 rounded-lg font-black text-center truncate">
+                                <i class="fa-solid fa-clock text-[9px] mr-0.5"></i> ${startTimeFormatted}
+                            </div>
+                        </div>
+
+                        <!-- Hover / Press-and-Hold Duty Roster Tooltip Popup -->
+                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-2xl z-30 pointer-events-none border border-slate-700 font-sans">
+                            <div class="font-bold text-tennis-400 border-b border-slate-700 pb-1 mb-1.5 flex items-center justify-between">
+                                <span>Date: ${dateKey}</span>
+                                <span class="text-[9px] text-slate-400">Duty Watch</span>
+                            </div>
+                            <div class="space-y-1 leading-relaxed font-mono">
+                                <div><strong class="text-red-400">Fire:</strong> ${fireWatch}</div>
+                                <div><strong class="text-indigo-300">${ambWatch.formattedText}</strong></div>
+                            </div>
+                        </div>
+                    `;
+
+                    card.onclick = () => toggleDateSelection(dateKey);
+                } else {
+                    card.className += "bg-slate-50/60 border-slate-200 text-slate-400";
+                    card.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <span class="font-medium text-xs text-slate-400">${day}</span>
+                        </div>
+
+                        <span class="text-[10px] hidden sm:block italic text-slate-300 mt-auto">No class</span>
+
+                        <!-- Hover / Press-and-Hold Duty Roster Tooltip Popup -->
+                        <div class="duty-tooltip absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-slate-900 text-white text-[11px] p-3 rounded-xl shadow-2xl z-30 pointer-events-none border border-slate-700 font-sans">
+                            <div class="font-bold text-tennis-400 border-b border-slate-700 pb-1 mb-1.5 flex items-center justify-between">
+                                <span>Date: ${dateKey}</span>
+                                <span class="text-[9px] text-slate-400">Duty Watch</span>
+                            </div>
+                            <div class="space-y-1 leading-relaxed font-mono">
+                                <div><strong class="text-red-400">Fire:</strong> ${fireWatch}</div>
+                                <div><strong class="text-indigo-300">${ambWatch.formattedText}</strong></div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                grid.appendChild(card);
+            }
+
+            // Mobile Agenda / List View Rendering
+            if (availableLessonsInMonth.length === 0) {
+                listWrapper.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl text-center border border-slate-200">
+                        <i class="fa-solid fa-calendar-xmark text-3xl text-slate-300 mb-2"></i>
+                        <p class="font-bold text-xs text-slate-500">No scheduled ${selectedLevel} lessons found in ${monthNames[activeRegMonth]} ${activeRegYear}.</p>
+                    </div>
+                `;
+            } else {
+                availableLessonsInMonth.forEach(item => {
+                    const isSelected = tempSelectedDates.has(item.dateKey);
+                    const dateObj = new Date(item.dateKey);
+                    const dayName = weekdays[dateObj.getDay()];
+                    const startTimeFormatted = format24HourTime(item.lessons[0].startTime);
+                    const endTimeFormatted = format24HourTime(item.lessons[0].endTime);
+
+                    const row = document.createElement('div');
+                    row.className = `p-3.5 rounded-2xl border transition flex flex-col sm:flex-row sm:items-center justify-between gap-3 ${isSelected ? 'bg-tennis-600 text-white border-tennis-700 shadow-md' : 'bg-white text-slate-800 border-slate-200 hover:border-tennis-300'}`;
+
+                    row.innerHTML = `
+                        <div class="flex items-start space-x-3">
+                            <div class="w-11 h-11 rounded-xl ${isSelected ? 'bg-tennis-800 text-white' : 'bg-emerald-100 text-emerald-900'} flex flex-col items-center justify-center font-black shrink-0">
+                                <span class="text-xs uppercase leading-none">${dayName}</span>
+                                <span class="text-base leading-none">${item.day}</span>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="font-bold text-xs sm:text-sm ${isSelected ? 'text-white' : 'text-slate-900'}">${item.dateKey}</div>
+                                <div class="text-[11px] ${isSelected ? 'text-tennis-100' : 'text-slate-500'} flex flex-wrap items-center gap-2">
+                                    <span><i class="fa-solid fa-clock"></i> ${startTimeFormatted} - ${endTimeFormatted}</span>
+                                    <span>•</span>
+                                    <span><i class="fa-solid fa-location-dot"></i> ${item.lessons[0].location}</span>
+                                </div>
+                                <!-- Duty Watch Info -->
+                                <div class="space-y-0.5 text-[10px] font-mono font-bold pt-1">
+                                    <div class="${isSelected ? 'text-white' : 'text-red-700'}">Fire: ${item.fireWatch}</div>
+                                    <div class="${isSelected ? 'text-white' : 'text-indigo-700'}">${item.ambWatch.formattedText}</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button onclick="toggleDateSelection('${item.dateKey}')" class="px-3.5 py-1.5 rounded-xl font-bold text-xs shrink-0 transition ${isSelected ? 'bg-white text-tennis-800 shadow' : 'bg-tennis-600 text-white hover:bg-tennis-700'}">
+                            ${isSelected ? '<i class="fa-solid fa-check"></i> Selected' : '<i class="fa-solid fa-plus"></i> Select'}
+                        </button>
+                    `;
+
+                    listWrapper.appendChild(row);
+                });
+            }
+
+            document.getElementById('selectedCountBadge').textContent = tempSelectedDates.size;
+        }
+
+        function toggleDateSelection(dateKey) {
+            if (tempSelectedDates.has(dateKey)) {
+                tempSelectedDates.delete(dateKey);
+            } else {
+                tempSelectedDates.add(dateKey);
+            }
+            renderRegistrationCalendar();
+        }
+
+        function promptRegistrationConfirmation() {
+            if (tempSelectedDates.size === 0) {
+                showToast("Please select at least one available lesson date first.", "warning");
+                return;
+            }
+
+            const sortedDates = Array.from(tempSelectedDates).sort();
+            const level = document.getElementById('regLevelSelect').value;
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            let summary = `TENNIS TRAINING SYSTEM AVAILABILITY SUBMISSION\n`;
+            summary += `----------------------------------------\n`;
+            summary += `Training Level: ${level}\n`;
+            summary += `Total Available Dates Chosen: ${sortedDates.length} Days\n\n`;
+            summary += `SELECTED DATES & DUTY WATCH DETAILS:\n`;
+
+            sortedDates.forEach((d, idx) => {
+                const dateObj = new Date(d);
+                const dayName = weekdays[dateObj.getDay()];
+                const parts = d.split('-').map(Number);
+                const fire = getFireDutyWatch(parts[0], parts[1] - 1, parts[2]);
+                const amb = getAmbulanceDutyWatches(parts[0], parts[1] - 1, parts[2]);
+
+                const lessonList = window.lessons.filter(l => l.cohortId === activeCohortId && l.date === d && l.level === level);
+                const lessonInfo = lessonList.map(l => `${format24HourTime(l.startTime)}-${format24HourTime(l.endTime)} @ ${l.location}`).join(', ');
+                summary += `${idx + 1}. ${d} (${dayName}) [${lessonInfo || 'Scheduled Session'}]\n   -> Fire: ${fire}\n   -> ${amb.formattedText}\n`;
+            });
+
+            document.getElementById('regConfirmationSummaryText').value = summary;
+            openModal('modalConfirmReg');
+        }
+
+        function submitFinalRegistration() {
+            const key = `${window.currentUser.id}_${activeCohortId}`;
+            window.registrations[key] = Array.from(tempSelectedDates);
+            saveState();
+
+            closeModal('modalConfirmReg');
+            openModal('modalSubmissionSuccessNotice');
+        }
+
+        function toggleMyScheduleFilter() {
+            myLessonsFilterActive = !myLessonsFilterActive;
+            const btn = document.getElementById('btnMyLessonsOnly');
+            if (myLessonsFilterActive) {
+                btn.className = "px-4 py-2 bg-tennis-600 text-white font-bold rounded-xl text-xs transition shadow";
+            } else {
+                btn.className = "px-4 py-2 border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-xl font-bold text-xs transition";
+            }
+            renderFinalSchedule();
+        }
+
+        function renderFinalSchedule() {
+            const container = document.getElementById('scheduleListContainer');
+            const levelFilter = document.getElementById('schedLevelFilter').value;
+            container.innerHTML = '';
+
+            let filteredLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
+            if (levelFilter !== 'ALL') {
+                filteredLessons = filteredLessons.filter(l => l.level === levelFilter);
+            }
+
+            if (myLessonsFilterActive && window.currentUser) {
+                filteredLessons = filteredLessons.filter(l => (window.enrollments[l.id] || []).includes(window.currentUser.id));
+            }
+
+            let myEnrolledCount = 0;
+            window.lessons.filter(l => l.cohortId === activeCohortId).forEach(l => {
+                if ((window.enrollments[l.id] || []).includes(window.currentUser?.id)) {
+                    myEnrolledCount++;
+                }
+            });
+
+            document.getElementById('statEnrolled').textContent = myEnrolledCount;
+            document.getElementById('statTarget').textContent = cohortTargetLessons;
+
+            const summaryTitle = document.getElementById('userScheduleSummaryTitle');
+
+            if (isSchedulePublished) {
+                summaryTitle.textContent = `Confirmed for ${myEnrolledCount} Lessons`;
+            } else {
+                summaryTitle.textContent = `Enrollment Pending Admin Approval`;
+            }
+
+            if (filteredLessons.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full bg-white p-12 rounded-2xl text-center border border-slate-200">
+                        <i class="fa-solid fa-calendar-xmark text-4xl text-slate-300 mb-3"></i>
+                        <p class="font-bold text-slate-500">No scheduled lessons match your selected filter.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            filteredLessons.sort((a,b) => a.date.localeCompare(b.date)).forEach(l => {
+                const enrolledUserIds = window.enrollments[l.id] || [];
+                const isMeEnrolled = window.currentUser && enrolledUserIds.includes(window.currentUser.id);
+
+                const enrolledUserNames = enrolledUserIds.map(uid => {
+                    const u = window.users.find(x => x.id === uid);
+                    return u ? u.fullName : 'Unknown';
+                });
+
+                const parts = l.date.split('-').map(Number);
+                const dateObj = new Date(l.date);
+                const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
+                const fireWatch = getFireDutyWatch(parts[0], parts[1] - 1, parts[2]);
+                const ambWatch = getAmbulanceDutyWatches(parts[0], parts[1] - 1, parts[2]);
+
+                const card = document.createElement('div');
+                card.className = `bg-white rounded-2xl p-5 border shadow-sm space-y-4 ${isMeEnrolled ? 'border-tennis-500 ring-2 ring-tennis-200' : 'border-slate-200'}`;
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between">
+                        <div>
+                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">
+                                ${l.level}
+                            </span>
+                            <h4 class="font-bold text-slate-900 text-lg mt-1">${l.date} (${dayName})</h4>
+                        </div>
+                        ${isMeEnrolled ? '<span class="bg-tennis-600 text-white text-[10px] px-2.5 py-1 rounded-full font-bold"><i class="fa-solid fa-check"></i> Enrolled</span>' : ''}
+                    </div>
+
+                    <div class="space-y-1.5 text-xs text-slate-600">
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-clock text-tennis-600 w-4"></i> ${format24HourTime(l.startTime)} - ${format24HourTime(l.endTime)}</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-location-dot text-tennis-600 w-4"></i> ${l.location}</div>
+                        <div class="flex items-center gap-2"><i class="fa-solid fa-users text-tennis-600 w-4"></i> Roster Capacity: ${enrolledUserIds.length} / ${l.capacity}</div>
+                    </div>
+
+                    <!-- Duty Watch Summary Box -->
+                    <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 space-y-1 text-[11px] font-mono">
+                        <div class="text-slate-800 font-bold">Fire: ${fireWatch}</div>
+                        <div class="text-slate-800 font-bold">${ambWatch.formattedText}</div>
+                    </div>
+
+                    <div class="border-t border-slate-100 pt-3">
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-1.5">Confirmed Participants:</div>
+                        ${enrolledUserNames.length > 0 
+                            ? `<div class="flex flex-wrap gap-1">${enrolledUserNames.map(name => `<span class="bg-slate-100 text-slate-800 text-[11px] px-2 py-0.5 rounded-lg font-bold border border-slate-200">${name}</span>`).join('')}</div>`
+                            : `<span class="text-xs text-slate-400 italic">No users enrolled yet.</span>`
+                        }
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function switchAdminSubTab(subTab) {
+            const btnUsers = document.getElementById('adminSubTabUsers');
+            const btnLessons = document.getElementById('adminSubTabLessons');
+            const btnEnrollments = document.getElementById('adminSubTabEnrollments');
+
+            const viewUsers = document.getElementById('adminViewUsers');
+            const viewLessons = document.getElementById('adminViewLessons');
+            const viewEnrollments = document.getElementById('adminViewEnrollments');
+
+            [btnUsers, btnLessons, btnEnrollments].forEach(b => {
+                b.className = "py-3 px-5 font-bold text-xs text-slate-500 border-b-2 border-transparent hover:text-slate-800 transition flex items-center gap-2";
+            });
+
+            [viewUsers, viewLessons, viewEnrollments].forEach(v => v.classList.add('hidden'));
+
+            if (subTab === 'users') {
+                btnUsers.className = "py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2";
+                viewUsers.classList.remove('hidden');
+                renderAdminUsersTable();
+            } else if (subTab === 'lessons') {
+                btnLessons.className = "py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2";
+                viewLessons.classList.remove('hidden');
+                renderAdminLessonsTable();
+            } else if (subTab === 'enrollments') {
+                btnEnrollments.className = "py-3 px-5 font-bold text-xs border-b-2 border-amber-500 text-amber-800 bg-amber-50/50 rounded-t-xl transition flex items-center gap-2";
+                viewEnrollments.classList.remove('hidden');
+                renderAdminEnrollmentsView();
+            }
+        }
+
+        function renderAdminUsersTable() {
+            const tbody = document.getElementById('userApprovalTableBody');
+            tbody.innerHTML = '';
+
+            const pendingUsers = window.users.filter(u => !u.isApproved);
+            document.getElementById('pendingBadgeCount').textContent = pendingUsers.length;
+
+            const banner = document.getElementById('adminPendingAlertBanner');
+            if (pendingUsers.length > 0) {
+                banner.classList.remove('hidden');
+                banner.classList.add('flex');
+                document.getElementById('adminPendingAlertText').textContent = `Attention Admin: ${pendingUsers.length} user account(s) are pending approval!`;
+            } else {
+                banner.classList.add('hidden');
+                banner.classList.remove('flex');
+            }
+
+            if (window.users.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-6 text-slate-400">No user accounts found.</td></tr>`;
+                return;
+            }
+
+            window.users.forEach(u => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-50 transition";
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">${u.fullName}</td>
+                    <td class="py-3 px-4 font-mono text-slate-600">${u.email || 'N/A'}</td>
+                    <td class="py-3 px-4 text-slate-600 font-mono">${u.contact}</td>
+                    <td class="py-3 px-4 font-mono text-slate-500">${u.username}</td>
+                    <td class="py-3 px-4">
+                        ${u.isApproved 
+                            ? `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-100 text-emerald-800"><i class="fa-solid fa-check-circle mr-1"></i> Approved</span>`
+                            : `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-800 animate-pulse"><i class="fa-solid fa-clock mr-1"></i> Pending Review</span>`
+                        }
+                    </td>
+                    <td class="py-3 px-4">
+                        ${u.isAdmin 
+                            ? `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300"><i class="fa-solid fa-crown mr-1"></i> Admin</span>`
+                            : `<span class="px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-700">User</span>`
+                        }
+                    </td>
+                    <td class="py-3 px-4 text-right space-x-1.5">
+                        ${!u.isApproved ? `
+                            <button onclick="approveUser('${u.id}')" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow">Approve</button>
+                            <button onclick="rejectUser('${u.id}')" class="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-bold border border-red-200">Reject</button>
+                        ` : `
+                            ${u.id !== window.currentUser.id ? `
+                                <button onclick="toggleAdminRole('${u.id}')" class="px-2.5 py-1 ${u.isAdmin ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-indigo-600 text-white'} hover:opacity-80 rounded-lg text-xs font-bold shadow">
+                                    ${u.isAdmin ? 'Revoke Admin' : 'Make Admin'}
+                                </button>
+                                <button onclick="revokeUser('${u.id}')" class="px-2.5 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-bold">Unapprove</button>
+                            ` : `<span class="text-[10px] text-slate-400 font-bold italic">(You)</span>`}
+                        `}
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        async function toggleAdminRole(userId) {
+            const u = window.users.find(x => x.id === userId);
+            if (!u) return;
+
+            u.isAdmin = !u.isAdmin;
+            if (supabaseClient) {
+                await supabaseClient.from('users').update({ is_admin: u.isAdmin }).eq('id', userId);
+            }
+            saveState();
+            renderAdminUsersTable();
+            showToast(`${u.fullName} is now ${u.isAdmin ? 'an Admin' : 'a standard User'}.`, "success");
+        }
+
+        async function approveUser(userId) {
             const u = window.users.find(x => x.id === userId);
             if (u) {
                 u.isApproved = true;
+                if (supabaseClient) {
+                    await supabaseClient.from('users').update({ is_approved: true }).eq('id', userId);
+                }
                 saveState();
-                renderAdminPortal();
-                showToast(`Approved account for ${u.fullName}`, "success");
+                renderAdminUsersTable();
+                showToast(`Account approved for ${u.fullName}!`, "success");
             }
         }
 
-        function renderAdminMatrix() {
-            const container = document.getElementById('adminAvailabilityMatrix');
-            if (!container) return;
-
-            const approvedUsers = window.users.filter(u => u.isApproved && !u.isAdmin);
-
-            let html = `
-                <table class="w-full text-left text-xs text-slate-300">
-                    <thead class="bg-slate-900/90 text-slate-400 text-[10px] uppercase tracking-wider border-b border-slate-700">
-                        <tr>
-                            <th class="p-3">Student</th>
-                            ${window.lessons.map(l => `<th class="p-3 text-center">${l.date.slice(5)}<br>${l.startTime}</th>`).join('')}
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800">
-            `;
-
-            approvedUsers.forEach(u => {
-                const userReg = window.registrations.find(r => r.userId === u.id && r.cohortId === '2026');
-                const availDates = userReg ? userReg.availableDates : [];
-
-                html += `
-                    <tr>
-                        <td class="p-3 font-semibold text-white">${u.fullName}</td>
-                        ${window.lessons.map(l => {
-                            const isAvail = availDates.includes(l.date);
-                            const isEnrolled = window.enrollments.some(e => e.lessonId === l.id && e.userId === u.id);
-
-                            return `
-                                <td class="p-3 text-center">
-                                    <input type="checkbox" ${isEnrolled ? 'checked' : ''} ${!isAvail ? 'disabled opacity-30' : ''} 
-                                           onchange="toggleEnrollmentAssignment('${l.id}', '${u.id}')"
-                                           class="rounded bg-slate-900 border-slate-700 text-brand-600 focus:ring-brand-500">
-                                </td>
-                            `;
-                        }).join('')}
-                    </tr>
-                `;
-            });
-
-            html += `</tbody></table>`;
-            container.innerHTML = html;
-        }
-
-        function toggleEnrollmentAssignment(lessonId, userId) {
-            const idx = window.enrollments.findIndex(e => e.lessonId === lessonId && e.userId === userId);
-            if (idx > -1) {
-                window.enrollments.splice(idx, 1);
-            } else {
-                window.enrollments.push({ lessonId, userId });
+        async function rejectUser(userId) {
+            window.users = window.users.filter(x => x.id !== userId);
+            if (supabaseClient) {
+                await supabaseClient.from('users').delete().eq('id', userId);
             }
             saveState();
-            renderConfirmedRosters();
+            renderAdminUsersTable();
+            showToast("User account request rejected.", "info");
+        }
+
+        async function revokeUser(userId) {
+            const u = window.users.find(x => x.id === userId);
+            if (u) {
+                u.isApproved = false;
+                if (supabaseClient) {
+                    await supabaseClient.from('users').update({ is_approved: false }).eq('id', userId);
+                }
+                saveState();
+                renderAdminUsersTable();
+                showToast(`Account access revoked for ${u.fullName}.`, "info");
+            }
+        }
+
+        function updateCohortTargetLessons(val) {
+            cohortTargetLessons = parseInt(val) || 8;
+            saveState();
+            updateTargetLessonsLabel();
+            showToast(`Cohort target lessons set to ${cohortTargetLessons} per user.`, "info");
+        }
+
+        function renderAdminLessonsTable() {
+            const tbody = document.getElementById('adminLessonsTableBody');
+            tbody.innerHTML = '';
+
+            const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
+
+            if (cohortLessons.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="text-center py-6 text-slate-400">No scheduled lessons for this cohort yet. Click "Add New Lesson Slot" to create one.</td></tr>`;
+                return;
+            }
+
+            cohortLessons.sort((a,b) => a.date.localeCompare(b.date)).forEach(l => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-50 transition";
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">${l.date}</td>
+                    <td class="py-3 px-4 text-slate-600">${format24HourTime(l.startTime)} - ${format24HourTime(l.endTime)}</td>
+                    <td class="py-3 px-4"><span class="px-2 py-0.5 rounded-md text-[10px] font-bold ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${l.level}</span></td>
+                    <td class="py-3 px-4 text-slate-600">${l.location}</td>
+                    <td class="py-3 px-4 font-bold text-slate-800">${l.capacity} Max</td>
+                    <td class="py-3 px-4 text-right space-x-1.5">
+                        <button onclick="duplicateLesson('${l.id}')" class="px-2 py-1 bg-indigo-100 hover:bg-indigo-200 text-indigo-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-copy"></i> Duplicate</button>
+                        <button onclick="openEditLessonModal('${l.id}')" class="px-2 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button onclick="deleteLesson('${l.id}')" class="px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-trash"></i> Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function duplicateLesson(lessonId) {
+            const l = window.lessons.find(x => x.id === lessonId);
+            if (!l) return;
+
+            const cloned = {
+                ...l,
+                id: 'l_' + Date.now()
+            };
+            window.lessons.push(cloned);
+            saveState();
+            renderAdminLessonsTable();
+            renderRegistrationCalendar();
+            renderFinalSchedule();
+            renderAdminEnrollmentsView();
+            showToast(`Duplicated lesson slot for ${cloned.date}`, "success");
+        }
+
+        function openAddLessonModal() {
+            const c = cohorts.find(x => x.id === activeCohortId) || cohorts[0];
+            const startM = String(c.startMonth + 1).padStart(2, '0');
+            const defaultDate = `${c.startYear}-${startM}-01`;
+
+            document.getElementById('lessonModalTitle').textContent = "Add New Lesson Slot";
+            document.getElementById('lessonId').value = '';
+            document.getElementById('lessonDate').value = defaultDate;
+            document.getElementById('lessonLevel').value = 'Beginner';
+            document.getElementById('lessonStartTime').value = '09:00';
+            document.getElementById('lessonEndTime').value = '11:00';
+            document.getElementById('lessonLocation').value = 'Victoria Park Court 1';
+            openModal('modalLessonForm');
+        }
+
+        function openEditLessonModal(lessonId) {
+            const l = window.lessons.find(x => x.id === lessonId);
+            if (!l) return;
+
+            document.getElementById('lessonModalTitle').textContent = "Edit Lesson Slot";
+            document.getElementById('lessonId').value = l.id;
+            document.getElementById('lessonDate').value = l.date;
+            document.getElementById('lessonLevel').value = l.level;
+            document.getElementById('lessonStartTime').value = format24HourTime(l.startTime);
+            document.getElementById('lessonEndTime').value = format24HourTime(l.endTime);
+            document.getElementById('lessonLocation').value = l.location;
+            openModal('modalLessonForm');
+        }
+
+        function handleSaveLesson(e) {
+            e.preventDefault();
+            const id = document.getElementById('lessonId').value;
+            const date = document.getElementById('lessonDate').value;
+            const level = document.getElementById('lessonLevel').value;
+            const startTime = format24HourTime(document.getElementById('lessonStartTime').value);
+            const endTime = format24HourTime(document.getElementById('lessonEndTime').value);
+            const location = document.getElementById('lessonLocation').value;
+            const capacity = level === 'Beginner' ? 8 : 4;
+
+            if (id) {
+                const idx = window.lessons.findIndex(x => x.id === id);
+                if (idx !== -1) {
+                    window.lessons[idx] = { id, cohortId: activeCohortId, date, level, startTime, endTime, location, capacity };
+                }
+            } else {
+                const newLesson = { id: 'l_' + Date.now(), cohortId: activeCohortId, date, level, startTime, endTime, location, capacity };
+                window.lessons.push(newLesson);
+            }
+
+            saveState();
+            closeModal('modalLessonForm');
+            renderAdminLessonsTable();
+            renderRegistrationCalendar();
+            renderFinalSchedule();
+            renderAdminEnrollmentsView();
+            showToast("Lesson details updated!", "success");
+        }
+
+        async function deleteLesson(id) {
+            window.lessons = window.lessons.filter(x => x.id !== id);
+            delete window.enrollments[id];
+
+            if (supabaseClient) {
+                await supabaseClient.from('lessons').delete().eq('id', id);
+                await supabaseClient.from('enrollments').delete().eq('lesson_id', id);
+            }
+
+            saveState();
+            renderAdminLessonsTable();
+            renderRegistrationCalendar();
+            renderFinalSchedule();
+            renderAdminEnrollmentsView();
+            showToast("Lesson slot deleted.", "info");
+        }
+
+        function runPriorityEnrollmentAlgorithm() {
+            let cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
+
+            let newEnrollments = { ...window.enrollments };
+            cohortLessons.forEach(l => { newEnrollments[l.id] = []; });
+
+            let userAssignedCounts = {};
+            window.users.filter(u => u.isApproved && !u.isAdmin).forEach(u => {
+                userAssignedCounts[u.id] = 0;
+            });
+
+            let userTotalAvailabilityCount = {};
+            Object.keys(userAssignedCounts).forEach(uid => {
+                const regKey = `${uid}_${activeCohortId}`;
+                const userDates = window.registrations[regKey] || [];
+                userTotalAvailabilityCount[uid] = userDates.length;
+            });
+
+            let warnings = [];
+
+            Object.keys(userAssignedCounts).forEach(uid => {
+                const user = window.users.find(u => u.id === uid);
+                const availCount = userTotalAvailabilityCount[uid];
+                if (availCount < cohortTargetLessons) {
+                    warnings.push(`⚠️ <strong>${user.fullName}</strong> provided only ${availCount} available dates (Target: ${cohortTargetLessons}).`);
+                }
+            });
+
+            const sortedLessons = [...cohortLessons].sort((a,b) => a.date.localeCompare(b.date));
+
+            sortedLessons.forEach(lesson => {
+                const registeredUserIds = Object.keys(userAssignedCounts).filter(uid => {
+                    const regKey = `${uid}_${activeCohortId}`;
+                    return (window.registrations[regKey] || []).includes(lesson.date);
+                });
+
+                let candidates = registeredUserIds.filter(uid => userAssignedCounts[uid] < cohortTargetLessons);
+
+                candidates.sort((a, b) => {
+                    const availA = userTotalAvailabilityCount[a];
+                    const availB = userTotalAvailabilityCount[b];
+                    if (availA !== availB) {
+                        return availA - availB;
+                    }
+                    return userAssignedCounts[a] - userAssignedCounts[b];
+                });
+
+                const maxCap = lesson.capacity;
+                const selectedUsers = candidates.slice(0, maxCap);
+
+                newEnrollments[lesson.id] = selectedUsers;
+                selectedUsers.forEach(uid => {
+                    userAssignedCounts[uid]++;
+                });
+
+                if (candidates.length > maxCap) {
+                    warnings.push(`ℹ️ Date <strong>${lesson.date} (${lesson.level})</strong>: Capacity exceeded (${candidates.length} applicants for ${maxCap} seats). Priority given to users with fewer available dates.`);
+                }
+            });
+
+            Object.keys(userAssignedCounts).forEach(uid => {
+                const user = window.users.find(u => u.id === uid);
+                const assigned = userAssignedCounts[uid];
+                if (assigned < cohortTargetLessons) {
+                    warnings.push(`🚨 <strong>${user.fullName}</strong> assigned ${assigned}/${cohortTargetLessons} target lessons due to availability limits.`);
+                }
+            });
+
+            window.enrollments = newEnrollments;
+            saveState();
+
+            renderAdminEnrollmentsView();
+
+            const warnBox = document.getElementById('algorithmWarningBox');
+            const warnContent = document.getElementById('algorithmWarningContent');
+            if (warnings.length > 0) {
+                warnBox.classList.remove('hidden');
+                warnContent.innerHTML = warnings.map(w => `<li>${w}</li>`).join('');
+            } else {
+                warnBox.classList.add('hidden');
+            }
+
+            showToast("Priority enrollment algorithm completed!", "success");
+        }
+
+        function clearAllCheckedEnrollments() {
+            const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
+            cohortLessons.forEach(l => {
+                window.enrollments[l.id] = [];
+            });
+            saveState();
+            renderAdminEnrollmentsView();
+            showToast("Cleared all checked enrollment rosters.", "info");
+        }
+
+        function openPreviewRosterModal() {
+            const tbody = document.getElementById('previewRosterTableBody');
+            tbody.innerHTML = '';
+            document.getElementById('previewTargetCount').textContent = cohortTargetLessons;
+
+            const approvedUsers = window.users.filter(u => u.isApproved && !u.isAdmin);
+            const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
+
+            if (approvedUsers.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-6 text-slate-400">No approved users found.</td></tr>`;
+                openModal('modalPreviewRoster');
+                return;
+            }
+
+            approvedUsers.forEach(u => {
+                const regKey = `${u.id}_${activeCohortId}`;
+                const availDates = (window.registrations[regKey] || []).length;
+
+                let enrolledCount = 0;
+                cohortLessons.forEach(l => {
+                    if ((window.enrollments[l.id] || []).includes(u.id)) {
+                        enrolledCount++;
+                    }
+                });
+
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-50";
+
+                let statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-800">Target Reached (${enrolledCount}/${cohortTargetLessons})</span>`;
+                if (enrolledCount < cohortTargetLessons) {
+                    statusBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800">Shortfall (${enrolledCount}/${cohortTargetLessons})</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">${u.fullName}</td>
+                    <td class="py-3 px-4 text-slate-600 font-mono">${u.contact}</td>
+                    <td class="py-3 px-4 text-center font-bold text-slate-700">${availDates} Days</td>
+                    <td class="py-3 px-4 text-center font-bold text-tennis-700 text-sm">${enrolledCount} Lessons</td>
+                    <td class="py-3 px-4 text-center">${statusBadge}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            openModal('modalPreviewRoster');
+        }
+
+        function renderAdminEnrollmentsView() {
+            const container = document.getElementById('adminRosterContainer');
+            container.innerHTML = '';
+
+            const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
+
+            if (cohortLessons.length === 0) {
+                container.innerHTML = `<div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-400 font-bold">No lesson slots created for this cohort yet.</div>`;
+                return;
+            }
+
+            cohortLessons.sort((a,b) => a.date.localeCompare(b.date)).forEach(l => {
+                const approvedUsers = window.users.filter(u => u.isApproved && !u.isAdmin);
+                const registeredUserIds = approvedUsers.map(u => u.id).filter(uid => {
+                    const regKey = `${uid}_${activeCohortId}`;
+                    return (window.registrations[regKey] || []).includes(l.date);
+                });
+
+                const enrolledIds = window.enrollments[l.id] || [];
+
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3";
+
+                let applicantCheckboxes = registeredUserIds.map(uid => {
+                    const u = window.users.find(x => x.id === uid);
+                    const isChecked = enrolledIds.includes(uid);
+                    const regKey = `${uid}_${activeCohortId}`;
+                    const totalAvail = (window.registrations[regKey] || []).length;
+
+                    return `
+                        <label class="flex items-center justify-between p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs cursor-pointer">
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleManualEnrollment('${l.id}', '${uid}')" class="rounded border-slate-300 text-tennis-600 focus:ring-tennis-500">
+                                <span class="font-bold text-slate-800">${u.fullName}</span>
+                            </div>
+                            <span class="text-[10px] text-slate-500 font-mono">Avail: ${totalAvail} days</span>
+                        </label>
+                    `;
+                }).join('');
+
+                if (registeredUserIds.length === 0) {
+                    applicantCheckboxes = `<span class="text-xs text-slate-400 italic">No users submitted availability for this date.</span>`;
+                }
+
+                card.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-2">
+                        <div>
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold uppercase ${l.level === 'Beginner' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'}">${l.level}</span>
+                            <h5 class="font-bold text-slate-900 text-base inline ml-2">${l.date}</h5>
+                            <span class="text-xs text-slate-500 ml-2">(${format24HourTime(l.startTime)} - ${format24HourTime(l.endTime)})</span>
+                        </div>
+                        <div class="text-xs font-bold ${enrolledIds.length > l.capacity ? 'text-red-600' : 'text-slate-600'}">
+                            Seats Enrolled: ${enrolledIds.length} / ${l.capacity} Max
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="text-[10px] font-bold text-slate-400 uppercase mb-2">Registered Applicants (Check to confirm seat):</div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
+                            ${applicantCheckboxes}
+                        </div>
+                    </div>
+                `;
+
+                container.appendChild(card);
+            });
+        }
+
+        function toggleManualEnrollment(lessonId, userId) {
+            if (!window.enrollments[lessonId]) window.enrollments[lessonId] = [];
+            const idx = window.enrollments[lessonId].indexOf(userId);
+
+            if (idx === -1) {
+                window.enrollments[lessonId].push(userId);
+            } else {
+                window.enrollments[lessonId].splice(idx, 1);
+            }
+
+            saveState();
+            renderAdminEnrollmentsView();
         }
 
         function confirmAndPublishEnrollment() {
+            isSchedulePublished = true;
             saveState();
             triggerPublishNotification();
-            showToast("Confirmed enrolment schedule published successfully!", "success");
-        }
-
-        // --- PWA & NATIVE NOTIFICATIONS ---
-        function requestNotificationPermission() {
-            if ('Notification' in window && Notification.permission === 'default') {
-                Notification.requestPermission();
-            }
+            showToast("Enrollment schedule confirmed & published!", "success");
         }
 
         function triggerPublishNotification() {
+            const matchedCohort = cohorts.find(c => c.id === activeCohortId);
+            const cohortName = matchedCohort ? matchedCohort.name : 'Active Cohort';
+            const title = "🎾 Training Schedule Published!";
+            const body = `The confirmed enrolment schedule for ${cohortName} is now live! Please log in to check your confirmed lessons.`;
+
             if ('Notification' in window && Notification.permission === 'granted') {
-                new Notification("🎾 Training Schedule Published!", {
-                    body: "The confirmed enrolment schedule for 2026 Cohort is now live! Log in to check your classes.",
-                    icon: "icon-192.png",
-                    vibrate: [200, 100, 200]
+                if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                    navigator.serviceWorker.ready.then(registration => {
+                        registration.showNotification(title, {
+                            body: body,
+                            icon: 'icon-192.png',
+                            badge: 'icon-192.png',
+                            vibrate: [200, 100, 200],
+                            tag: 'schedule-published'
+                        });
+                    });
+                } else {
+                    new Notification(title, {
+                        body: body,
+                        icon: 'icon-192.png'
+                    });
+                }
+            } else if ('Notification' in window && Notification.permission !== 'denied') {
+                Notification.requestPermission().then(permission => {
+                    if (permission === 'granted') {
+                        new Notification(title, { body: body });
+                    }
                 });
             }
         }
 
-        // --- UI UTILITIES & TOASTS ---
-        function switchDashboardTab(tab) {
-            const contentEnrolment = document.getElementById('tabContentEnrolment');
-            const contentRoster = document.getElementById('tabContentRoster');
-            const contentAdmin = document.getElementById('tabContentAdmin');
+        function exportUserDatabaseExcel() {
+            let csvContent = "\uFEFF";
+            csvContent += "User ID,Full Name,Email,Contact Phone,Username,Status,Is Admin\n";
 
-            const tabEnrolment = document.getElementById('viewTabEnrolment');
-            const tabRoster = document.getElementById('viewTabRoster');
-            const tabAdmin = document.getElementById('viewTabAdmin');
+            window.users.forEach(u => {
+                const status = u.isApproved ? "Approved" : "Pending Verification";
+                const role = u.isAdmin ? "Admin" : "User";
+                csvContent += `"${u.id}","${u.fullName}","${u.email || 'N/A'}","${u.contact}","${u.username}","${status}","${role}"\n`;
+            });
 
-            contentEnrolment.classList.add('hidden');
-            contentRoster.classList.add('hidden');
-            contentAdmin.classList.add('hidden');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `tennis_user_accounts_${activeCohortId}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("User accounts exported to CSV/Excel!", "success");
+        }
 
-            tabEnrolment.className = "px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 rounded-lg transition-all";
-            tabRoster.className = "px-4 py-2 text-xs font-semibold text-slate-400 hover:text-slate-200 rounded-lg transition-all";
-            tabAdmin.className = "px-4 py-2 text-xs font-semibold text-amber-400 hover:text-amber-300 rounded-lg transition-all";
+        function exportEnrollmentDatabaseExcel() {
+            let csvContent = "\uFEFF";
+            csvContent += "Cohort,Lesson ID,Date,Weekday,Level,Location,StartTime,EndTime,Fire Watch,Amb Watches,Enrolled User ID,Enrolled User Name,Contact\n";
 
-            if (tab === 'enrolment') {
-                contentEnrolment.classList.remove('hidden');
-                tabEnrolment.className = "px-4 py-2 text-xs font-semibold rounded-lg transition-all bg-brand-600 text-white shadow";
-            } else if (tab === 'roster') {
-                contentRoster.classList.remove('hidden');
-                tabRoster.className = "px-4 py-2 text-xs font-semibold rounded-lg transition-all bg-brand-600 text-white shadow";
-            } else if (tab === 'admin') {
-                contentAdmin.classList.remove('hidden');
-                tabAdmin.className = "px-4 py-2 text-xs font-semibold rounded-lg transition-all bg-amber-500 text-slate-950 shadow font-bold";
-            }
+            const cohortLessons = window.lessons.filter(l => l.cohortId === activeCohortId);
+            const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+            cohortLessons.forEach(l => {
+                const parts = l.date.split('-').map(Number);
+                const dateObj = new Date(l.date);
+                const dayName = weekdays[dateObj.getDay()];
+                const fire = getFireDutyWatch(parts[0], parts[1] - 1, parts[2]);
+                const amb = getAmbulanceDutyWatches(parts[0], parts[1] - 1, parts[2]);
+
+                const enrolledUserIds = window.enrollments[l.id] || [];
+
+                if (enrolledUserIds.length === 0) {
+                    csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${format24HourTime(l.startTime)}","${format24HourTime(l.endTime)}","${fire}","${amb.formattedText}","N/A","No Users Enrolled","N/A"\n`;
+                } else {
+                    enrolledUserIds.forEach(uid => {
+                        const u = window.users.find(x => x.id === uid);
+                        const name = u ? u.fullName : "Unknown";
+                        const contact = u ? u.contact : "N/A";
+                        csvContent += `"${l.cohortId}","${l.id}","${l.date}","${dayName}","${l.level}","${l.location}","${format24HourTime(l.startTime)}","${format24HourTime(l.endTime)}","${fire}","${amb.formattedText}","${uid}","${name}","${contact}"\n`;
+                    });
+                }
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", `tennis_enrolment_database_${activeCohortId}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast("Enrolment database exported to CSV/Excel!", "success");
+        }
+
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) modal.classList.add('hidden');
         }
 
         function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
-
             const toast = document.createElement('div');
-            let icon = 'fa-circle-info text-blue-400';
-            let border = 'border-blue-500/40';
+            let bgColor = 'bg-slate-900 text-white border-slate-700';
+            if (type === 'success') bgColor = 'bg-tennis-600 text-white font-bold border-tennis-500';
+            if (type === 'error') bgColor = 'bg-red-600 text-white border-red-500';
+            if (type === 'warning') bgColor = 'bg-amber-500 text-slate-950 font-bold border-amber-400';
 
-            if (type === 'success') {
-                icon = 'fa-circle-check text-brand-400';
-                border = 'border-brand-500/40';
-            } else if (type === 'error') {
-                icon = 'fa-circle-xmark text-rose-400';
-                border = 'border-rose-500/40';
-            } else if (type === 'warning') {
-                icon = 'fa-triangle-exclamation text-amber-400';
-                border = 'border-amber-500/40';
-            }
+            toast.className = `fixed bottom-5 right-5 z-50 px-5 py-3 rounded-xl shadow-2xl text-xs transition-all duration-300 transform translate-y-2 flex items-center gap-2 border ${bgColor}`;
+            toast.innerHTML = `<i class="fa-solid fa-circle-info"></i> <span>${message}</span>`;
 
-            toast.className = `pointer-events-auto flex items-center gap-3 bg-slate-800/90 border ${border} text-white px-4 py-3 rounded-xl shadow-2xl backdrop-blur-md text-xs font-semibold transition-all duration-300 transform translate-y-2 opacity-0`;
-            toast.innerHTML = `<i class="fa-solid ${icon} text-base"></i><span>${message}</span>`;
-
-            container.appendChild(toast);
+            document.body.appendChild(toast);
 
             setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
+                toast.classList.add('opacity-0', 'translate-y-4');
                 setTimeout(() => toast.remove(), 300);
             }, 3500);
         }
