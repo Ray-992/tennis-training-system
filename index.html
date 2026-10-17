@@ -480,6 +480,9 @@
                             <p class="text-xs text-slate-500">Create new cohorts, schedule training dates, or duplicate available lesson slots.</p>
                         </div>
                         <div class="flex items-center space-x-2">
+                            <button onclick="openManageCohortsModal()" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                                <i class="fa-solid fa-folder-gear"></i> Manage Cohorts
+                            </button>
                             <button onclick="openAddCohortModal()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
                                 <i class="fa-solid fa-folder-plus"></i> Add New Cohort
                             </button>
@@ -508,315 +511,15 @@
                     </div>
                 </div>
 
-                <!-- SUB-TAB 3: Priority Auto-Enrollment & Roster Confirmation -->
-                <div id="adminViewEnrollments" class="hidden space-y-4">
-                    <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                            <div>
-                                <h4 class="font-bold text-slate-900 text-lg flex items-center gap-2">
-                                    <i class="fa-solid fa-scale-balanced text-tennis-600"></i> Priority Auto-Enrollment & Confirmation
-                                </h4>
-                                <p class="text-xs text-slate-600 mt-1 leading-relaxed">
-                                    <strong>Priority Rule:</strong> When class registrations exceed capacity (Beginner: 8, Intermediate: 4), priority is automatically assigned to users with <strong>fewer total available dates</strong> so everyone reaches their target of <span id="adminRuleTargetLessonsText" class="font-bold text-slate-900">8 lessons</span>.
-                                </p>
-                            </div>
-                            <div class="flex flex-wrap items-center gap-2">
-                                <button onclick="runPriorityEnrollmentAlgorithm()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
-                                    <i class="fa-solid fa-wand-magic-sparkles"></i> Auto-Assign
-                                </button>
-                                <button onclick="clearAllCheckedEnrollments()" class="px-3.5 py-2 bg-red-100 hover:bg-red-200 text-red-700 border border-red-200 font-bold rounded-xl text-xs transition flex items-center gap-1.5">
-                                    <i class="fa-solid fa-eraser"></i> Clear All Checked
-                                </button>
-                                <button onclick="openPreviewRosterModal()" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5">
-                                    <i class="fa-solid fa-eye"></i> Preview Roster
-                                </button>
-                                <button onclick="exportEnrollmentDatabaseExcel()" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition flex items-center gap-1.5 shadow">
-                                    <i class="fa-solid fa-file-excel"></i> Export Enrolments (Excel)
-                                </button>
-                                <button onclick="confirmAndPublishEnrollment()" class="px-3.5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
-                                    <i class="fa-solid fa-paper-plane"></i> Publish Schedule
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Shortfall Box -->
-                        <div id="algorithmWarningBox" class="hidden p-4 bg-amber-50 border border-amber-200 rounded-xl space-y-1">
-                            <div class="flex items-center space-x-2 text-amber-900 font-bold text-xs">
-                                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
-                                <span>System Allocation Report</span>
-                            </div>
-                            <ul id="algorithmWarningContent" class="text-xs text-amber-800 space-y-1 pl-5 list-disc">
-                                <!-- Warnings injected -->
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Daily Roster Cards -->
-                    <div id="adminRosterContainer" class="space-y-4">
-                        <!-- Dynamic Roster Cards -->
-                    </div>
-                </div>
-
-            </div>
-
-        </div>
-
-    </main>
-
-
-    <!-- MODAL 1: Confirm Selected Availability -->
-    <div id="modalConfirmReg" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-5">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-clipboard-check text-tennis-600"></i> Confirm Selected Availability
-                </h3>
-                <button onclick="closeModal('modalConfirmReg')" class="text-slate-400 hover:text-slate-600 text-xl"><i class="fa-solid fa-xmark"></i></button>
-            </div>
-
-            <p class="text-xs text-slate-600 leading-relaxed">
-                You are about to submit your available dates for the active cohort.
-            </p>
-
-            <div>
-                <label class="block text-[10px] font-bold text-slate-700 uppercase mb-2">Summary of Selected Dates:</label>
-                <textarea id="regConfirmationSummaryText" readonly rows="6" 
-                          class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs font-mono text-slate-800 focus:outline-none resize-none leading-relaxed shadow-inner">
-                </textarea>
-            </div>
-
-            <div class="flex items-center justify-end space-x-3 pt-2">
-                <button onclick="closeModal('modalConfirmReg')" class="px-4 py-2 border border-slate-300 text-slate-600 hover:bg-slate-100 rounded-xl text-xs font-bold transition">
-                    Edit Selection
-                </button>
-                <button onclick="submitFinalRegistration()" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white rounded-xl text-xs font-bold shadow transition">
-                    Confirm & Submit Registration
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 2: Submission Received Notice -->
-    <div id="modalSubmissionSuccessNotice" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 text-center space-y-4">
-            <div class="w-16 h-16 rounded-full bg-tennis-100 border border-tennis-200 text-tennis-600 mx-auto flex items-center justify-center text-2xl">
-                <i class="fa-solid fa-circle-check"></i>
-            </div>
-            <h3 class="text-xl font-bold text-slate-900">Availability Received</h3>
-            <p class="text-xs text-slate-600 leading-relaxed px-2">
-                Your enrolment requests have been successfully submitted. Please note that your submission does not mean the lessons are successfully enrolled. The final enrolment list is still pending confirmation.
-            </p>
-            <button onclick="closeModal('modalSubmissionSuccessNotice')" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow transition">
-                Understood
-            </button>
-        </div>
-    </div>
-
-    <!-- MODAL 3: Update Profile & Credentials -->
-    <div id="modalChangeProfile" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-user-gear text-tennis-600 mr-2"></i> User Profile Settings</h3>
-                <button onclick="closeModal('modalChangeProfile')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form onsubmit="handleSaveProfile(event)" class="space-y-3">
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Username (Read Only)</label>
-                    <input type="text" id="profUsername" readonly class="w-full px-3 py-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-600 text-xs font-mono font-bold outline-none">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Full Name</label>
-                    <input type="text" id="profFullName" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Email Address</label>
-                    <input type="email" id="profEmail" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Contact Phone Number</label>
-                    <input type="text" id="profContact" required class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
-                </div>
-
-                <div class="border-t border-slate-100 pt-3">
-                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">New Password (Leave blank to keep unchanged)</label>
-                    <input type="password" id="profNewPassword" placeholder="••••••••" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none focus:ring-2 focus:ring-tennis-500">
-                </div>
-                <div class="flex justify-end space-x-2 pt-2">
-                    <button type="button" onclick="closeModal('modalChangeProfile')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">Save Profile Changes</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 4: User Enrolled History -->
-    <div id="modalEnrolledRecords" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-clock-rotate-left text-tennis-600"></i> My Enrolled Records History
-                </h3>
-                <button onclick="closeModal('modalEnrolledRecords')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
-                <table class="w-full text-left text-xs border-collapse">
-                    <thead class="bg-slate-50 text-slate-600 uppercase sticky top-0 font-bold">
-                        <tr>
-                            <th class="py-3 px-4">Cohort</th>
-                            <th class="py-3 px-4">Date</th>
-                            <th class="py-3 px-4">Time</th>
-                            <th class="py-3 px-4">Level</th>
-                            <th class="py-3 px-4">Location</th>
-                        </tr>
-                    </thead>
-                    <tbody id="enrolledHistoryTableBody">
-                        <!-- Dynamic Records -->
-                    </tbody>
-                </table>
-            </div>
-            <div class="flex justify-end pt-2">
-                <button onclick="closeModal('modalEnrolledRecords')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold">Close</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 5: Password Reset via Email -->
-    <div id="modalForgotPassword" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-envelope-open-text text-tennis-600 mr-2"></i> Password Reset via Email</h3>
-                <button onclick="closeModal('modalForgotPassword')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-
-            <!-- Step 1: Request Email Reset -->
-            <div id="forgotStep1">
-                <form onsubmit="handleSendOTP(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Username or Email</label>
-                        <input type="text" id="forgotUsername" required placeholder="Username or name@example.com" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Registered Phone</label>
-                        <div class="flex items-center space-x-2">
-                            <select id="forgotCountryCode" class="bg-slate-50 border border-slate-300 text-slate-800 font-bold text-xs rounded-xl px-3 py-2 outline-none">
-                                <option value="+852">+852</option>
-                                <option value="+86">+86</option>
-                            </select>
-                            <input type="tel" id="forgotContact" required placeholder="91234567" class="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
-                        </div>
-                    </div>
-                    <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">
-                        Send Email Verification Code
-                    </button>
-                </form>
-            </div>
-
-            <!-- Step 2: Verify Code & Reset -->
-            <div id="forgotStep2" class="hidden space-y-4">
-                <form onsubmit="handleVerifyOTPAndReset(event)" class="space-y-4">
-                    <p class="text-xs text-slate-600 leading-relaxed">
-                        An email verification request has been processed. Enter your 6-digit verification code below to authorize your password reset.
-                    </p>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">6-Digit Verification Code</label>
-                        <input type="text" id="forgotOTPInput" required placeholder="Enter 6-digit code" maxlength="6" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-tennis-700 font-mono tracking-widest text-center font-bold text-base outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">New Password</label>
-                        <input type="password" id="forgotNewPassword" required placeholder="Enter new password" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
-                    </div>
-                    <button type="submit" class="w-full py-2.5 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">
-                        Verify Code & Update Password
-                    </button>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 7: Roster Preview -->
-    <div id="modalPreviewRoster" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
-                    <i class="fa-solid fa-users text-indigo-600"></i> Roster Summary Preview
-                </h3>
-                <button onclick="closeModal('modalPreviewRoster')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
-                <table class="w-full text-left text-xs border-collapse">
-                    <thead class="bg-slate-50 text-slate-600 uppercase sticky top-0 font-bold">
-                        <tr>
-                            <th class="py-3 px-4">User Name</th>
-                            <th class="py-3 px-4">Contact</th>
-                            <th class="py-3 px-4 text-center">Avail. Provided</th>
-                            <th class="py-3 px-4 text-center">Enrolled Lessons</th>
-                            <th class="py-3 px-4 text-center">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="previewRosterTableBody">
-                        <!-- Dynamic Rows -->
-                    </tbody>
-                </table>
-            </div>
-            <div class="flex items-center justify-between pt-2 border-t border-slate-100">
-                <div class="text-xs text-slate-500">Target per user: <span id="previewTargetCount" class="font-bold text-slate-800">8</span> lessons</div>
-                <button onclick="closeModal('modalPreviewRoster')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold">Close Preview</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 8: Add/Edit Lesson Slot -->
-    <div id="modalLessonForm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 id="lessonModalTitle" class="text-base font-bold text-slate-900">Add New Lesson</h3>
-                <button onclick="closeModal('modalLessonForm')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form onsubmit="handleSaveLesson(event)" class="space-y-4">
-                <input type="hidden" id="lessonId">
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Date</label>
-                    <input type="date" id="lessonDate" required 
-                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Level</label>
-                    <select id="lessonLevel" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
-                        <option value="Beginner">Beginner (Capacity 8)</option>
-                        <option value="Intermediate">Intermediate (Capacity 4)</option>
-                    </select>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Start Time</label>
-                        <input type="time" id="lessonStartTime" required value="09:00" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">End Time</label>
-                        <input type="time" id="lessonEndTime" required value="11:00" class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Location Venue</label>
-                    <input type="text" id="lessonLocation" required placeholder="Victoria Park Court 1" value="Victoria Park Court 1"
-                           class="w-full px-3 py-2 rounded-xl border border-slate-300 text-slate-800 text-xs outline-none">
-                </div>
-                <div class="flex justify-end space-x-2 pt-2">
-                    <button type="button" onclick="closeModal('modalLessonForm')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-tennis-600 hover:bg-tennis-700 text-white font-bold rounded-xl text-xs shadow">Save Lesson</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 9: Add New Cohort -->
+    <!-- MODAL 9: Add/Edit Cohort -->
     <div id="modalCohortForm" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
             <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 class="text-base font-bold text-slate-900"><i class="fa-solid fa-folder-plus text-amber-500 mr-2"></i> Add New Cohort</h3>
+                <h3 id="cohortModalTitle" class="text-base font-bold text-slate-900"><i class="fa-solid fa-folder-plus text-amber-500 mr-2"></i> Add New Cohort</h3>
                 <button onclick="closeModal('modalCohortForm')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <form onsubmit="handleSaveCohort(event)" class="space-y-4">
+                <input type="hidden" id="cohortEditId">
                 <div>
                     <label class="block text-[10px] font-bold text-slate-700 uppercase mb-1">Cohort Display Name</label>
                     <input type="text" id="cohortNameInput" required placeholder="2nd Training Cohort: Mar 2027 - May 2027" 
@@ -834,9 +537,42 @@
                 </div>
                 <div class="flex justify-end space-x-2 pt-2">
                     <button type="button" onclick="closeModal('modalCohortForm')" class="px-4 py-2 border border-slate-300 text-slate-600 rounded-xl text-xs font-bold">Cancel</button>
-                    <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow">Create Cohort</button>
+                    <button type="submit" class="px-5 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow">Save Cohort</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- MODAL 10: Manage Cohorts List -->
+    <div id="modalManageCohorts" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] flex flex-col">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                    <i class="fa-solid fa-folder-gear text-slate-800"></i> Manage Training Cohorts
+                </h3>
+                <button onclick="closeModal('modalManageCohorts')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <div class="overflow-y-auto flex-grow border border-slate-200 rounded-xl">
+                <table class="w-full text-left text-xs border-collapse">
+                    <thead class="bg-slate-50 text-slate-600 uppercase sticky top-0 font-bold">
+                        <tr>
+                            <th class="py-3 px-4">Cohort Name</th>
+                            <th class="py-3 px-4">Start Month</th>
+                            <th class="py-3 px-4">End Month</th>
+                            <th class="py-3 px-4 text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="manageCohortsTableBody">
+                        <!-- Dynamic Cohort Rows -->
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-between items-center pt-2 border-t border-slate-100">
+                <button onclick="openAddCohortModal()" class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-folder-plus"></i> Add New Cohort
+                </button>
+                <button onclick="closeModal('modalManageCohorts')" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-bold">Close</button>
+            </div>
         </div>
     </div>
 
@@ -1206,7 +942,153 @@
         }
 
         function openAddCohortModal() {
+            document.getElementById('cohortModalTitle').innerHTML = `<i class="fa-solid fa-folder-plus text-amber-500 mr-2"></i> Add New Cohort`;
+            document.getElementById('cohortEditId').value = '';
+            document.getElementById('cohortNameInput').value = '';
+            document.getElementById('cohortStartMonth').value = '2027-03';
+            document.getElementById('cohortEndMonth').value = '2027-05';
+            closeModal('modalManageCohorts');
             openModal('modalCohortForm');
+        }
+
+        function openEditCohortModal(cohortId) {
+            const c = cohorts.find(x => x.id === cohortId);
+            if (!c) return;
+
+            document.getElementById('cohortModalTitle').innerHTML = `<i class="fa-solid fa-folder-pen text-amber-500 mr-2"></i> Amend Cohort Period`;
+            document.getElementById('cohortEditId').value = c.id;
+            document.getElementById('cohortNameInput').value = c.name;
+
+            const startM = String(c.startMonth + 1).padStart(2, '0');
+            const endM = String(c.endMonth + 1).padStart(2, '0');
+            document.getElementById('cohortStartMonth').value = `${c.startYear}-${startM}`;
+            document.getElementById('cohortEndMonth').value = `${c.endYear}-${endM}`;
+
+            closeModal('modalManageCohorts');
+            openModal('modalCohortForm');
+        }
+
+        function openManageCohortsModal() {
+            renderManageCohortsTable();
+            openModal('modalManageCohorts');
+        }
+
+        function renderManageCohortsTable() {
+            const tbody = document.getElementById('manageCohortsTableBody');
+            tbody.innerHTML = '';
+
+            const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+            cohorts.forEach(c => {
+                const tr = document.createElement('tr');
+                tr.className = "border-b border-slate-100 hover:bg-slate-50 transition";
+                const isCurrentActive = c.id === activeCohortId;
+
+                tr.innerHTML = `
+                    <td class="py-3 px-4 font-bold text-slate-800">
+                        ${c.name} ${isCurrentActive ? '<span class="ml-1 px-2 py-0.5 rounded-full text-[9px] bg-tennis-500 text-slate-900 font-black">Active</span>' : ''}
+                    </td>
+                    <td class="py-3 px-4 text-slate-600 font-mono">${monthNames[c.startMonth]} ${c.startYear}</td>
+                    <td class="py-3 px-4 text-slate-600 font-mono">${monthNames[c.endMonth]} ${c.endYear}</td>
+                    <td class="py-3 px-4 text-right space-x-1.5">
+                        <button onclick="openEditCohortModal('${c.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-pen"></i> Edit</button>
+                        <button onclick="deleteCohort('${c.id}')" class="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-trash"></i> Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function handleSaveCohort(e) {
+            e.preventDefault();
+            const editId = document.getElementById('cohortEditId').value;
+            const name = document.getElementById('cohortNameInput').value.trim();
+            const startVal = document.getElementById('cohortStartMonth').value;
+            const endVal = document.getElementById('cohortEndMonth').value;
+
+            if (!name || !startVal || !endVal) return;
+
+            const [sYear, sMonth] = startVal.split('-').map(Number);
+            const [eYear, eMonth] = endVal.split('-').map(Number);
+
+            if (editId) {
+                const idx = cohorts.findIndex(c => c.id === editId);
+                if (idx !== -1) {
+                    cohorts[idx] = {
+                        ...cohorts[idx],
+                        name: name,
+                        startYear: sYear,
+                        startMonth: sMonth - 1,
+                        endYear: eYear,
+                        endMonth: eMonth - 1
+                    };
+                    showToast(`Cohort "${name}" updated successfully!`, "success");
+                }
+            } else {
+                const newCohort = {
+                    id: 'c_' + Date.now(),
+                    name: name,
+                    startYear: sYear,
+                    startMonth: sMonth - 1,
+                    endYear: eYear,
+                    endMonth: eMonth - 1
+                };
+
+                cohorts.push(newCohort);
+                activeCohortId = newCohort.id;
+                showToast(`New cohort "${name}" created and set as active!`, "success");
+            }
+
+            saveState();
+            populateCohortDropdowns();
+            changeActiveCohort(activeCohortId);
+            closeModal('modalCohortForm');
+        }
+
+        async function deleteCohort(cohortId) {
+            if (cohorts.length <= 1) {
+                showToast("Cannot delete the only remaining cohort in the system.", "warning");
+                return;
+            }
+
+            const targetCohort = cohorts.find(c => c.id === cohortId);
+            const cohortName = targetCohort ? targetCohort.name : cohortId;
+
+            // Delete cohort and associated lessons
+            cohorts = cohorts.filter(c => c.id !== cohortId);
+
+            const deletedLessonIds = window.lessons.filter(l => l.cohortId === cohortId).map(l => l.id);
+            window.lessons = window.lessons.filter(l => l.cohortId !== cohortId);
+
+            // Clean registrations and enrollments
+            Object.keys(window.registrations).forEach(key => {
+                if (key.endsWith(`_${cohortId}`)) {
+                    delete window.registrations[key];
+                }
+            });
+
+            deletedLessonIds.forEach(id => {
+                delete window.enrollments[id];
+            });
+
+            if (supabaseClient) {
+                try {
+                    await supabaseClient.from('lessons').delete().eq('cohort_id', cohortId);
+                    await supabaseClient.from('registrations').delete().eq('cohort_id', cohortId);
+                } catch (err) {
+                    console.log("Supabase deletion notice:", err);
+                }
+            }
+
+            if (activeCohortId === cohortId) {
+                activeCohortId = cohorts[0].id;
+            }
+
+            saveState();
+            populateCohortDropdowns();
+            changeActiveCohort(activeCohortId);
+            renderManageCohortsTable();
+            showToast(`Deleted cohort "${cohortName}" and its related lesson data.`, "info");
         }
 
         function handleSaveCohort(e) {
