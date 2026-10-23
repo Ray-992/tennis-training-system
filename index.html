@@ -1199,6 +1199,7 @@
 
             document.getElementById('authView').classList.remove('hidden');
             document.getElementById('mainDashboardView').classList.add('hidden');
+            resetLoginBtn();
             renderHeaderNav();
         }
 
@@ -1561,6 +1562,7 @@
             window.currentUser = null;
             document.getElementById('authView').classList.remove('hidden');
             document.getElementById('mainDashboardView').classList.add('hidden');
+            resetLoginBtn();
             renderHeaderNav();
 
             checkAutoLoginSession();
